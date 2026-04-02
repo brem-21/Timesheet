@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { getCurrentUser, fetchTicketsByRange } from "@/lib/jira";
 import { loadTasks } from "@/lib/taskStoreServer";
@@ -28,7 +30,7 @@ async function runReminder() {
     const totalHours      = tickets.reduce((s, t) => s + t.hours, 0);
 
     // ── Meeting tasks summary ────────────────────────────────────────────────
-    const allTasks     = loadTasks();
+    const allTasks     = await loadTasks();
     const openTasks    = allTasks.filter((t) => t.status === "todo");
     const activeTasks  = allTasks.filter((t) => t.status === "in-progress");
     const doneTasks    = allTasks.filter((t) => t.status === "done");

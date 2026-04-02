@@ -1,8 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
-
-const DATA_DIR = join(process.cwd(), "data");
-const FILE = join(DATA_DIR, "meetings.json");
+import { pool } from "./db";
 
 export interface MeetingMeta {
   source: string;
@@ -10,32 +6,26 @@ export interface MeetingMeta {
   date: string;
 }
 
-function ensureDir() {
-  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
+export async function loadMeetings(): Promise<MeetingMeta[]> {
+  const result = await pool.query<MeetingMeta>(
+    `SELECT source, speakers, date FROM meetings ORDER BY date DESC`
+  );
+  return result.rows;
 }
 
-export function loadMeetings(): MeetingMeta[] {
-  ensureDir();
-  if (!existsSync(FILE)) return [];
-  try {
-    return JSON.parse(readFileSync(FILE, "utf-8")) as MeetingMeta[];
-  } catch {
-    return [];
-  }
+export async function saveMeetingMeta(meta: MeetingMeta): Promise<void> {
+  await pool.query(
+    `INSERT INTO meetings (source, speakers, date)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (source) DO UPDATE SET speakers = EXCLUDED.speakers, date = EXCLUDED.date`,
+    [meta.source, meta.speakers, meta.date]
+  );
 }
 
-export function saveMeetingMeta(meta: MeetingMeta): void {
-  ensureDir();
-  const existing = loadMeetings();
-  const idx = existing.findIndex((m) => m.source === meta.source);
-  if (idx >= 0) {
-    existing[idx] = meta;
-  } else {
-    existing.unshift(meta);
-  }
-  writeFileSync(FILE, JSON.stringify(existing, null, 2));
-}
-
-export function getMeetingSpeakers(source: string): string[] {
-  return loadMeetings().find((m) => m.source === source)?.speakers ?? [];
+export async function getMeetingSpeakers(source: string): Promise<string[]> {
+  const result = await pool.query<{ speakers: string[] }>(
+    `SELECT speakers FROM meetings WHERE source = $1`,
+    [source]
+  );
+  return result.rows[0]?.speakers ?? [];
 }

@@ -1,5 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
+import { pool } from "./db";
 
 export type TaskStatus = "todo" | "in-progress" | "done";
 export type TaskPriority = "high" | "medium" | "low";
@@ -24,47 +23,85 @@ export interface MeetingTask {
   checklist?: ChecklistItem[];
 }
 
-const DATA_DIR = join(process.cwd(), "data");
-const TASKS_FILE = join(DATA_DIR, "tasks.json");
+// ── helpers ────────────────────────────────────────────────────────────────────
 
-function ensureDataDir() {
-  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
+function rowToTask(r: Record<string, unknown>): MeetingTask {
+  return {
+    id: r.id as string,
+    text: r.text as string,
+    source: r.source as string,
+    createdAt: Number(r.created_at),
+    status: r.status as TaskStatus,
+    priority: r.priority as TaskPriority,
+    assignee: (r.assignee as string) ?? undefined,
+    reportsTo: (r.reports_to as string) ?? undefined,
+    notes: (r.notes as string) ?? undefined,
+    description: (r.description as string) ?? undefined,
+    checklist: (r.checklist as ChecklistItem[]) ?? [],
+  };
 }
 
-export function loadTasks(): MeetingTask[] {
-  ensureDataDir();
-  if (!existsSync(TASKS_FILE)) return [];
-  try {
-    return JSON.parse(readFileSync(TASKS_FILE, "utf-8")) as MeetingTask[];
-  } catch {
-    return [];
+// ── public API ─────────────────────────────────────────────────────────────────
+
+export async function loadTasks(): Promise<MeetingTask[]> {
+  const result = await pool.query(`SELECT * FROM tasks ORDER BY created_at DESC`);
+  return result.rows.map(rowToTask);
+}
+
+export async function addTasks(tasks: MeetingTask[]): Promise<MeetingTask[]> {
+  for (const t of tasks) {
+    await pool.query(
+      `INSERT INTO tasks (id, text, source, created_at, status, priority, assignee, reports_to, notes, description, checklist)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       ON CONFLICT (id) DO NOTHING`,
+      [
+        t.id, t.text, t.source, t.createdAt, t.status, t.priority,
+        t.assignee ?? null, t.reportsTo ?? null, t.notes ?? null,
+        t.description ?? null, JSON.stringify(t.checklist ?? []),
+      ]
+    );
   }
+  return loadTasks();
 }
 
-export function saveTasks(tasks: MeetingTask[]): void {
-  ensureDataDir();
-  writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2));
+export async function updateTask(id: string, patch: Partial<MeetingTask>): Promise<MeetingTask[]> {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+  let idx = 1;
+
+  const colMap: Record<string, string> = {
+    text: "text", source: "source", createdAt: "created_at",
+    status: "status", priority: "priority", assignee: "assignee",
+    reportsTo: "reports_to", notes: "notes", description: "description",
+    checklist: "checklist",
+  };
+
+  for (const [key, col] of Object.entries(colMap)) {
+    if (key in patch) {
+      const val = patch[key as keyof MeetingTask];
+      fields.push(`${col} = $${idx++}`);
+      values.push(key === "checklist" ? JSON.stringify(val) : val);
+    }
+  }
+
+  if (fields.length > 0) {
+    values.push(id);
+    await pool.query(
+      `UPDATE tasks SET ${fields.join(", ")} WHERE id = $${idx}`,
+      values
+    );
+  }
+
+  return loadTasks();
 }
 
-export function addTasks(tasks: MeetingTask[]): MeetingTask[] {
-  const existing = loadTasks();
-  const existingTexts = new Set(existing.map((t) => t.text.trim().toLowerCase()));
-  const newOnes = tasks.filter((t) => !existingTexts.has(t.text.trim().toLowerCase()));
-  const merged = [...newOnes, ...existing];
-  saveTasks(merged);
-  return merged;
+export async function deleteTask(id: string): Promise<MeetingTask[]> {
+  await pool.query(`DELETE FROM tasks WHERE id = $1`, [id]);
+  return loadTasks();
 }
 
-export function updateTask(id: string, patch: Partial<MeetingTask>): MeetingTask[] {
-  const tasks = loadTasks().map((t) => (t.id === id ? { ...t, ...patch } : t));
-  saveTasks(tasks);
-  return tasks;
-}
-
-export function deleteTask(id: string): MeetingTask[] {
-  const tasks = loadTasks().filter((t) => t.id !== id);
-  saveTasks(tasks);
-  return tasks;
+export async function clearTasks(): Promise<void> {
+  await pool.query(`DELETE FROM tasks`);
 }
 
 export function generateTaskId(): string {

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { parseTranscript, extractiveSummarize, geminiSummarize, extractDateFromTranscript, isPersonName } from "@/lib/summarize";
 import { addTasks, generateTaskId } from "@/lib/taskStoreServer";
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
   const resolvedLabel = meetingLabel || transcriptDate || format(new Date(), "MMM d, yyyy");
 
   summary.meetingLabel = resolvedLabel;
-  const savedSummaries = saveSummary(summary);
+  const savedSummaries = await saveSummary(summary);
   const savedId = savedSummaries[0]?.id ?? null;
 
   // Save speaker names extracted from transcript
@@ -43,7 +45,7 @@ export async function POST(request: NextRequest) {
   const speakers = Array.from(
     new Set(parsedLines.map((l) => l.speaker.trim()).filter(isPersonName))
   );
-  saveMeetingMeta({ source: resolvedLabel, speakers, date: new Date().toISOString() });
+  await saveMeetingMeta({ source: resolvedLabel, speakers, date: new Date().toISOString() });
 
   // Auto-save action items as tasks
   const source = resolvedLabel;
@@ -62,7 +64,7 @@ export async function POST(request: NextRequest) {
 
   let savedCount = 0;
   if (tasks.length > 0) {
-    addTasks(tasks);
+    await addTasks(tasks);
     savedCount = tasks.length;
   }
 

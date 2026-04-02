@@ -1,13 +1,12 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { loadProfDev, addProfDev, ProfDevEntry } from "@/lib/profDevStore";
 
 export async function GET() {
   try {
-    const entries = loadProfDev();
-    const sorted = [...entries].sort((a, b) =>
-      b.completedDate.localeCompare(a.completedDate)
-    );
-    return NextResponse.json(sorted);
+    const entries = await loadProfDev();
+    return NextResponse.json(entries);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
       skills: Array.isArray(body.skills) ? body.skills : [],
       createdAt: Date.now(),
     };
-    const updated = addProfDev(entry);
+    const updated = await addProfDev(entry);
     return NextResponse.json(updated, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

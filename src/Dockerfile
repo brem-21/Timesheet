@@ -31,9 +31,6 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
-# data/ holds file-based JSON stores — copy seed files and ensure the nextjs user can write
-COPY --from=builder --chown=nextjs:nodejs /app/data ./data
-
 USER nextjs
 
 EXPOSE 5000

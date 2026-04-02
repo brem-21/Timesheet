@@ -1,11 +1,12 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { loadMilestones, addMilestone, Milestone } from "@/lib/milestoneStore";
 
 export async function GET() {
   try {
-    const milestones = loadMilestones();
-    const sorted = [...milestones].sort((a, b) => b.createdAt - a.createdAt);
-    return NextResponse.json(sorted);
+    const milestones = await loadMilestones();
+    return NextResponse.json(milestones);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -25,7 +26,7 @@ export async function POST(request: NextRequest) {
       category: body.category ?? "other",
       createdAt: Date.now(),
     };
-    const updated = addMilestone(milestone);
+    const updated = await addMilestone(milestone);
     return NextResponse.json(updated, { status: 201 });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

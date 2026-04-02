@@ -1,9 +1,6 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { join } from "path";
+import { pool } from "./db";
 import { TranscriptSummary } from "./summarize";
 
-const DATA_DIR = join(process.cwd(), "data");
-const FILE = join(DATA_DIR, "summaries.json");
 const MAX_HISTORY = 5;
 
 export interface SavedSummary {
@@ -12,46 +9,47 @@ export interface SavedSummary {
   summary: TranscriptSummary;
 }
 
-function ensureDir() {
-  if (!existsSync(DATA_DIR)) mkdirSync(DATA_DIR, { recursive: true });
-}
-
-export function loadSummaries(): SavedSummary[] {
-  ensureDir();
-  if (!existsSync(FILE)) return [];
-  try {
-    return JSON.parse(readFileSync(FILE, "utf-8")) as SavedSummary[];
-  } catch {
-    return [];
-  }
-}
-
-export function saveSummary(summary: TranscriptSummary): SavedSummary[] {
-  ensureDir();
-  const existing = loadSummaries();
-  const entry: SavedSummary = {
-    id: `sum-${Date.now()}`,
-    savedAt: Date.now(),
-    summary,
+function rowToSaved(r: Record<string, unknown>): SavedSummary {
+  return {
+    id: r.id as string,
+    savedAt: Number(r.saved_at),
+    summary: r.summary as TranscriptSummary,
   };
-  // Prepend newest, keep only MAX_HISTORY
-  const updated = [entry, ...existing].slice(0, MAX_HISTORY);
-  writeFileSync(FILE, JSON.stringify(updated, null, 2));
-  return updated;
 }
 
-export function deleteSummary(id: string): SavedSummary[] {
-  ensureDir();
-  const updated = loadSummaries().filter((s) => s.id !== id);
-  writeFileSync(FILE, JSON.stringify(updated, null, 2));
-  return updated;
-}
-
-export function updateSummaryLabel(id: string, meetingLabel: string): SavedSummary[] {
-  ensureDir();
-  const updated = loadSummaries().map((s) =>
-    s.id === id ? { ...s, summary: { ...s.summary, meetingLabel } } : s
+export async function loadSummaries(): Promise<SavedSummary[]> {
+  const result = await pool.query(
+    `SELECT * FROM summaries ORDER BY saved_at DESC`
   );
-  writeFileSync(FILE, JSON.stringify(updated, null, 2));
-  return updated;
+  return result.rows.map(rowToSaved);
+}
+
+export async function saveSummary(summary: TranscriptSummary): Promise<SavedSummary[]> {
+  const id = `sum-${Date.now()}`;
+  const savedAt = Date.now();
+  await pool.query(
+    `INSERT INTO summaries (id, saved_at, summary) VALUES ($1, $2, $3)`,
+    [id, savedAt, JSON.stringify(summary)]
+  );
+  // Keep only MAX_HISTORY
+  await pool.query(`
+    DELETE FROM summaries
+    WHERE id NOT IN (
+      SELECT id FROM summaries ORDER BY saved_at DESC LIMIT $1
+    )
+  `, [MAX_HISTORY]);
+  return loadSummaries();
+}
+
+export async function deleteSummary(id: string): Promise<SavedSummary[]> {
+  await pool.query(`DELETE FROM summaries WHERE id = $1`, [id]);
+  return loadSummaries();
+}
+
+export async function updateSummaryLabel(id: string, meetingLabel: string): Promise<SavedSummary[]> {
+  await pool.query(
+    `UPDATE summaries SET summary = summary || $1 WHERE id = $2`,
+    [JSON.stringify({ meetingLabel }), id]
+  );
+  return loadSummaries();
 }

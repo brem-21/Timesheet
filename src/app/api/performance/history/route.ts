@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import {
   loadPerformanceHistory,
@@ -6,7 +8,7 @@ import {
 } from "@/lib/performanceStore";
 
 export async function GET() {
-  return NextResponse.json({ history: loadPerformanceHistory() });
+  return NextResponse.json({ history: await loadPerformanceHistory() });
 }
 
 export async function PATCH(request: NextRequest) {
@@ -14,13 +16,13 @@ export async function PATCH(request: NextRequest) {
   if (!id || !dateLabel) {
     return NextResponse.json({ error: "id and dateLabel required" }, { status: 400 });
   }
-  const history = updatePerformanceLabel(id, dateLabel);
+  const history = await updatePerformanceLabel(id, dateLabel);
   return NextResponse.json({ history });
 }
 
 export async function DELETE(request: NextRequest) {
   const { id } = await request.json();
   if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  const history = deletePerformanceEntry(id);
+  const history = await deletePerformanceEntry(id);
   return NextResponse.json({ history });
 }

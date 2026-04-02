@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { updateMilestone, deleteMilestone } from "@/lib/milestoneStore";
 
@@ -7,7 +9,7 @@ export async function PATCH(
 ) {
   try {
     const patch = await request.json();
-    const updated = updateMilestone(params.id, patch);
+    const updated = await updateMilestone(params.id, patch);
     return NextResponse.json(updated);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
@@ -20,7 +22,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const updated = deleteMilestone(params.id);
+    const updated = await deleteMilestone(params.id);
     return NextResponse.json(updated);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

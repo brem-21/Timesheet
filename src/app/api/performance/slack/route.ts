@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser, fetchTicketsByRange } from "@/lib/jira";
 import { loadTasks } from "@/lib/taskStoreServer";
@@ -127,13 +129,13 @@ async function generateAndSend(
     tickets = await fetchTicketsByRange(jiraUser.accountId, startDate, endDate);
   } catch {}
 
-  const allTasks = loadTasks();
-  const milestones = loadMilestones();
-  const allProfDev = loadProfDev();
+  const allTasks = await loadTasks();
+  const milestones = await loadMilestones();
+  const allProfDev = await loadProfDev();
   const filteredProfDev = allProfDev.filter(
     (e) => e.completedDate >= startDate && e.completedDate <= endDate
   );
-  const summaries = loadSummaries();
+  const summaries = await loadSummaries();
 
   const done = tickets.filter((t) => ["done", "closed", "resolved"].some((s) => t.status.toLowerCase().includes(s)));
   const inProgress = tickets.filter((t) => t.status.toLowerCase().includes("progress"));
@@ -201,7 +203,7 @@ Data for ${rangeLabel}:
 
   // Auto-save to history
   const autoLabel = `${rangeLabel} — auto`;
-  savePerformanceEntry({
+  await savePerformanceEntry({
     dateLabel: autoLabel,
     rangeLabel,
     startDate,

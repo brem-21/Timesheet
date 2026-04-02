@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser, fetchTicketsByRange } from "@/lib/jira";
 import { loadTasks } from "@/lib/taskStoreServer";
@@ -80,19 +82,19 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Load meeting tasks
-    const allTasks = loadTasks();
+    const allTasks = await loadTasks();
 
     // 3. Load milestones
-    const milestones = loadMilestones();
+    const milestones = await loadMilestones();
 
     // 4. Load profdev, filter to date range
-    const allProfDev = loadProfDev();
+    const allProfDev = await loadProfDev();
     const filteredProfDev = allProfDev.filter(
       (e) => e.completedDate >= startDate && e.completedDate <= endDate
     );
 
     // 5. Load meeting summaries
-    const summaries = loadSummaries();
+    const summaries = await loadSummaries();
 
     // 6. Compute stats
     const done = tickets.filter((t) => {
@@ -192,7 +194,7 @@ Performance Data for ${rangeLabel}:
 
     // 10. Auto-save to performance history
     const autoLabel = `${rangeLabel} — ${format(new Date(), "MMM yyyy")}`;
-    const saved = savePerformanceEntry({
+    const saved = await savePerformanceEntry({
       dateLabel: autoLabel,
       rangeLabel,
       startDate,

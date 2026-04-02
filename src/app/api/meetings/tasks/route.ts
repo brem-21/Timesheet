@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { parseTranscript, callGemini, extractDateFromTranscript, isPersonName } from "@/lib/summarize";
 import { addTasks, generateTaskId, MeetingTask, TaskPriority } from "@/lib/taskStoreServer";
@@ -107,7 +109,7 @@ export async function POST(request: NextRequest) {
   );
 
   // Persist meeting metadata (source → speakers)
-  saveMeetingMeta({ source, speakers, date: new Date().toISOString() });
+  await saveMeetingMeta({ source, speakers, date: new Date().toISOString() });
 
   try {
     let extracted: MeetingTask[] = [];
@@ -122,7 +124,7 @@ export async function POST(request: NextRequest) {
       extracted = extractWithPatterns(transcript, userName, source);
     }
 
-    const allTasks = addTasks(extracted);
+    const allTasks = await addTasks(extracted);
     return NextResponse.json({ extracted, allTasks, count: extracted.length, speakers });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Task extraction failed";
