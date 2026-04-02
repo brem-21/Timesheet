@@ -3,7 +3,7 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-COPY package.json package-lock.json ./
+COPY package*.json ./
 RUN npm ci
 
 # Stage 2: Build the application
@@ -27,16 +27,18 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/public ./public
+# Copy only what is required
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+# data/ holds file-based JSON stores — copy seed files and ensure the nextjs user can write
+COPY --from=builder --chown=nextjs:nodejs /app/data ./data
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 5000
 
-ENV PORT=3000
+ENV PORT=5000
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["npm", "run", "start"]
