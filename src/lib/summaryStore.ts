@@ -48,7 +48,7 @@ export async function deleteSummary(id: string): Promise<SavedSummary[]> {
 
 export async function updateSummaryLabel(id: string, meetingLabel: string): Promise<SavedSummary[]> {
   await pool.query(
-    `UPDATE summaries SET summary = summary || $1 WHERE id = $2`,
+    `UPDATE summaries SET summary = summary || $1::jsonb WHERE id = $2`,
     [JSON.stringify({ meetingLabel }), id]
   );
   return loadSummaries();

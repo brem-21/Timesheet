@@ -108,8 +108,11 @@ export async function POST(request: NextRequest) {
     new Set(parsedLines.map((l) => l.speaker.trim()).filter(isPersonName))
   );
 
-  // Persist meeting metadata (source → speakers)
-  await saveMeetingMeta({ source, speakers, date: new Date().toISOString() });
+  try {
+    await saveMeetingMeta({ source, speakers, date: new Date().toISOString() });
+  } catch (err) {
+    console.error("[/api/meetings/tasks] saveMeetingMeta error:", err);
+  }
 
   try {
     let extracted: MeetingTask[] = [];
