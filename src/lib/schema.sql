@@ -73,6 +73,9 @@ CREATE TABLE IF NOT EXISTS user_events (
   browser     TEXT,
   device_type TEXT,
   ip          TEXT,
+  country     TEXT,
+  region      TEXT,
+  city        TEXT,
   referrer    TEXT,
   timestamp   BIGINT NOT NULL,
   metadata    JSONB  NOT NULL DEFAULT '{}'

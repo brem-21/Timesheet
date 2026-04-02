@@ -18,14 +18,15 @@ const FEATURES = [
 async function persistEvent(e: Record<string, unknown>): Promise<void> {
   await pool.query(
     `INSERT INTO user_events
-       (id, type, session_id, path, component, action, os, browser, device_type, ip, referrer, timestamp, metadata)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       (id, type, session_id, path, component, action, os, browser, device_type, ip, country, region, city, referrer, timestamp, metadata)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
      ON CONFLICT (id) DO NOTHING`,
     [
       e.eventId, e.type, e.sessionId,
       e.path ?? null, e.component ?? null, e.action ?? null,
       e.os ?? null, e.browser ?? null, e.deviceType ?? null,
-      e.ip ?? null, e.referrer ?? null, e.timestamp,
+      e.ip ?? null, e.country ?? null, e.region ?? null, e.city ?? null,
+      e.referrer ?? null, e.timestamp,
       JSON.stringify(e.metadata ?? {}),
     ]
   );

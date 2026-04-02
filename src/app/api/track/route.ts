@@ -6,11 +6,12 @@ import { publishEvent } from "@/lib/kafka";
 import { startEventConsumer } from "@/lib/eventConsumer";
 
 function getClientIp(req: NextRequest): string {
-  return (
+  const raw =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
     req.headers.get("x-real-ip") ??
-    "unknown"
-  );
+    "unknown";
+  // Normalize IPv4-mapped IPv6 addresses (e.g. ::ffff:1.2.3.4 → 1.2.3.4)
+  return raw.startsWith("::ffff:") ? raw.slice(7) : raw;
 }
 
 // Boot consumer once per process — fire and forget
@@ -34,6 +35,10 @@ export async function POST(req: NextRequest) {
     const browser = [uaResult.browser.name, uaResult.browser.major].filter(Boolean).join(" ") || "Unknown";
     const deviceType = uaResult.device.type ?? "desktop";
 
+    const ip = getClientIp(req);
+    const { default: geoip } = await import(/* webpackIgnore: true */ "geoip-lite");
+    const geo = geoip.lookup(ip);
+
     const event = {
       eventId: body.eventId ?? `evt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       type: body.type ?? "page_view",
@@ -46,7 +51,10 @@ export async function POST(req: NextRequest) {
       os,
       browser,
       deviceType,
-      ip: getClientIp(req),
+      ip,
+      country: geo?.country ?? null,
+      region: geo?.region ?? null,
+      city: geo?.city ?? null,
       timestamp: body.timestamp ?? Date.now(),
     };
 

@@ -11,6 +11,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.27.0",
     "date-fns": "^3.6.0",
+    "geoip-lite": "^2.0.1",
     "kafkajs": "^2.2.4",
     "next": "14.2.5",
     "node-cron": "^3.0.3",
@@ -20,6 +21,7 @@
     "ua-parser-js": "^2.0.9"
   },
   "devDependencies": {
+    "@types/geoip-lite": "^1.4.4",
     "@types/node": "^20.14.10",
     "@types/node-cron": "^3.0.11",
     "@types/pg": "^8.20.0",
