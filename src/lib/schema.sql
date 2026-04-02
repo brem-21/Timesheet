@@ -60,6 +60,39 @@ CREATE TABLE IF NOT EXISTS summaries (
   summary  JSONB  NOT NULL
 );
 
+-- ── Kafka-backed event stream ──────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS user_events (
+  id          TEXT   PRIMARY KEY,
+  type        TEXT   NOT NULL,   -- 'page_view' | 'click' | 'feature_use' | 'api_call'
+  session_id  TEXT   NOT NULL,
+  path        TEXT,
+  component   TEXT,
+  action      TEXT,
+  os          TEXT,
+  browser     TEXT,
+  device_type TEXT,
+  ip          TEXT,
+  referrer    TEXT,
+  timestamp   BIGINT NOT NULL,
+  metadata    JSONB  NOT NULL DEFAULT '{}'
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_events_timestamp   ON user_events (timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_user_events_session     ON user_events (session_id);
+CREATE INDEX IF NOT EXISTS idx_user_events_path        ON user_events (path);
+CREATE INDEX IF NOT EXISTS idx_user_events_type        ON user_events (type);
+
+CREATE TABLE IF NOT EXISTS recommendations (
+  feature      TEXT   PRIMARY KEY,
+  label        TEXT   NOT NULL,
+  description  TEXT   NOT NULL,
+  score        NUMERIC NOT NULL DEFAULT 0,  -- 0 = heavily used, 1 = never used
+  last_updated BIGINT NOT NULL
+);
+
+-- ── Performance history ────────────────────────────────────────────────────────
+
 CREATE TABLE IF NOT EXISTS performance_history (
   id          TEXT   PRIMARY KEY,
   saved_at    BIGINT NOT NULL,

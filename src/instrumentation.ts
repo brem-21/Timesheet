@@ -1,9 +1,11 @@
 export async function register() {
+  // Only run in the Node.js runtime — node-cron and kafkajs are Node.js only.
+  // Webpack eliminates this block as dead code when compiling for Edge.
   if (process.env.NEXT_RUNTIME === "nodejs") {
     const cron = (await import("node-cron")).default;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-    // 3:00 PM Monday–Friday, Africa/Accra timezone
+    // ── 3:00 PM weekday Slack reminder ──────────────────────────────────────
     cron.schedule(
       "0 15 * * 1-5",
       async () => {
@@ -24,5 +26,13 @@ export async function register() {
     );
 
     console.log("[Clock-It] ✅ 3:00 PM weekday Slack reminder scheduled (Africa/Accra)");
+
+    // ── Kafka event consumer ─────────────────────────────────────────────────
+    try {
+      const { startEventConsumer } = await import("./lib/eventConsumer");
+      await startEventConsumer();
+    } catch (err) {
+      console.error("[Clock-It] Kafka consumer failed to start (Kafka may not be running):", err);
+    }
   }
 }

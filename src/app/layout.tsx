@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { TimerProvider } from "@/components/TimerContext";
 import ActiveTimerBanner from "@/components/ActiveTimerBanner";
-import ActivityTracker from "@/components/ActivityTracker";
+import EventTracker from "@/components/EventTracker";
 import SidebarLink from "@/components/SidebarLink";
 
 export const metadata: Metadata = {
@@ -181,7 +181,7 @@ export default function RootLayout({
 
         {/* Main content */}
         <main className="flex-1 overflow-y-auto">
-          <ActivityTracker />
+          <EventTracker />
           {children}
         </main>
         <ActiveTimerBanner />
