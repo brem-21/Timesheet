@@ -37,8 +37,6 @@ export async function getProducer(): Promise<Producer> {
   return globalForKafka._producer!;
 }
 
-let _consumerBooted = false;
-
 export async function publishEvent(event: Record<string, unknown>): Promise<void> {
   try {
     const producer = await getProducer();
@@ -52,13 +50,6 @@ export async function publishEvent(event: Record<string, unknown>): Promise<void
       ],
     });
 
-    // Boot the consumer once after the first successful publish
-    if (!_consumerBooted) {
-      _consumerBooted = true;
-      import(/* webpackIgnore: true */ "./eventConsumer")
-        .then(({ startEventConsumer }) => startEventConsumer())
-        .catch((err) => console.error("[Kafka] Consumer boot failed:", err));
-    }
   } catch (err) {
     console.error("[Kafka] publishEvent failed:", err);
   }

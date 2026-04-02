@@ -3,12 +3,22 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { UAParser } from "ua-parser-js";
 import { publishEvent } from "@/lib/kafka";
+import { startEventConsumer } from "@/lib/eventConsumer";
 
 function getClientIp(req: NextRequest): string {
   return (
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
     req.headers.get("x-real-ip") ??
     "unknown"
+  );
+}
+
+// Boot consumer once per process — fire and forget
+const g = globalThis as unknown as { _consumerBooted?: boolean };
+if (!g._consumerBooted) {
+  g._consumerBooted = true;
+  startEventConsumer().catch((err) =>
+    console.error("[Clock-It] Kafka consumer boot failed:", err)
   );
 }
 
@@ -33,7 +43,6 @@ export async function POST(req: NextRequest) {
       action: body.action ?? null,
       referrer: body.referrer ?? null,
       metadata: body.metadata ?? {},
-      // Server-enriched
       os,
       browser,
       deviceType,
@@ -45,13 +54,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    // Tracking errors must never surface to the user
     console.error("[/api/track]", err);
     return NextResponse.json({ ok: false });
   }
 }
 
-// Preflight for browser requests
 export async function OPTIONS() {
   return new NextResponse(null, {
     status: 204,
