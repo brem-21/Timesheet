@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clock-it
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clock-it
+  template:
+    metadata:
+      labels:
+        app: clock-it
+    spec:
+      containers:
+      - name: clockit-app
+        image: timesheet-app
+        imagePullPolicy: Never
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: DATABASE_URL
+        - name: KAFKA_BROKERS
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: KAFKA_BROKERS
+        - name: JIRA_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: JIRA_API_TOKEN
+        - name: JIRA_BASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: JIRA_BASE_URL
+        - name: JIRA_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: JIRA_EMAIL
+        - name: SLACK_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: SLACK_WEBHOOK_URL
+        - name: TEAMS_WEBHOOK_URL
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: TEAMS_WEBHOOK_URL
+        - name: NEXT_PUBLIC_APP_URL
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: NEXT_PUBLIC_APP_URL
+        - name: GEMINI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: clock-it-secret
+              key: GEMINI_API_KEY
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clock-it-service
+spec:
+  selector:
+    app: clock-it
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 30000
