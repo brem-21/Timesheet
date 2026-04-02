@@ -1,0 +1,24 @@
+{
+  "crons": [
+    {
+      "path": "/api/reminder",
+      "schedule": "0 16 * * 1-5",
+      "comment": "Daily standup reminder — Mon–Fri at 4 PM UTC"
+    },
+    {
+      "path": "/api/performance/slack?frequency=weekly",
+      "schedule": "0 16 * * 5",
+      "comment": "Weekly performance insights — every Friday at 4 PM UTC (covers Mon–Fri of that week)"
+    },
+    {
+      "path": "/api/performance/slack?frequency=monthly",
+      "schedule": "0 16 25-31 * 5",
+      "comment": "Monthly performance insights — last Friday of each month at 4 PM UTC (covers previous month)"
+    },
+    {
+      "path": "/api/performance/slack?frequency=quarterly",
+      "schedule": "0 16 15-21 1,4,7,10 5",
+      "comment": "Quarterly performance insights — 3rd Friday of Jan/Apr/Jul/Oct at 4 PM UTC (covers previous quarter)"
+    }
+  ]
+}

@@ -1,0 +1,427 @@
+[
+  {
+    "id": "task-1775041544573-s18pl",
+    "text": "Prepare the list of items for cloud workspace cleanup.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Richard",
+    "reportsTo": "Daniel Abakah",
+    "createdAt": 1775041544573
+  },
+  {
+    "id": "task-1775041544573-zmdvz",
+    "text": "Lead the exercise to review the cleanup list for approximately one to two minutes.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Richard",
+    "reportsTo": "Daniel Abakah",
+    "createdAt": 1775041544573
+  },
+  {
+    "id": "task-1775041544573-ffypc",
+    "text": "Duplicate the live version of the uncertain dimension, underscore it as 'dev', and test its deletion on the dev environment.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Richard",
+    "reportsTo": "Daniel Abakah",
+    "createdAt": 1775041544573
+  },
+  {
+    "id": "task-1775041544574-byodv",
+    "text": "Tread cautiously with deleting old dashboards and consider waiting for further confirmation.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Richard",
+    "reportsTo": "Daniel Abakah",
+    "createdAt": 1775041544574
+  },
+  {
+    "id": "task-1775041544574-1bk5r",
+    "text": "Catch up on Slack.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Richard",
+    "reportsTo": "Daniel Abakah",
+    "createdAt": 1775041544574
+  },
+  {
+    "id": "task-1775041414002-rjlam",
+    "text": "Team to confirm items for cloud workspace cleanup.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Brempong Dankwah",
+    "createdAt": 1775041414002
+  },
+  {
+    "id": "task-1775041414002-wagf4",
+    "text": "Team to prepare the list for cloud workspace cleanup.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Brempong Dankwah",
+    "createdAt": 1775041414002
+  },
+  {
+    "id": "task-1775041414002-l04hl",
+    "text": "Eugenia Teye to create the test.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Brempong Dankwah",
+    "createdAt": 1775041414002
+  },
+  {
+    "id": "task-1775041414002-wl3e9",
+    "text": "Richard Dadzie and team to duplicate the live dimension, label it as dev, and test its deletion on the dev environment.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Brempong Dankwah",
+    "createdAt": 1775041414002
+  },
+  {
+    "id": "task-1775041414002-ji9ei",
+    "text": "Team to proceed cautiously with deletions, especially for old dashboards.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Brempong Dankwah",
+    "createdAt": 1775041414002
+  },
+  {
+    "id": "task-1775041414002-1894k",
+    "text": "All participants to catch up on Slack.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Apr 1, 2026",
+    "assignee": "Brempong Dankwah",
+    "createdAt": 1775041414002
+  },
+  {
+    "id": "task-1774994837387-z9dav",
+    "text": "Publish the latest version of the work by Monday morning for Angela to review.",
+    "priority": "medium",
+    "status": "done",
+    "source": "Mar 31, 2026",
+    "assignee": "Nana Yaw",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994837387
+  },
+  {
+    "id": "task-1774994837387-phq2c",
+    "text": "Prepare something to present to Angela on a call on Monday.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Nana Yaw",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994837387
+  },
+  {
+    "id": "task-1774994837387-aqm0i",
+    "text": "Set up everything for the call with Angela.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Nana Yaw",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994837387
+  },
+  {
+    "id": "task-1774994837387-xodgs",
+    "text": "Publish the latest version on the weekend if possible.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Nana Yaw",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994837387
+  },
+  {
+    "id": "task-1774994806431-6aoa9",
+    "text": "Eugenia: Add a new column to the detail tables to indicate if the predefined transit time frames were fulfilled.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "eugenia",
+    "createdAt": 1774994806431
+  },
+  {
+    "id": "task-1774994760088-tj3vl",
+    "text": "Publish the latest version of the work by Monday morning.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Richard",
+    "createdAt": 1774994760088
+  },
+  {
+    "id": "task-1774994694410-t4gtl",
+    "text": "Publish the latest version of the dashboard by Monday morning for Angela to review.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Brempong Dankwah",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994694410
+  },
+  {
+    "id": "task-1774994694410-h1u7z",
+    "text": "Collaborate on having a presentable version by Monday for a call with Angela.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Brempong Dankwah",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994694410
+  },
+  {
+    "id": "task-1774994694410-s6hge",
+    "text": "Team: Ping Adam Badei Omari if anything comes up.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "assignee": "Brempong Dankwah",
+    "reportsTo": "Adam Badei Omari",
+    "createdAt": 1774994694410
+  },
+  {
+    "id": "task-1774977170017-j5jxy",
+    "text": "Brempong: Complete 'the quality one'.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774977170018
+  },
+  {
+    "id": "task-1774977170018-0qmxs",
+    "text": "Brempong: Ping Adam once 'the quality one' is completed.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774977170018
+  },
+  {
+    "id": "task-1774977170018-cq3ld",
+    "text": "Richard/Nana Yaw: Add 'in transit' across all sheets for in-transit and on-time delivery.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774977170018
+  },
+  {
+    "id": "task-1774977170018-hbvly",
+    "text": "Adam: Review the request to Satish.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774977170018,
+    "description": ""
+  },
+  {
+    "id": "task-1774977170018-f3nl4",
+    "text": "Adam: Write emails to Greg and Angela.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774977170018
+  },
+  {
+    "id": "task-1774976661845-b01u3",
+    "text": "Daniel to review and clean up existing documentation, identifying and fleshing out missing areas.",
+    "priority": "high",
+    "status": "in-progress",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976661845
+  },
+  {
+    "id": "task-1774976661845-dehkp",
+    "text": "Daniel to update slides from PDF to MD format for better tool compatibility.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976661845
+  },
+  {
+    "id": "task-1774976661845-768tw",
+    "text": "Brempong to reduce the repetitive 'line variable status' text in charts.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976661845
+  },
+  {
+    "id": "task-1774976661845-04ker",
+    "text": "Brempong to check if it's possible to remove the chart title, keeping only the subtitle.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976661845
+  },
+  {
+    "id": "task-1774976661845-nldeg",
+    "text": "Adam to call Nana Yaw Darko and Brempong for a 15-minute discussion after the meeting.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976661845
+  },
+  {
+    "id": "task-1774976607802-koyv3",
+    "text": "Brempong: Reduce the repetition of 'line variable status' in your screenshot to appear only once.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976607802
+  },
+  {
+    "id": "task-1774976607802-67nyo",
+    "text": "Brempong: Remove the main title from the chart in your screenshot, retaining only the subtitle.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774976607802
+  },
+  {
+    "id": "task-1774975964821-g754d",
+    "text": "Daniel to review and clean up the documentation baseline, identifying and fleshing out any missing areas this week.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975964821-g801l",
+    "text": "Daniel to update the file for the slides to MD format for better compatibility with Adam's tool, especially for tables.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975964821-l0cd3",
+    "text": "Adam to ensure all outputs for the customer master are validated and correct.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975964821-0p8zo",
+    "text": "Adam to remove the invalid hypothesis regarding subsidiaries and credit limits from the roadmap.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975964821-ttzdy",
+    "text": "Brempong to revise his screenshot to reduce the repetitive 'line variable status' text.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975964821-wi0ky",
+    "text": "Brempong to remove the title from his chart, keeping only the subtitle and ensuring it includes instructions like 'right click to download'.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975964821-697dm",
+    "text": "Adam to call Nana Yaw and Ben Pong for a 15-minute discussion after the meeting.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975964821
+  },
+  {
+    "id": "task-1774975910347-8opsi",
+    "text": "Reduce the repeated 'line variable status' text in his screenshot to one instance.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975910347
+  },
+  {
+    "id": "task-1774975910347-r0bra",
+    "text": "Remove the title from his chart.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975910347
+  },
+  {
+    "id": "task-1774975910347-9q3kw",
+    "text": "Check if it is possible to only have a subtitle for his chart.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975910347
+  },
+  {
+    "id": "task-1774975910347-bahnj",
+    "text": "Participate in a 15-minute follow-up call with Adam Badei Omari and Nana Yaw Darko immediately after this meeting.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975910347
+  },
+  {
+    "id": "task-1774975742825-fh9im",
+    "text": "Reduce the repetition of 'line variable status' on your screenshot to appear only once.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975742825
+  },
+  {
+    "id": "task-1774975742826-cjimt",
+    "text": "Check if it's possible to remove the chart title on your screenshot, retaining only the subtitle (e.g., 'right click to download').",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975742826
+  },
+  {
+    "id": "task-1774975635935-4usx7",
+    "text": "Richard Dadzie: Investigate the source of the date format for 'last reload' and address the change from 'PM' to 'pm'.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975635935
+  },
+  {
+    "id": "task-1774975259523-d0c1p",
+    "text": "Richard Dadzie: Perform a final cleanup of materials and send out an updated link.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975259523
+  },
+  {
+    "id": "task-1774975259523-0a8wc",
+    "text": "Richard Dadzie: Investigate the source of the 'last reload' date format (specifically the casing of 'PM') and determine if it's from their data or manipulated externally.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774975259523
+  },
+  {
+    "id": "task-1774974918754-098x5",
+    "text": "Work on the bookings, quotes, cancellations, reserved and so on area.",
+    "priority": "medium",
+    "status": "todo",
+    "source": "Mar 31, 2026",
+    "createdAt": 1774974918754
+  }
+]
