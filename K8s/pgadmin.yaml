@@ -24,13 +24,15 @@ spec:
       labels:
         app: pgadmin
     spec:
+      securityContext:
+        fsGroup: 5050
       containers:
       - name: pgadmin
         image: dpage/pgadmin4:latest
         resources:
           limits:
-            memory: "256Mi"
-            cpu: "250m"
+            memory: "512Mi"
+            cpu: "500m"
         ports:
         - containerPort: 80
         env:
