@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: clockit-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - clockit.192.168.49.2.nip.io
+    - pgadmin.192.168.49.2.nip.io
+    - kafka-ui.192.168.49.2.nip.io
+    secretName: clockit-tls
+  rules:
+  - host: clockit.192.168.49.2.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: clock-it-service
+            port:
+              number: 5000
+  - host: pgadmin.192.168.49.2.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pgadmin-service
+            port:
+              number: 80
+  - host: kafka-ui.192.168.49.2.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kafka-ui-service
+            port:
+              number: 8080
