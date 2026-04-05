@@ -446,6 +446,127 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
   );
 }
 
+// ─── Projects Summary Panel ────────────────────────────────────────────────────
+
+interface ProjectSummaryItem {
+  id: string; name: string; color: string;
+  totalMinutes: number; taskCount: number; tasksDone: number;
+  tasksInProgress: number; tasksTodo: number; completionRate: number; logEntries: number;
+}
+
+function fmtMinsLocal(mins: number): string {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDate: string }) {
+  const [projects, setProjects] = useState<ProjectSummaryItem[]>([]);
+  const [totals, setTotals] = useState<{ totalMinutes: number; taskCount: number; tasksDone: number; completionRate: number } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+    setLoading(true);
+    const params = new URLSearchParams({ startDate, endDate });
+    fetch(`/api/performance/projects-summary?${params}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.projects) { setProjects(d.projects); setTotals(d.totals ?? null); } })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [startDate, endDate]);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-3 text-gray-400 text-sm">
+        <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        Loading project data…
+      </div>
+    );
+  }
+
+  if (projects.length === 0) return null;
+
+  const withTime = projects.filter((p) => p.totalMinutes > 0 || p.taskCount > 0);
+  if (withTime.length === 0) return null;
+
+  const maxMins = Math.max(...projects.map((p) => p.totalMinutes), 1);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-gray-700">Projects — Performance Summary</h2>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">📁 Projects</span>
+        </div>
+        <a href="/projects" className="text-xs text-indigo-500 hover:underline">Open Projects ↗</a>
+      </div>
+
+      {/* Totals KPI row */}
+      {totals && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: "Total Time Logged", value: fmtMinsLocal(totals.totalMinutes), cls: "text-indigo-600" },
+            { label: "Total Tasks", value: String(totals.taskCount), cls: "text-gray-700" },
+            { label: "Tasks Done", value: String(totals.tasksDone), cls: "text-emerald-600" },
+            { label: "Overall Completion", value: `${totals.completionRate}%`, cls: totals.completionRate >= 70 ? "text-emerald-600" : totals.completionRate >= 40 ? "text-amber-600" : "text-red-500" },
+          ].map(({ label, value, cls }) => (
+            <div key={label} className="bg-gray-50 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">{label}</p>
+              <p className={`text-sm font-bold ${cls}`}>{value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Per-project rows */}
+      <div className="space-y-3">
+        {projects.map((p) => (
+          <div key={p.id} className="space-y-1">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
+                <span className="text-sm font-medium text-gray-700">{p.name}</span>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                <span className="font-semibold text-indigo-600">{fmtMinsLocal(p.totalMinutes)}</span>
+                <span>{p.tasksDone}/{p.taskCount} done</span>
+                <span className={`font-semibold ${p.completionRate >= 70 ? "text-emerald-600" : p.completionRate >= 40 ? "text-amber-600" : "text-gray-400"}`}>{p.completionRate}%</span>
+              </div>
+            </div>
+            {/* Time bar */}
+            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{ width: `${(p.totalMinutes / maxMins) * 100}%`, backgroundColor: p.color }}
+              />
+            </div>
+            {/* Task mini-bars */}
+            {p.taskCount > 0 && (
+              <div className="flex h-1 rounded-full overflow-hidden gap-px">
+                {p.tasksDone > 0 && <div className="bg-emerald-400" style={{ flex: p.tasksDone }} />}
+                {p.tasksInProgress > 0 && <div className="bg-blue-400" style={{ flex: p.tasksInProgress }} />}
+                {p.tasksTodo > 0 && <div className="bg-gray-200" style={{ flex: p.tasksTodo }} />}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-4 text-[10px] text-gray-400">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Done</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> In Progress</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" /> To Do</span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function PerformancePage() {
@@ -501,6 +622,19 @@ export default function PerformancePage() {
   const [pdNotes, setPdNotes] = useState("");
   const [pdSaving, setPdSaving] = useState(false);
 
+  // View mode
+  const [viewMode, setViewMode] = useState<"overall" | "project">("overall");
+
+  // Project performance
+  const [perfProjects, setPerfProjects] = useState<{ id: string; name: string; color: string }[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>("");
+  const [projectPerfStats, setProjectPerfStats] = useState<Record<string, number | string> | null>(null);
+  const [projectInsights, setProjectInsights] = useState<string>("");
+  const [projectInsightsLoading, setProjectInsightsLoading] = useState(false);
+  const [projectInsightsError, setProjectInsightsError] = useState<string | null>(null);
+  const [projectTimeByDate, setProjectTimeByDate] = useState<{ date: string; minutes: number }[]>([]);
+  const [projectName, setProjectName] = useState<string>("");
+
   // ── Initialise date range ──────────────────────────────────────────────────
   useEffect(() => {
     const range = computeRange(rangeLabel);
@@ -541,6 +675,11 @@ export default function PerformancePage() {
     loadMilestones();
     loadProfDev();
     loadHistory();
+    // Load projects for project performance view
+    fetch("/api/projects")
+      .then((r) => r.json())
+      .then((d) => { if (d.projects) setPerfProjects(d.projects); })
+      .catch(() => {});
   }, [loadMilestones, loadProfDev, loadHistory]);
 
   // ── Generate Insights ─────────────────────────────────────────────────────
@@ -724,6 +863,33 @@ export default function PerformancePage() {
     await loadProfDev();
   };
 
+  // ── Generate Project Insights ─────────────────────────────────────────────
+  const generateProjectInsights = useCallback(async () => {
+    if (!selectedProjectId || !startDate || !endDate) return;
+    setProjectInsightsLoading(true);
+    setProjectInsightsError(null);
+    try {
+      const res = await fetch("/api/performance/project", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: selectedProjectId, startDate, endDate, rangeLabel }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error ?? "Failed to generate project insights");
+      }
+      const data = await res.json();
+      setProjectPerfStats(data.stats);
+      setProjectInsights(data.insights);
+      setProjectTimeByDate(data.timeByDate ?? []);
+      setProjectName(data.projectName ?? "");
+    } catch (err) {
+      setProjectInsightsError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setProjectInsightsLoading(false);
+    }
+  }, [selectedProjectId, startDate, endDate, rangeLabel]);
+
   // ── Derived: group milestones ─────────────────────────────────────────────
   const inProgressMilestones = milestones.filter((m) => m.status === "in-progress");
   const pendingMilestones = milestones.filter((m) => m.status === "pending");
@@ -776,6 +942,21 @@ export default function PerformancePage() {
         </div>
       </div>
 
+      {/* ── View Mode Toggle ────────────────────────────────────────────────── */}
+      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+        {(["overall", "project"] as const).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setViewMode(mode)}
+            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              viewMode === mode ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            {mode === "overall" ? "Overall" : "By Project"}
+          </button>
+        ))}
+      </div>
+
       {/* ── Range Presets ──────────────────────────────────────────────────── */}
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
         {PRESETS.map((preset) => (
@@ -793,6 +974,155 @@ export default function PerformancePage() {
         ))}
       </div>
 
+      {/* ── Project Performance View ────────────────────────────────────────── */}
+      {viewMode === "project" && (
+        <div className="space-y-5">
+          {/* Project selector */}
+          <div className="flex flex-wrap items-center gap-3">
+            <select
+              value={selectedProjectId}
+              onChange={(e) => { setSelectedProjectId(e.target.value); setProjectPerfStats(null); setProjectInsights(""); setProjectTimeByDate([]); }}
+              className="text-sm border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white min-w-[200px]"
+            >
+              <option value="">Select a project…</option>
+              {perfProjects.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <button
+              onClick={generateProjectInsights}
+              disabled={!selectedProjectId || projectInsightsLoading}
+              className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              {projectInsightsLoading ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Analysing…
+                </>
+              ) : (
+                <>
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Analyse Project
+                </>
+              )}
+            </button>
+            {selectedProjectId && startDate && endDate && (
+              <span className="text-sm text-gray-400">{startDate} → {endDate}</span>
+            )}
+          </div>
+
+          {projectInsightsError && (
+            <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">{projectInsightsError}</div>
+          )}
+
+          {projectPerfStats && (
+            <>
+              {/* KPIs */}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {[
+                  { title: "Time Logged", value: String(projectPerfStats.timeLogged), sub: `${projectPerfStats.logEntries} entries`, color: "indigo" as const },
+                  { title: "Tasks Total", value: String(projectPerfStats.taskCount), sub: `this project`, color: "blue" as const },
+                  { title: "Done", value: String(projectPerfStats.tasksDone), sub: `${projectPerfStats.completionRate}% completion`, color: "emerald" as const },
+                  { title: "In Progress", value: String(projectPerfStats.tasksInProgress), sub: `active tasks`, color: "amber" as const },
+                  { title: "Velocity", value: `${projectPerfStats.velocity}/wk`, sub: `tasks done per week`, color: "violet" as const },
+                  { title: "Avg/Active Day", value: String(projectPerfStats.avgDailyTime), sub: `${projectPerfStats.activeDays} days with logs`, color: "rose" as const },
+                ].map(({ title, value, sub, color }) => (
+                  <KpiCard key={title} title={title} value={value} subtitle={sub} color={color} icon={
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} className="w-4 h-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  } />
+                ))}
+              </div>
+
+              {/* Task status breakdown */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-gray-700 mb-4">Task Status — {projectName}</h3>
+                <div className="space-y-3">
+                  {[
+                    { label: "To Do", count: Number(projectPerfStats.tasksTodo), color: "bg-gray-300", textColor: "text-gray-600" },
+                    { label: "In Progress", count: Number(projectPerfStats.tasksInProgress), color: "bg-blue-400", textColor: "text-blue-600" },
+                    { label: "Done", count: Number(projectPerfStats.tasksDone), color: "bg-emerald-400", textColor: "text-emerald-600" },
+                  ].map(({ label, count, color, textColor }) => {
+                    const total = Number(projectPerfStats.taskCount);
+                    return (
+                      <div key={label}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-gray-500">{label}</span>
+                          <span className={`text-xs font-semibold ${textColor}`}>{count} / {total}</span>
+                        </div>
+                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className={`h-full rounded-full ${color} transition-all`}
+                            style={{ width: total > 0 ? `${(count / total) * 100}%` : "0%" }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Time by date chart */}
+              {projectTimeByDate.length > 0 && (
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-4">Time Logged by Date — {projectName}</h3>
+                  <div className="flex items-end gap-1.5 h-36 overflow-x-auto">
+                    {projectTimeByDate.map(({ date, minutes }) => {
+                      const maxM = Math.max(...projectTimeByDate.map((d) => d.minutes), 1);
+                      const h = Math.floor(minutes / 60);
+                      const m = minutes % 60;
+                      const label = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${m}m`;
+                      return (
+                        <div key={date} className="flex flex-col items-center gap-1 min-w-[32px] flex-1">
+                          <span className="text-[9px] text-gray-400">{label}</span>
+                          <div className="w-full rounded-sm"
+                            style={{ height: `${(minutes / maxM) * 108}px`, backgroundColor: "#6366f1", opacity: 0.8 }} />
+                          <span className="text-[8px] text-gray-400 truncate w-full text-center">{date.slice(5)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Project AI insights */}
+          {(projectInsights || projectInsightsLoading) && (
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-sm font-semibold text-gray-700">Project Insights — {projectName || "..."}</h2>
+                {projectInsights && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">✨ AI</span>
+                )}
+              </div>
+              {projectInsightsLoading && (
+                <div className="flex items-center gap-3 py-8 justify-center text-gray-400">
+                  <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  <span className="text-sm">Analysing project performance…</span>
+                </div>
+              )}
+              {!projectInsightsLoading && projectInsights && <InsightsRenderer text={projectInsights} />}
+            </div>
+          )}
+
+          {!selectedProjectId && (
+            <div className="text-center py-16 text-gray-400">
+              <p className="text-4xl mb-3">📁</p>
+              <p className="text-sm">Select a project above, then click <span className="font-semibold text-indigo-500">Analyse Project</span> to see performance metrics.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {viewMode === "overall" && (<>
       {/* ── Generate + Slack row ──────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3">
         {/* Generate */}
@@ -1091,6 +1421,9 @@ export default function PerformancePage() {
       {/* ── Growth Summary ───────────────────────────────────────────────── */}
       <GrowthSummaryPanel startDate={startDate} endDate={endDate} />
 
+      {/* ── Projects Summary ─────────────────────────────────────────────────── */}
+      <ProjectsSummaryPanel startDate={startDate} endDate={endDate} />
+
       {/* ── Bottom Grid: Milestones + ProfDev ────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ── Milestones ─────────────────────────────────────────────────── */}
@@ -1345,6 +1678,7 @@ export default function PerformancePage() {
           )}
         </div>
       </div>
+      </>)}
     </div>
   );
 }

@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   text        TEXT    NOT NULL,
   source      TEXT    NOT NULL,
   created_at  BIGINT  NOT NULL,
-  status      TEXT    NOT NULL DEFAULT 'todo'   CHECK (status   IN ('todo', 'in-progress', 'done')),
+  status      TEXT    NOT NULL DEFAULT 'todo'   CHECK (status   IN ('todo', 'in-progress', 'in-review', 'done')),
   priority    TEXT    NOT NULL DEFAULT 'medium' CHECK (priority IN ('high', 'medium', 'low')),
   assignee    TEXT,
   reports_to  TEXT,
@@ -198,6 +198,16 @@ CREATE TABLE IF NOT EXISTS time_logs (
 
 CREATE INDEX IF NOT EXISTS idx_time_logs_project ON time_logs (project_id);
 
+CREATE TABLE IF NOT EXISTS project_meetings (
+  project_id  TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  meeting_id  TEXT NOT NULL REFERENCES summaries(id) ON DELETE CASCADE,
+  linked_at   BIGINT NOT NULL,
+  PRIMARY KEY (project_id, meeting_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_meetings_project ON project_meetings (project_id);
+CREATE INDEX IF NOT EXISTS idx_project_meetings_meeting ON project_meetings (meeting_id);
+
 INSERT INTO growth_topics (id, label, description, is_custom, created_at) VALUES
   ('data-engineering',        'Data Engineering',         'Pipelines, ETL/ELT, data lakes, warehouse design', FALSE, 0),
   ('devops',                  'DevOps',                   'CI/CD, infrastructure as code, monitoring, SRE', FALSE, 0),
@@ -214,6 +224,31 @@ INSERT INTO growth_topics (id, label, description, is_custom, created_at) VALUES
   ('problem-solving',         'Problem Solving',          'Structured thinking, root cause analysis, frameworks', FALSE, 0),
   ('active-listening',        'Active Listening',         'Communication, note-taking, empathy, feedback loops', FALSE, 0)
 ON CONFLICT (id) DO NOTHING;
+
+-- ── Daily Assessments ─────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS growth_assessments (
+  id            TEXT   PRIMARY KEY,
+  date_key      TEXT   NOT NULL,
+  scenario      TEXT   NOT NULL,
+  topics_covered JSONB NOT NULL DEFAULT '[]',
+  context_data  JSONB  NOT NULL DEFAULT '{}',
+  generated_at  BIGINT NOT NULL,
+  UNIQUE (date_key)
+);
+
+CREATE TABLE IF NOT EXISTS growth_assessment_submissions (
+  id            TEXT    PRIMARY KEY,
+  assessment_id TEXT    NOT NULL REFERENCES growth_assessments(id) ON DELETE CASCADE,
+  date_key      TEXT    NOT NULL,
+  answer        TEXT    NOT NULL,
+  score         NUMERIC NOT NULL,
+  feedback      JSONB   NOT NULL DEFAULT '{}',
+  submitted_at  BIGINT  NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_assessment_date ON growth_assessments (date_key);
+CREATE INDEX IF NOT EXISTS idx_assessment_sub_date ON growth_assessment_submissions (date_key);
 
 -- ── Performance history ────────────────────────────────────────────────────────
 

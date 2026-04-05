@@ -115,7 +115,46 @@ export interface CourseSection {
   title: string;
   objectives: string[];
   keyTopics: string[];
+  explanation: string;           // 3-5 paragraph teaching content
+  teachingPoints: string[];      // 4-6 bullet points to memorize
+  realWorldExample: string;      // Concrete consulting/industry example
+  codeExample?: string;          // Optional code snippet
+  exerciseLanguage?: string;     // "python" | "sql" | "bash" etc.
   practiceExercise: string;
+}
+
+export interface DailyAssessment {
+  id: string;
+  dateKey: string;
+  scenario: string;              // The business problem scenario
+  topicsCovered: string[];       // Topic IDs incorporated
+  contextData: {
+    firm: string;
+    industry: string;
+    companyType: string;
+    problemStatement: string;
+    expectedSkills: string[];
+    evaluationCriteria: string[];
+  };
+  generatedAt: number;
+}
+
+export interface AssessmentSubmission {
+  id: string;
+  assessmentId: string;
+  dateKey: string;
+  answer: string;
+  score: number;                  // 0-100
+  feedback: {
+    technicality: { score: number; comment: string };
+    logic: { score: number; comment: string };
+    problemSolving: { score: number; comment: string };
+    delivery: { score: number; comment: string };
+    overallVerdict: string;
+    strengthsHighlighted: string[];
+    areasToImprove: string[];
+  };
+  submittedAt: number;
 }
 
 export interface CourseChapter {
@@ -527,6 +566,82 @@ export async function getModules(topicId: string): Promise<GrowthModuleRecord | 
     generatedAt: Number(row.generated_at),
   };
 }
+
+// ── Daily Assessments ─────────────────────────────────────────────────────────
+
+export async function getDailyAssessment(dateKey: string): Promise<DailyAssessment | null> {
+  const r = await pool.query(`SELECT * FROM growth_assessments WHERE date_key = $1 LIMIT 1`, [dateKey]);
+  if (r.rows.length === 0) return null;
+  const row = r.rows[0];
+  return {
+    id: row.id as string,
+    dateKey: row.date_key as string,
+    scenario: row.scenario as string,
+    topicsCovered: row.topics_covered as string[],
+    contextData: row.context_data as DailyAssessment["contextData"],
+    generatedAt: Number(row.generated_at),
+  };
+}
+
+export async function saveDailyAssessment(a: Omit<DailyAssessment, "id">): Promise<DailyAssessment> {
+  const id = growthId("assess");
+  const now = Date.now();
+  await pool.query(
+    `INSERT INTO growth_assessments (id, date_key, scenario, topics_covered, context_data, generated_at)
+     VALUES ($1,$2,$3,$4,$5,$6)
+     ON CONFLICT (date_key) DO UPDATE SET scenario=$3, topics_covered=$4, context_data=$5, generated_at=$6`,
+    [id, a.dateKey, a.scenario, JSON.stringify(a.topicsCovered), JSON.stringify(a.contextData), now]
+  );
+  return (await getDailyAssessment(a.dateKey))!;
+}
+
+export async function getAssessmentSubmission(dateKey: string): Promise<AssessmentSubmission | null> {
+  const r = await pool.query(
+    `SELECT * FROM growth_assessment_submissions WHERE date_key = $1 ORDER BY submitted_at DESC LIMIT 1`,
+    [dateKey]
+  );
+  if (r.rows.length === 0) return null;
+  const row = r.rows[0];
+  return {
+    id: row.id as string,
+    assessmentId: row.assessment_id as string,
+    dateKey: row.date_key as string,
+    answer: row.answer as string,
+    score: Number(row.score),
+    feedback: row.feedback as AssessmentSubmission["feedback"],
+    submittedAt: Number(row.submitted_at),
+  };
+}
+
+export async function saveAssessmentSubmission(s: Omit<AssessmentSubmission, "id">): Promise<AssessmentSubmission> {
+  const id = growthId("asub");
+  await pool.query(
+    `INSERT INTO growth_assessment_submissions (id, assessment_id, date_key, answer, score, feedback, submitted_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+    [id, s.assessmentId, s.dateKey, s.answer, s.score, JSON.stringify(s.feedback), s.submittedAt]
+  );
+  const r = await pool.query(`SELECT * FROM growth_assessment_submissions WHERE id = $1`, [id]);
+  const row = r.rows[0];
+  return {
+    id: row.id as string,
+    assessmentId: row.assessment_id as string,
+    dateKey: row.date_key as string,
+    answer: row.answer as string,
+    score: Number(row.score),
+    feedback: row.feedback as AssessmentSubmission["feedback"],
+    submittedAt: Number(row.submitted_at),
+  };
+}
+
+export async function loadAssessmentHistory(limit = 30): Promise<Array<{ dateKey: string; score: number; submittedAt: number }>> {
+  const r = await pool.query(
+    `SELECT date_key, score, submitted_at FROM growth_assessment_submissions ORDER BY submitted_at DESC LIMIT $1`,
+    [limit]
+  );
+  return r.rows.map((row) => ({ dateKey: row.date_key as string, score: Number(row.score), submittedAt: Number(row.submitted_at) }));
+}
+
+// ── Course Modules ─────────────────────────────────────────────────────────────
 
 export async function saveModules(topicId: string, title: string, modules: CourseModule): Promise<GrowthModuleRecord> {
   const id = growthId("mod");

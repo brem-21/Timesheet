@@ -118,6 +118,11 @@ interface CourseSection {
   title: string;
   objectives: string[];
   keyTopics: string[];
+  explanation?: string;
+  teachingPoints?: string[];
+  realWorldExample?: string;
+  codeExample?: string;
+  exerciseLanguage?: string;
   practiceExercise: string;
 }
 
@@ -146,7 +151,45 @@ interface GrowthModuleRecord {
   generatedAt: number;
 }
 
-type Tab = "materials" | "course" | "quiz" | "insights";
+interface AssessmentContextData {
+  firm: string;
+  industry: string;
+  companyType: string;
+  problemStatement: string;
+  expectedSkills: string[];
+  evaluationCriteria: string[];
+}
+
+interface DailyAssessment {
+  id: string;
+  dateKey: string;
+  scenario: string;
+  topicsCovered: string[];
+  contextData: AssessmentContextData;
+  generatedAt: number;
+}
+
+interface AssessmentFeedback {
+  technicality: { score: number; comment: string };
+  logic: { score: number; comment: string };
+  problemSolving: { score: number; comment: string };
+  delivery: { score: number; comment: string };
+  overallVerdict: string;
+  strengthsHighlighted: string[];
+  areasToImprove: string[];
+}
+
+interface AssessmentSubmission {
+  id: string;
+  assessmentId: string;
+  dateKey: string;
+  answer: string;
+  score: number;
+  feedback: AssessmentFeedback;
+  submittedAt: number;
+}
+
+type Tab = "materials" | "course" | "quiz" | "insights" | "assessment";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -271,6 +314,21 @@ export default function GrowthPage() {
   const [newTopicLabel, setNewTopicLabel] = useState("");
   const [newTopicDesc, setNewTopicDesc] = useState("");
 
+  // Course section expansion + exercise state
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [exerciseCode, setExerciseCode] = useState<Record<string, string>>({});
+  const [exerciseNotes, setExerciseNotes] = useState<Record<string, string>>({});
+  const [exerciseResults, setExerciseResults] = useState<Record<string, { score: number; feedback: string }>>({});
+  const [exerciseEvaluating, setExerciseEvaluating] = useState<Record<string, boolean>>({});
+
+  // Daily assessment state
+  const [assessment, setAssessment] = useState<DailyAssessment | null>(null);
+  const [assessmentLoading, setAssessmentLoading] = useState(false);
+  const [assessmentAnswer, setAssessmentAnswer] = useState("");
+  const [assessmentSubmission, setAssessmentSubmission] = useState<AssessmentSubmission | null>(null);
+  const [assessmentSubmitting, setAssessmentSubmitting] = useState(false);
+  const [assessmentHistory, setAssessmentHistory] = useState<Array<{ dateKey: string; score: number; submittedAt: number }>>([]);
+
   // ── Data loading ──────────────────────────────────────────────────────────
 
   const loadTopics = useCallback(async () => {
@@ -308,6 +366,9 @@ export default function GrowthPage() {
 
   const loadModules = useCallback(async (topicId: string, regen = false) => {
     setCourseLoading(true);
+    setCourseRecord(null);
+    setExpandedChapters(new Set());
+    setExpandedSections(new Set());
     try {
       const url = `/api/growth/modules?topicId=${topicId}${regen ? "&regen=true" : ""}`;
       const res = await fetch(url);
@@ -320,6 +381,66 @@ export default function GrowthPage() {
       setCourseLoading(false);
     }
   }, []);
+
+  const loadAssessment = useCallback(async () => {
+    setAssessmentLoading(true);
+    try {
+      const res = await fetch(`/api/growth/assessment?date=${todayKey()}`);
+      const data = await res.json();
+      if (data.assessment) setAssessment(data.assessment);
+      if (data.submission) setAssessmentSubmission(data.submission);
+      // Load history
+      const hRes = await fetch(`/api/growth/assessment?history=true`);
+      const hData = await hRes.json();
+      setAssessmentHistory(hData.history ?? []);
+    } finally {
+      setAssessmentLoading(false);
+    }
+  }, []);
+
+  const handleSubmitAssessment = async () => {
+    if (!assessment || !assessmentAnswer.trim() || assessmentSubmitting) return;
+    setAssessmentSubmitting(true);
+    try {
+      const res = await fetch("/api/growth/assessment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assessmentId: assessment.id, dateKey: todayKey(), answer: assessmentAnswer }),
+      });
+      const data = await res.json();
+      if (data.submission) setAssessmentSubmission(data.submission);
+    } finally {
+      setAssessmentSubmitting(false);
+    }
+  };
+
+  const handleEvaluateExercise = async (sectionId: string, section: CourseSection) => {
+    const answer = exerciseCode[sectionId] || exerciseNotes[sectionId] || "";
+    if (!answer.trim() || !selectedTopic) return;
+    setExerciseEvaluating((prev) => ({ ...prev, [sectionId]: true }));
+    try {
+      const res = await fetch("/api/growth/quiz/evaluate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          question: {
+            type: section.exerciseLanguage ? "code_write" : "free_text",
+            text: section.practiceExercise,
+            expectedAnswer: section.explanation ?? section.practiceExercise,
+            language: section.exerciseLanguage,
+          },
+          answer,
+          topicLabel: selectedTopic.label,
+        }),
+      });
+      const data = await res.json();
+      setExerciseResults((prev) => ({ ...prev, [sectionId]: { score: data.score ?? 50, feedback: data.feedback ?? "" } }));
+    } catch {
+      setExerciseResults((prev) => ({ ...prev, [sectionId]: { score: 0, feedback: "Evaluation failed. Please try again." } }));
+    } finally {
+      setExerciseEvaluating((prev) => ({ ...prev, [sectionId]: false }));
+    }
+  };
 
   useEffect(() => {
     if (!selectedId) return;
@@ -337,6 +458,11 @@ export default function GrowthPage() {
     setAddMode("none");
     setQuizHistory([]);
     setCourseRecord(null);
+    setExpandedChapters(new Set());
+    setExpandedSections(new Set());
+    setExerciseCode({});
+    setExerciseNotes({});
+    setExerciseResults({});
 
     loadMaterials(selectedId);
     loadInsight(selectedId);
@@ -590,105 +716,81 @@ export default function GrowthPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex h-full bg-gray-50">
-      {/* Left: Topic Sidebar */}
-      <aside className="w-64 shrink-0 border-r border-gray-200 bg-white flex flex-col overflow-hidden">
-        <div className="px-4 py-4 border-b border-gray-100">
-          <h2 className="text-sm font-bold text-gray-800">Professional Growth</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Select a topic to study</p>
-        </div>
+    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
 
-        <div className="flex-1 overflow-y-auto py-2">
-          {topics.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setSelectedId(t.id)}
-              className={`w-full flex items-center justify-between px-4 py-2.5 text-left text-sm transition-colors ${
-                selectedId === t.id
-                  ? "bg-indigo-50 text-indigo-700 font-medium"
-                  : "text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              <span className="truncate">{t.label}</span>
-              <div className="flex items-center gap-1 shrink-0">
-                {scoreBadge(topicScores[t.id])}
-                {t.isCustom && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDeleteTopic(t.id); }}
-                    className="text-gray-300 hover:text-red-400 text-xs ml-1"
-                    title="Remove custom topic"
-                  >✕</button>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        <div className="px-4 py-3 border-t border-gray-100">
-          {showAddTopic ? (
-            <div className="space-y-2">
-              <input
-                value={newTopicLabel}
-                onChange={(e) => setNewTopicLabel(e.target.value)}
-                placeholder="Topic name"
-                className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-              />
-              <input
-                value={newTopicDesc}
-                onChange={(e) => setNewTopicDesc(e.target.value)}
-                placeholder="Short description (optional)"
-                className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-              />
-              <div className="flex gap-2">
-                <button onClick={handleAddTopic} className="flex-1 text-xs bg-indigo-500 text-white rounded py-1.5 hover:bg-indigo-600">Add</button>
-                <button onClick={() => setShowAddTopic(false)} className="flex-1 text-xs border border-gray-200 rounded py-1.5 hover:bg-gray-50">Cancel</button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowAddTopic(true)}
-              className="w-full text-xs text-indigo-500 hover:text-indigo-700 py-1.5 text-center"
-            >
-              + Add custom topic
-            </button>
+      {/* ── Topic selector bar ────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 flex-wrap shrink-0">
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide shrink-0">Topic</label>
+          <select
+            value={selectedId ?? ""}
+            onChange={(e) => setSelectedId(e.target.value || null)}
+            className="flex-1 min-w-0 max-w-xs text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+          >
+            <option value="">— Select a topic —</option>
+            {topics.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}{topicScores[t.id] !== undefined ? ` (${topicScores[t.id]}%)` : ""}
+              </option>
+            ))}
+          </select>
+          {selectedTopic?.isCustom && (
+            <button onClick={() => handleDeleteTopic(selectedTopic.id)} className="text-xs text-red-400 hover:text-red-600 shrink-0">Remove</button>
           )}
         </div>
-      </aside>
 
-      {/* Right: Content Area */}
+        {/* Add custom topic inline */}
+        {showAddTopic ? (
+          <div className="flex items-center gap-2 flex-wrap">
+            <input value={newTopicLabel} onChange={(e) => setNewTopicLabel(e.target.value)}
+              placeholder="Topic name" autoFocus
+              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 w-32" />
+            <input value={newTopicDesc} onChange={(e) => setNewTopicDesc(e.target.value)}
+              placeholder="Description (optional)"
+              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none w-40" />
+            <button onClick={handleAddTopic} className="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-600">Add</button>
+            <button onClick={() => setShowAddTopic(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowAddTopic(true)} className="text-xs text-indigo-500 hover:text-indigo-700 shrink-0">+ Custom topic</button>
+        )}
+
+        {selectedTopic && (
+          <div className="flex gap-2 shrink-0">
+            <button onClick={() => { setTab("quiz"); loadQuiz(); }}
+              className="text-sm px-3 py-1.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+              Today&apos;s Quiz
+            </button>
+            <button onClick={() => { setTab("insights"); handleRegenerateInsight(); }}
+              className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+              Insights
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Content area ─────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {!selectedTopic ? (
-          <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">Select a topic to get started</div>
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-4xl mb-3">📚</p>
+              <p className="text-gray-500 text-sm">Select a topic from the dropdown above to get started</p>
+            </div>
+          </div>
         ) : (
           <>
-            {/* Topic header */}
-            <div className="bg-white border-b border-gray-200 px-6 py-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-lg font-bold text-gray-900">{selectedTopic.label}</h1>
-                  {selectedTopic.description && (
-                    <p className="text-sm text-gray-500 mt-0.5">{selectedTopic.description}</p>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => { setTab("quiz"); loadQuiz(); }}
-                    className="text-sm px-3 py-1.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors"
-                  >
-                    Today&apos;s Quiz
-                  </button>
-                  <button
-                    onClick={() => { setTab("insights"); handleRegenerateInsight(); }}
-                    className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Refresh Insights
-                  </button>
-                </div>
+            {/* Topic header + tabs */}
+            <div className="bg-white border-b border-gray-200 px-6 pt-4 pb-0">
+              <div className="flex items-center gap-3 mb-3">
+                <h1 className="text-base font-bold text-gray-900">{selectedTopic.label}</h1>
+                {selectedTopic.description && <span className="text-sm text-gray-400">— {selectedTopic.description}</span>}
+                {topicScores[selectedId!] !== undefined && scoreBadge(topicScores[selectedId!])}
               </div>
 
               {/* Tab bar */}
               <div className="flex gap-1 mt-4 flex-wrap">
-                {(["materials", "course", "quiz", "insights"] as Tab[]).map((t) => (
+                {(["materials", "course", "quiz", "insights", "assessment"] as Tab[]).map((t) => (
                   <button
                     key={t}
                     onClick={() => {
@@ -696,14 +798,20 @@ export default function GrowthPage() {
                       if (t === "course" && selectedId && !courseRecord && !courseLoading) {
                         loadModules(selectedId);
                       }
+                      if (t === "assessment" && !assessment && !assessmentLoading) {
+                        loadAssessment();
+                      }
                     }}
                     className={`px-4 py-1.5 text-sm rounded-lg transition-colors ${
-                      tab === t ? "bg-indigo-100 text-indigo-700 font-medium" : "text-gray-500 hover:text-gray-700"
+                      tab === t
+                        ? t === "assessment" ? "bg-purple-100 text-purple-700 font-medium" : "bg-indigo-100 text-indigo-700 font-medium"
+                        : "text-gray-500 hover:text-gray-700"
                     }`}
                   >
                     {t === "materials" ? "Study Materials"
                       : t === "course" ? "Course Modules"
                       : t === "quiz" ? "Daily Quiz"
+                      : t === "assessment" ? "Daily Assessment"
                       : "Insights"}
                   </button>
                 ))}
@@ -971,45 +1079,155 @@ export default function GrowthPage() {
                                 <div className="border-t border-gray-50 px-5 pb-5 pt-4 space-y-5">
                                   <p className="text-sm text-gray-500">{chapter.description}</p>
 
-                                  {chapter.sections.map((section, si) => (
-                                    <div key={section.id} className="border border-gray-100 rounded-xl p-4 space-y-3">
-                                      <div className="flex items-center gap-2">
-                                        <span className="w-5 h-5 rounded bg-indigo-100 text-indigo-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                  {chapter.sections.map((section, si) => {
+                                    const secKey = section.id;
+                                    const isSectionOpen = expandedSections.has(secKey);
+                                    const exResult = exerciseResults[secKey];
+                                    const isEvaluating = exerciseEvaluating[secKey];
+                                    const isCodeExercise = !!section.exerciseLanguage;
+
+                                    return (
+                                    <div key={section.id} className="border border-gray-100 rounded-xl overflow-hidden">
+                                      {/* Section header — clickable */}
+                                      <button
+                                        onClick={() => {
+                                          setExpandedSections((prev) => {
+                                            const next = new Set(prev);
+                                            if (next.has(secKey)) next.delete(secKey); else next.add(secKey);
+                                            return next;
+                                          });
+                                        }}
+                                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors"
+                                      >
+                                        <span className="w-6 h-6 rounded bg-indigo-100 text-indigo-700 text-[10px] font-bold flex items-center justify-center shrink-0">
                                           {chapter.number}.{si + 1}
                                         </span>
-                                        <p className="text-sm font-semibold text-gray-800">{section.title}</p>
-                                      </div>
+                                        <p className="flex-1 text-sm font-semibold text-gray-800">{section.title}</p>
+                                        {exResult && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${exResult.score >= 70 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{exResult.score}%</span>}
+                                        <svg className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${isSectionOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                      </button>
 
-                                      {/* Objectives */}
-                                      <div>
-                                        <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1.5">Learning Objectives</p>
-                                        <ul className="space-y-1">
-                                          {section.objectives.map((obj, i) => (
-                                            <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
-                                              <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>
-                                              {obj}
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
+                                      {isSectionOpen && (
+                                        <div className="border-t border-gray-50 px-4 pb-5 pt-4 space-y-4">
+                                          {/* Objectives */}
+                                          <div>
+                                            <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1.5">Learning Objectives</p>
+                                            <ul className="space-y-1">
+                                              {section.objectives.map((obj, i) => (
+                                                <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
+                                                  <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>{obj}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          </div>
 
-                                      {/* Key topics */}
-                                      <div>
-                                        <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1.5">Key Topics</p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                          {section.keyTopics.map((topic, i) => (
-                                            <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{topic}</span>
-                                          ))}
+                                          {/* Key topics */}
+                                          <div>
+                                            <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1.5">Key Topics</p>
+                                            <div className="flex flex-wrap gap-1.5">
+                                              {section.keyTopics.map((topic, i) => (
+                                                <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{topic}</span>
+                                              ))}
+                                            </div>
+                                          </div>
+
+                                          {/* Rich explanation */}
+                                          {section.explanation && (
+                                            <div className="bg-white border border-gray-100 rounded-xl p-4 space-y-2">
+                                              <p className="text-[10px] font-bold text-gray-500 uppercase">Explanation</p>
+                                              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{section.explanation}</div>
+                                            </div>
+                                          )}
+
+                                          {/* Teaching points */}
+                                          {section.teachingPoints && section.teachingPoints.length > 0 && (
+                                            <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+                                              <p className="text-[10px] font-bold text-indigo-600 uppercase mb-2">Key Takeaways</p>
+                                              <ul className="space-y-1.5">
+                                                {section.teachingPoints.map((pt, i) => (
+                                                  <li key={i} className="flex items-start gap-2 text-sm text-indigo-900">
+                                                    <span className="text-indigo-400 shrink-0 mt-0.5">▸</span>{pt}
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            </div>
+                                          )}
+
+                                          {/* Real-world example */}
+                                          {section.realWorldExample && (
+                                            <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                                              <p className="text-[10px] font-bold text-amber-700 uppercase mb-1">Real-World Example</p>
+                                              <p className="text-sm text-amber-900 leading-relaxed">{section.realWorldExample}</p>
+                                            </div>
+                                          )}
+
+                                          {/* Code example */}
+                                          {section.codeExample && (
+                                            <div className="rounded-xl overflow-hidden border border-gray-200">
+                                              <div className="bg-gray-900 px-4 py-2 flex items-center gap-2">
+                                                <span className="text-[10px] font-bold text-gray-400 uppercase">Code Example</span>
+                                              </div>
+                                              <pre className="bg-gray-950 text-gray-200 text-xs px-4 py-3 overflow-x-auto font-mono leading-relaxed">{section.codeExample}</pre>
+                                            </div>
+                                          )}
+
+                                          {/* Practice exercise */}
+                                          <div className="border border-amber-200 rounded-xl overflow-hidden">
+                                            <div className="bg-amber-50 px-4 py-3">
+                                              <p className="text-[10px] font-bold text-amber-700 uppercase mb-1">Practice Exercise</p>
+                                              <p className="text-sm text-amber-900 leading-relaxed">{section.practiceExercise}</p>
+                                            </div>
+
+                                            <div className="bg-white p-4 space-y-3">
+                                              {isCodeExercise ? (
+                                                <textarea
+                                                  value={exerciseCode[secKey] ?? ""}
+                                                  onChange={(e) => setExerciseCode((prev) => ({ ...prev, [secKey]: e.target.value }))}
+                                                  placeholder={`Write your ${section.exerciseLanguage} code here…`}
+                                                  rows={12}
+                                                  className="w-full font-mono text-xs bg-gray-950 text-gray-100 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y"
+                                                />
+                                              ) : (
+                                                <textarea
+                                                  value={exerciseNotes[secKey] ?? ""}
+                                                  onChange={(e) => setExerciseNotes((prev) => ({ ...prev, [secKey]: e.target.value }))}
+                                                  placeholder="Write your answer, analysis, or notes here…"
+                                                  rows={8}
+                                                  className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-y leading-relaxed"
+                                                />
+                                              )}
+
+                                              <div className="flex items-center justify-between flex-wrap gap-2">
+                                                <p className="text-xs text-gray-400">
+                                                  {isCodeExercise ? `${section.exerciseLanguage} editor` : "Text answer"}
+                                                  {exResult && <span className={`ml-2 font-semibold ${exResult.score >= 70 ? "text-emerald-600" : "text-amber-600"}`}>Score: {exResult.score}/100</span>}
+                                                </p>
+                                                <button
+                                                  onClick={() => handleEvaluateExercise(secKey, section)}
+                                                  disabled={isEvaluating || (!(exerciseCode[secKey] || "").trim() && !(exerciseNotes[secKey] || "").trim())}
+                                                  className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600 disabled:opacity-50 flex items-center gap-2"
+                                                >
+                                                  {isEvaluating ? (
+                                                    <><svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Evaluating…</>
+                                                  ) : "Submit for AI Review"}
+                                                </button>
+                                              </div>
+
+                                              {exResult && (
+                                                <div className={`rounded-xl p-3 border-l-4 ${exResult.score >= 70 ? "bg-emerald-50 border-emerald-400" : "bg-amber-50 border-amber-400"}`}>
+                                                  <p className="text-xs font-semibold text-gray-600 mb-1">AI Feedback</p>
+                                                  <p className="text-sm text-gray-700 leading-relaxed">{exResult.feedback}</p>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
                                         </div>
-                                      </div>
-
-                                      {/* Practice exercise */}
-                                      <div className="bg-amber-50 rounded-lg p-3">
-                                        <p className="text-[10px] font-bold text-amber-700 uppercase mb-1">Practice Exercise</p>
-                                        <p className="text-xs text-amber-900 leading-relaxed">{section.practiceExercise}</p>
-                                      </div>
+                                      )}
                                     </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
@@ -1029,7 +1247,7 @@ export default function GrowthPage() {
                     <div className="text-center py-16">
                       <p className="text-4xl mb-3">🧠</p>
                       <p className="text-base font-semibold text-gray-700 mb-1">Today&apos;s {selectedTopic.label} Quiz</p>
-                      <p className="text-sm text-gray-400 mb-6">Senior Associate difficulty · 5 questions · Daily rotation</p>
+                      <p className="text-sm text-gray-400 mb-6">Senior Associate difficulty · 30 questions (MC + code + theory) · Daily rotation</p>
                       <button onClick={loadQuiz} className="bg-indigo-500 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-600 text-sm font-medium">
                         Generate Today&apos;s Quiz
                       </button>
@@ -1449,6 +1667,192 @@ export default function GrowthPage() {
                   )}
                 </div>
               )}
+
+              {/* ── DAILY ASSESSMENT TAB ─────────────────────────────────── */}
+              {tab === "assessment" && (
+                <div className="max-w-3xl space-y-5">
+                  {/* Loading */}
+                  {assessmentLoading && (
+                    <div className="text-center py-16">
+                      <div className="inline-block w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-3" />
+                      <p className="text-sm font-medium text-gray-600 mb-1">Generating today&apos;s comprehensive assessment…</p>
+                      <p className="text-xs text-gray-400">AI is designing a real-world business scenario across all your topics</p>
+                    </div>
+                  )}
+
+                  {/* No assessment */}
+                  {!assessmentLoading && !assessment && (
+                    <div className="text-center py-16">
+                      <p className="text-4xl mb-3">🎯</p>
+                      <p className="text-base font-semibold text-gray-700 mb-1">Daily Business Assessment</p>
+                      <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+                        A daily consulting scenario designed to test your command of ALL topics simultaneously — as a business consultant solving a real client problem.
+                      </p>
+                      <button onClick={loadAssessment} className="bg-purple-500 text-white px-6 py-2.5 rounded-xl hover:bg-purple-600 text-sm font-medium">
+                        Generate Today&apos;s Assessment
+                      </button>
+                    </div>
+                  )}
+
+                  {!assessmentLoading && assessment && (
+                    <>
+                      {/* Assessment header */}
+                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="flex items-start gap-4 mb-4">
+                          <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0 text-lg">🎯</div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 flex-wrap mb-1">
+                              <p className="text-sm font-bold text-gray-900">Daily Assessment — {assessment.dateKey}</p>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full uppercase">{assessment.contextData.firm}</span>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{assessment.contextData.industry}</span>
+                            </div>
+                            <p className="text-xs text-gray-500">{assessment.contextData.companyType}</p>
+                          </div>
+                        </div>
+
+                        {/* Problem statement */}
+                        <div className="bg-purple-50 rounded-xl p-4 mb-4">
+                          <p className="text-[10px] font-bold text-purple-600 uppercase mb-1">Problem Statement</p>
+                          <p className="text-sm font-medium text-purple-900">{assessment.contextData.problemStatement}</p>
+                        </div>
+
+                        {/* Scenario */}
+                        <div className="space-y-2">
+                          <p className="text-[10px] font-bold text-gray-500 uppercase">Full Scenario</p>
+                          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{assessment.scenario}</div>
+                        </div>
+
+                        {/* Skills + criteria */}
+                        <div className="grid grid-cols-1 gap-3 mt-5 sm:grid-cols-2">
+                          <div className="bg-indigo-50 rounded-lg p-3">
+                            <p className="text-[10px] font-bold text-indigo-600 uppercase mb-2">Skills to Apply</p>
+                            <div className="flex flex-wrap gap-1">
+                              {assessment.contextData.expectedSkills.map((s, i) => (
+                                <span key={i} className="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">{s}</span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="bg-amber-50 rounded-lg p-3">
+                            <p className="text-[10px] font-bold text-amber-600 uppercase mb-2">Evaluation Criteria</p>
+                            <ul className="space-y-0.5">
+                              {assessment.contextData.evaluationCriteria.slice(0, 4).map((c, i) => (
+                                <li key={i} className="text-xs text-amber-800 truncate">{c.split(":")[0]}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Already submitted */}
+                      {assessmentSubmission ? (
+                        <div className="space-y-4">
+                          {/* Score overview */}
+                          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+                            <p className="text-5xl font-bold text-gray-900 mb-1">{assessmentSubmission.score}%</p>
+                            <p className="text-sm text-gray-500 mb-4">Overall Assessment Score</p>
+                            <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">{assessmentSubmission.feedback.overallVerdict}</p>
+                          </div>
+
+                          {/* Dimension scores */}
+                          <div className="grid grid-cols-2 gap-3">
+                            {(["technicality", "logic", "problemSolving", "delivery"] as const).map((dim) => {
+                              const d = assessmentSubmission.feedback[dim];
+                              const label = dim === "problemSolving" ? "Problem Solving" : dim.charAt(0).toUpperCase() + dim.slice(1);
+                              const color = d.score >= 80 ? "emerald" : d.score >= 60 ? "amber" : "red";
+                              return (
+                                <div key={dim} className={`bg-${color}-50 border border-${color}-100 rounded-xl p-4`}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <p className={`text-[10px] font-bold text-${color}-700 uppercase`}>{label}</p>
+                                    <span className={`text-sm font-bold text-${color}-700`}>{d.score}/100</span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 leading-relaxed">{d.comment}</p>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Strengths / improvements */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {assessmentSubmission.feedback.strengthsHighlighted.length > 0 && (
+                              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
+                                <p className="text-[10px] font-bold text-emerald-700 uppercase mb-2">Strengths</p>
+                                <ul className="space-y-1">
+                                  {assessmentSubmission.feedback.strengthsHighlighted.map((s, i) => (
+                                    <li key={i} className="flex items-start gap-1.5 text-xs text-gray-700"><span className="text-emerald-500 shrink-0">✓</span>{s}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {assessmentSubmission.feedback.areasToImprove.length > 0 && (
+                              <div className="bg-red-50 rounded-xl p-4 border border-red-100">
+                                <p className="text-[10px] font-bold text-red-600 uppercase mb-2">Areas to Improve</p>
+                                <ul className="space-y-1">
+                                  {assessmentSubmission.feedback.areasToImprove.map((s, i) => (
+                                    <li key={i} className="flex items-start gap-1.5 text-xs text-gray-700"><span className="text-red-400 shrink-0">△</span>{s}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Your submitted answer */}
+                          <details className="bg-gray-50 rounded-xl border border-gray-100">
+                            <summary className="px-4 py-3 text-xs font-semibold text-gray-500 cursor-pointer select-none">View your submitted answer</summary>
+                            <div className="px-4 pb-4 pt-2">
+                              <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-sans">{assessmentSubmission.answer}</pre>
+                            </div>
+                          </details>
+
+                          {/* Score history */}
+                          {assessmentHistory.length > 1 && (
+                            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+                              <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Assessment Score History</p>
+                              <ScoreChart attempts={assessmentHistory.map((h, i) => ({ id: String(i), topicId: "", dateKey: h.dateKey, score: h.score, totalQ: 100, correctQ: h.score, completedAt: h.submittedAt }))} />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        /* Answer form */
+                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800 mb-1">Your Response</p>
+                            <p className="text-xs text-gray-400 mb-3">
+                              Write a comprehensive response covering all dimensions of the problem. Structure your answer clearly — the Partner is reading this tomorrow morning.
+                            </p>
+                            <textarea
+                              value={assessmentAnswer}
+                              onChange={(e) => setAssessmentAnswer(e.target.value)}
+                              placeholder={`Structure your response:\n\n1. Problem diagnosis — MECE decomposition of root causes\n2. Technical analysis — what the data/systems show\n3. Recommended interventions — specific, prioritised, with rationale\n4. Implementation roadmap — 30/60/90 day plan\n5. Risk mitigation — what could go wrong and how you'd prevent it\n6. Executive summary — 3 bullets for the board`}
+                              rows={20}
+                              className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-y leading-relaxed"
+                              disabled={assessmentSubmitting}
+                            />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <p className="text-xs text-gray-400">{assessmentAnswer.length} characters</p>
+                            <button
+                              onClick={handleSubmitAssessment}
+                              disabled={!assessmentAnswer.trim() || assessmentSubmitting}
+                              className="bg-purple-500 text-white text-sm px-6 py-2.5 rounded-xl hover:bg-purple-600 disabled:opacity-50 transition-colors flex items-center gap-2"
+                            >
+                              {assessmentSubmitting ? (
+                                <>
+                                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                  </svg>
+                                  AI is evaluating…
+                                </>
+                              ) : "Submit for Partner Review"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
             </div>
           </>
         )}

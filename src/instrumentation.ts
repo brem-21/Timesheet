@@ -5,6 +5,28 @@ export async function register() {
     const cron = (await import("node-cron")).default;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+    // ── 12:00 PM weekday midday Slack reminder ───────────────────────────────
+    cron.schedule(
+      "0 12 * * 1-5",
+      async () => {
+        console.log("[Clock-It] Sending 12:00 PM midday check-in to Slack...");
+        try {
+          const res = await fetch(`${appUrl}/api/reminder/midday`, { method: "POST" });
+          const data = await res.json();
+          if (data.ok) {
+            console.log(`[Clock-It] Midday reminder sent — ${data.inProgress} in-progress, ${data.todo} to-do, ${data.done} done.`);
+          } else {
+            console.error("[Clock-It] Midday reminder failed:", data.error);
+          }
+        } catch (err) {
+          console.error("[Clock-It] Midday reminder error:", err);
+        }
+      },
+      { timezone: "Africa/Accra" }
+    );
+
+    console.log("[Clock-It] ✅ 12:00 PM weekday midday Slack reminder scheduled (Africa/Accra)");
+
     // ── 3:00 PM weekday Slack reminder ──────────────────────────────────────
     cron.schedule(
       "0 15 * * 1-5",

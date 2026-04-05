@@ -185,7 +185,7 @@ async function generateQuestions(
     questionMix = `8 multiple_choice + 22 free_text`;
   }
 
-  const prompt = `You are a ${firm} case interviewer and technical assessor. Generate 5 quiz questions for a Senior Associate on: ${topicLabel}
+  const prompt = `You are a ${firm} case interviewer and technical assessor. Generate EXACTLY 30 quiz questions for a Senior Associate on: ${topicLabel}
 
 Today the associate studied this lesson:
 - Expert: ${lesson.expertName}
@@ -194,56 +194,28 @@ Today the associate studied this lesson:
 - Client scenario context: ${lesson.consultingContext.realClientScenario}
 - Debugging framework: ${lesson.consultingContext.debuggingFramework}
 
-Question mix: ${questionMix}
+Required question mix (MUST total exactly 30): ${questionMix}
 
-ALL questions must:
-1. Be scenario-based — set inside a realistic ${firm} client engagement (Fortune 500 company, specific industry)
-2. Test one or more of: debugging, problem-solving methodology, or application of ${lesson.todaysFocus}
+ALL 30 questions must:
+1. Be scenario-based — set inside a DIFFERENT realistic consulting engagement per question (rotate firms: BCG, McKinsey, Bain, Deloitte, Oliver Wyman; rotate industries: banking, retail, healthcare, logistics, telecom, energy, fintech, FMCG)
+2. Test one or more of: debugging methodology, problem-solving structure, technical application, or MECE analysis
 3. Reference the lesson concepts — the associate just studied them and should recognise the connection
-4. Be at Senior Associate difficulty — someone with 3-5 years experience who studied the lesson
+4. Progress in difficulty: q1-q8 intermediate, q9-q20 senior associate, q21-q30 challenging/edge cases
+5. Be at Senior Associate difficulty — someone with 3-5 years experience
 
-Return ONLY a JSON array (no markdown fences):
-[
-  {
-    "id": "q1",
-    "type": "multiple_choice",
-    "text": "Your ${firm} team is advising a global bank processing 2M daily transactions. The data engineering team (led by their VP of Data) flags that...[scenario]...Based on ${lesson.expertName}'s approach to [concept], which action addresses the root cause?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correct_index": 2,
-    "explanation": "Why this is correct referencing the lesson concept, and why each distractor is wrong (2-3 sentences)."
-  },
-  {
-    "id": "q2",
-    "type": "sql_write",
-    "text": "Your ${firm} client (a global e-commerce platform) needs...[scenario]...\\nSchema:\\n  table1(col1 TYPE, col2 TYPE, ...)\\nWrite a SQL query that...",
-    "language": "sql",
-    "expected_answer": "-- Optimal solution\\nSELECT ...",
-    "explanation": "What makes this solution correct and efficient, tied to today's lesson."
-  },
-  {
-    "id": "q3",
-    "type": "code_write",
-    "text": "During a ${firm} engagement at a fintech client...[scenario]...\\nFunction signature: def function_name(params) -> return_type\\n\\nRequirements:\\n- requirement 1\\n- requirement 2",
-    "language": "python",
-    "expected_answer": "def function_name(params):\\n    # Solution\\n    ...",
-    "explanation": "Why this approach is correct, connecting to the lesson methodology."
-  },
-  {
-    "id": "q4",
-    "type": "free_text",
-    "text": "You are presenting to the CTO of a ${firm} client...[scenario]...Using ${lesson.expertName}'s [methodology] and ${firm}'s structured approach, walk through how you would [debug/solve/design] this. Structure your answer using the [debugging framework from lesson].",
-    "expected_answer": "Key points the answer should cover: ...",
-    "explanation": "What a high-scoring answer demonstrates."
-  }
-]
+Return ONLY a JSON array of exactly 30 objects (no markdown fences, ids q1 through q30):
+- multiple_choice: include "options" (4 choices), "correct_index" (0-3), "explanation"
+- sql_write: include "language":"sql", "expected_answer" (full SQL), "explanation"
+- code_write: include "language" (python/bash/scala/etc), "expected_answer" (full code), "explanation"
+- free_text: include "expected_answer" (key points to cover), "explanation"
 
 Rules:
-- Every question must name a realistic company type (e.g. 'global retail bank', 'streaming platform with 200M subscribers', 'FMCG multinational', 'ride-sharing startup scaling to APAC')
-- Debugging questions must follow the 3-step framework from today's lesson
-- Problem-solving questions must require structured, MECE thinking
-- Methodology questions must reference ${lesson.expertName}'s specific approach
-- For code/SQL: include full schema and constraints so the question is self-contained
-- Make distractors in MC questions reflect the common mistake from today's lesson`;
+- Each question names a specific company type and industry (never generic "a company")
+- Debugging questions follow the 3-step Isolate→Hypothesise→Validate framework
+- Multiple choice distractors reflect the common mistakes from today's lesson
+- Code/SQL questions include full schema/context so they are self-contained
+- Free-text questions require structured MECE answers referencing ${lesson.expertName}'s methodology
+- Spread the 30 questions to cover ALL concepts from today's lesson multiple times`;
 
   const raw = await callGemini(prompt);
   const cleaned = raw.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/, "").trim();
@@ -307,56 +279,94 @@ function fallbackLesson(topicLabel: string, topicId: string): QuizLesson {
 }
 
 function fallbackQuestions(topicLabel: string): QuizQuestion[] {
-  return [
-    {
-      id: "q1", type: "multiple_choice",
-      text: `Your BCG team is advising a global retail client whose ${topicLabel} system has failed in production. The incident has been ongoing for 2 hours and the CTO is asking for a root cause. What is the correct first step using a hypothesis-driven debugging approach?`,
-      options: [
-        "Restart all services and monitor for recurrence",
-        "Form a specific failure hypothesis, then check logs that would confirm or disprove it",
-        "Escalate to the vendor immediately",
-        "Roll back the last deployment without investigation"
-      ],
-      correctIndex: 1,
-      explanation: "Hypothesis-driven debugging — the McKinsey and BCG standard — means forming a testable hypothesis first, then gathering targeted evidence. Restarting services is a fix, not a diagnosis."
-    },
-    {
-      id: "q2", type: "multiple_choice",
-      text: `A McKinsey client's ${topicLabel} team is debating two approaches. Approach A is faster to implement but creates technical debt. Approach B takes 3x longer but is more maintainable. The client needs to go live in 6 weeks. As Senior Associate, what is the structured recommendation?`,
-      options: [
-        "Always choose Approach B — technical debt is never acceptable",
-        "Always choose Approach A — client deadlines take priority",
-        "Recommend Approach A for MVP with a documented remediation plan and timeline for Approach B",
-        "Ask the client to decide — it's their system"
-      ],
-      correctIndex: 2,
-      explanation: "Senior Associates balance delivery and quality. The MECE answer is: meet the deadline with Approach A but document and commit to the debt remediation. Leaving the decision entirely to the client without a recommendation is not consulting."
-    },
-    {
-      id: "q3", type: "free_text",
-      text: `You are leading a Bain engagement at a global logistics company. Their ${topicLabel} system processes 10M events per day and is intermittently producing incorrect outputs that only appear in reports 3 days later. Using the 3-step debugging framework (Isolate → Hypothesise → Validate), walk through how you would diagnose this. Be specific about what data, logs, or tests you would look for at each step.`,
-      expectedAnswer: "A strong answer: Step 1 Isolate — reproduce on a subset of data, identify which records are affected, check if pattern is time-based or data-based. Step 2 Hypothesise — form 2-3 specific hypotheses (e.g. timezone handling, batch aggregation boundary, upstream data quality). Step 3 Validate — design minimum test for each hypothesis, check audit logs, compare input vs output checksums.",
-      explanation: "This tests the ability to apply structured consulting methodology to a technical debugging scenario — a core Senior Associate skill."
-    },
-    {
-      id: "q4", type: "multiple_choice",
-      text: `During a BCG engagement, a client's ${topicLabel} team reports that their system 'sometimes fails'. This is not MECE. Which of the following restatements best applies MECE decomposition to this problem statement?`,
-      options: [
-        "'The system fails randomly, so we need more servers'",
-        "'Failures occur in category A (data quality issues) OR category B (infrastructure failures) OR category C (logic bugs) — these are mutually exclusive and cover all cases'",
-        "'We need to add more logging to understand what's happening'",
-        "'The system is unreliable and needs to be rewritten'"
-      ],
-      correctIndex: 1,
-      explanation: "MECE decomposition creates categories that are Mutually Exclusive (no overlap) and Collectively Exhaustive (cover all cases). Option B is the only answer that actually decomposes the problem space without overlap."
-    },
-    {
-      id: "q5", type: "free_text",
-      text: `A McKinsey client (global bank) asks you to evaluate whether their ${topicLabel} investment is delivering ROI. They have gut-feel metrics but no structured measurement. Using a top-down, hypothesis-driven methodology, outline the 3 key questions you would answer first and the data you would need to answer each one.`,
-      expectedAnswer: "Good answer: Q1 What is the baseline? (current state metrics before investment) Q2 What changed? (delta in KPIs attributable to the investment, not external factors) Q3 What is the counterfactual? (what would have happened without the investment). Each needs specific data sources, not just 'we need data'.",
-      explanation: "Senior Associates on consulting engagements must structure ambiguous business questions before collecting data — this is the hypothesis-driven, top-down approach."
-    },
+  const firms = ["BCG", "McKinsey", "Bain", "Deloitte", "Oliver Wyman", "PwC"];
+  const companies = [
+    "global retail bank processing 2M daily transactions",
+    "FMCG multinational with operations in 40 countries",
+    "streaming platform with 200M active subscribers",
+    "global logistics company handling 50M shipments/year",
+    "healthcare provider network across 300 hospitals",
+    "ride-sharing startup scaling to APAC markets",
   ];
+
+  const base: QuizQuestion[] = [];
+
+  // 8 multiple choice
+  for (let i = 0; i < 8; i++) {
+    const firm = firms[i % firms.length];
+    const company = companies[i % companies.length];
+    if (i % 2 === 0) {
+      base.push({
+        id: `q${i + 1}`, type: "multiple_choice",
+        text: `Your ${firm} team is advising a ${company} whose ${topicLabel} system has failed in production. Incident ongoing for ${i + 1} hours. Using a hypothesis-driven debugging approach, what is the correct first step?`,
+        options: [
+          "Restart all services and monitor for recurrence",
+          "Form a specific failure hypothesis, then check logs to confirm or disprove it",
+          "Escalate to the vendor immediately without evidence",
+          "Roll back the last deployment without investigating root cause",
+        ],
+        correctIndex: 1,
+        explanation: `Hypothesis-driven debugging — the ${firm} standard — means forming a testable hypothesis first, then gathering targeted evidence. Restarting services is a temporary fix, not a diagnosis.`,
+      });
+    } else {
+      base.push({
+        id: `q${i + 1}`, type: "multiple_choice",
+        text: `A ${firm} client's ${topicLabel} team reports that their system 'sometimes produces wrong results'. This is not MECE. Which restatement correctly applies MECE decomposition?`,
+        options: [
+          "'It fails randomly — we need more servers'",
+          "'Failures fall into: (A) data quality issues OR (B) processing logic errors OR (C) infrastructure failures — mutually exclusive, collectively exhaustive'",
+          "'We need to add more logging first'",
+          "'The system needs to be rebuilt from scratch'",
+        ],
+        correctIndex: 1,
+        explanation: "MECE decomposition creates non-overlapping, exhaustive categories. Option B is the only answer that genuinely decomposes the problem space without overlap or gaps.",
+      });
+    }
+  }
+
+  // 22 free_text
+  const freeTextTemplates = [
+    (f: string, c: string, n: number) => ({
+      id: `q${n}`, type: "free_text" as const,
+      text: `You are leading a ${f} engagement at a ${c}. Their ${topicLabel} system is intermittently producing incorrect outputs that only appear 3 days later. Using Isolate → Hypothesise → Validate, walk through your diagnostic approach. What specific data and logs would you check at each step?`,
+      expectedAnswer: "Isolate: reproduce on a data subset, identify affected records and whether the pattern is time-based. Hypothesise: form 2-3 specific hypotheses (timezone handling, boundary conditions, upstream quality). Validate: design minimum experiment per hypothesis, check audit logs, compare checksums.",
+      explanation: "Structured consulting debugging methodology — a core Senior Associate skill on client engagements.",
+    }),
+    (f: string, c: string, n: number) => ({
+      id: `q${n}`, type: "free_text" as const,
+      text: `A ${f} client (${c}) asks you to evaluate ROI for their ${topicLabel} investment. No structured measurement exists. Using top-down hypothesis-driven methodology, define the 3 key questions you'd answer first and the data needed for each.`,
+      expectedAnswer: "Q1: What is the baseline? (pre-investment KPIs) Q2: What changed? (delta attributable to investment vs external factors) Q3: What is the counterfactual? (what would have happened without it). Each needs specific, named data sources.",
+      explanation: "Before collecting data, Senior Associates structure the measurement framework — this is hypothesis-driven, top-down consulting methodology.",
+    }),
+    (f: string, c: string, n: number) => ({
+      id: `q${n}`, type: "free_text" as const,
+      text: `You are presenting to the CTO of a ${c} (${f} engagement). They want to cut ${topicLabel} costs by 40% in 6 months. How would you structure your analysis? Include your decomposition framework, key hypotheses, and how you'd prioritise initiatives.`,
+      expectedAnswer: "Decompose cost drivers MECE: people vs infrastructure vs licensing vs process waste. Form hypotheses for each driver. Prioritise by: impact (%) × feasibility × time-to-realise. Always quantify the 'safe to cut vs risky to cut' distinction.",
+      explanation: "Cost optimisation is a classic consulting problem requiring MECE decomposition, hypothesis testing, and prioritisation frameworks.",
+    }),
+    (f: string, c: string, n: number) => ({
+      id: `q${n}`, type: "free_text" as const,
+      text: `During a ${f} engagement, a ${c} is deciding between build vs buy for their ${topicLabel} needs. Walk through the decision framework you'd use. What are the 4-5 most critical factors and how would you weight them?`,
+      expectedAnswer: "Factors: strategic differentiation (build if core), total cost of ownership, time-to-market, internal capability, vendor lock-in risk. Weight by: urgency, competitive moat, and build capability. Recommend with clear assumptions documented.",
+      explanation: "Build vs buy is a classic Senior Associate-level recommendation that requires structured trade-off analysis, not opinion.",
+    }),
+    (f: string, c: string, n: number) => ({
+      id: `q${n}`, type: "free_text" as const,
+      text: `You discover a critical ${topicLabel} architectural flaw at a ${c} (${f} client) 2 weeks before go-live. The flaw will cause data inconsistencies under load. Walk through how you would: (1) assess severity, (2) communicate to the client, and (3) recommend a path forward.`,
+      expectedAnswer: "Severity: quantify impact under realistic load scenarios. Communication: early, factual, with solution options — not just the problem. Path forward: present 2-3 options with trade-offs, timelines, and risks. Recommend one with clear rationale. Never deliver bad news without a prepared recommendation.",
+      explanation: "This tests judgment, communication under pressure, and structured problem-solving — core consulting competencies for Senior Associates.",
+    }),
+  ];
+
+  for (let i = 0; i < 22; i++) {
+    const n = i + 9; // q9 through q30
+    const firm = firms[i % firms.length];
+    const company = companies[i % companies.length];
+    const template = freeTextTemplates[i % freeTextTemplates.length];
+    base.push(template(firm, company, n));
+  }
+
+  return base;
 }
 
 // ── GET handler ───────────────────────────────────────────────────────────────
