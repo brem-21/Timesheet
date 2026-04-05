@@ -36,15 +36,17 @@ function detectPriority(text: string): TaskPriority {
 }
 
 async function extractWithGemini(transcript: string, userName: string, source: string): Promise<MeetingTask[]> {
-  const prompt = `Read this meeting transcript and extract every task or action item.
+  const prompt = `You are a project manager creating Jira-style tickets from a meeting transcript. Extract every task or action item and format each as a structured ticket.
 
 Return a JSON array where each item has:
-- "text": a clear, self-contained task description written as an imperative (e.g. "Update the deployment pipeline", "Send the report to the client by Friday")
-- "priority": "high" if urgent/blocking/ASAP/today, "low" if no rush/later, otherwise "medium"
+- "text": a concise ticket title (5-10 words max), written as an imperative starting with a verb (e.g. "Fix deployment pipeline timeout", "Send Q2 report to client")
+- "description": 2-4 sentences of context — what needs to be done, why it matters, and any relevant details from the meeting. Write it as a ticket description a developer or team member would see in Jira.
+- "priority": "high" if urgent/blocking/ASAP/today/deadline-driven, "low" if no rush/later/nice-to-have, otherwise "medium"
 - "assignee": the full name of the person this task is assigned to, exactly as it appears in the transcript. Use "${userName}" for tasks assigned to them.
+- "checklist": an array of 2-4 acceptance criteria strings — specific, testable conditions that define when this task is done (e.g. "PR reviewed and merged", "Client notified via email", "Unit tests passing")
 
 Return ONLY the JSON array. No markdown fences, no explanation. Example:
-[{"text":"Fix the login bug before Thursday","priority":"high","assignee":"${userName}"},{"text":"Review the PR","priority":"medium","assignee":"Richard Dadzie"}]
+[{"text":"Fix login authentication bug","description":"Users are unable to log in after the recent OAuth token refresh. This is blocking the QA team from completing regression testing. Root cause identified as an expired certificate on the auth service.","priority":"high","assignee":"${userName}","checklist":["Identify and patch the expired certificate","Verify login works across all supported browsers","Notify QA team once fix is deployed"]},{"text":"Review infrastructure PR","description":"The PR for the new Kubernetes cluster configuration is ready for review. It includes changes to resource limits and health check configurations discussed in today's meeting.","priority":"medium","assignee":"Richard Dadzie","checklist":["Review resource limit changes","Check health check configurations","Approve or request changes on the PR"]}]
 
 If no tasks are found, return [].
 
@@ -53,15 +55,17 @@ ${transcript.slice(0, 10000)}`;
 
   const raw = await callGemini(prompt);
   const cleaned = raw.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/, "").trim();
-  const parsed: Array<{ text: string; priority: TaskPriority; assignee?: string }> = JSON.parse(cleaned);
+  const parsed: Array<{ text: string; description?: string; priority: TaskPriority; assignee?: string; checklist?: string[] }> = JSON.parse(cleaned);
 
   return parsed.map((t) => ({
     id: generateTaskId(),
     text: t.text,
+    description: t.description,
     priority: t.priority ?? "medium",
     status: "todo" as const,
     source,
     assignee: t.assignee ?? userName,
+    checklist: (t.checklist ?? []).map((item) => ({ id: generateTaskId(), text: item, done: false })),
     createdAt: Date.now(),
   }));
 }
