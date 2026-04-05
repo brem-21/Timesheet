@@ -94,6 +94,102 @@ CREATE TABLE IF NOT EXISTS recommendations (
   last_updated BIGINT NOT NULL
 );
 
+-- ── Professional Growth ───────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS growth_topics (
+  id          TEXT    PRIMARY KEY,
+  label       TEXT    NOT NULL,
+  description TEXT,
+  is_custom   BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at  BIGINT  NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS growth_materials (
+  id           TEXT   PRIMARY KEY,
+  topic_id     TEXT   NOT NULL REFERENCES growth_topics(id) ON DELETE CASCADE,
+  title        TEXT   NOT NULL,
+  type         TEXT   NOT NULL CHECK (type IN ('file', 'link', 'note', 'ai_suggestion')),
+  url          TEXT,
+  file_name    TEXT,
+  file_size    BIGINT,
+  mime_type    TEXT,
+  content_text TEXT,
+  source_url   TEXT,
+  created_at   BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_growth_materials_topic ON growth_materials (topic_id);
+
+CREATE TABLE IF NOT EXISTS growth_quizzes (
+  id           TEXT   PRIMARY KEY,
+  topic_id     TEXT   NOT NULL REFERENCES growth_topics(id) ON DELETE CASCADE,
+  date_key     TEXT   NOT NULL,
+  questions    JSONB  NOT NULL DEFAULT '[]',
+  lesson       JSONB  NOT NULL DEFAULT '{}',
+  generated_at BIGINT NOT NULL,
+  UNIQUE (topic_id, date_key)
+);
+
+CREATE INDEX IF NOT EXISTS idx_growth_quizzes_date ON growth_quizzes (date_key);
+
+CREATE TABLE IF NOT EXISTS growth_quiz_attempts (
+  id           TEXT    PRIMARY KEY,
+  quiz_id      TEXT    NOT NULL REFERENCES growth_quizzes(id) ON DELETE CASCADE,
+  topic_id     TEXT    NOT NULL,
+  date_key     TEXT    NOT NULL,
+  answers      JSONB   NOT NULL DEFAULT '[]',
+  score        NUMERIC NOT NULL,
+  total_q      INT     NOT NULL,
+  correct_q    INT     NOT NULL,
+  completed_at BIGINT  NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_growth_attempts_topic ON growth_quiz_attempts (topic_id);
+CREATE INDEX IF NOT EXISTS idx_growth_attempts_date  ON growth_quiz_attempts (date_key);
+CREATE INDEX IF NOT EXISTS idx_growth_attempts_quiz  ON growth_quiz_attempts (quiz_id);
+
+CREATE TABLE IF NOT EXISTS growth_insights (
+  id           TEXT    PRIMARY KEY,
+  topic_id     TEXT    NOT NULL REFERENCES growth_topics(id) ON DELETE CASCADE,
+  generated_at BIGINT  NOT NULL,
+  avg_score    NUMERIC,
+  trend        TEXT    CHECK (trend IN ('improving', 'declining', 'stable', 'insufficient_data')),
+  takeaways    JSONB   NOT NULL DEFAULT '[]',
+  improvements JSONB   NOT NULL DEFAULT '[]',
+  weaknesses   JSONB   NOT NULL DEFAULT '[]',
+  summary_text TEXT    NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_growth_insights_topic ON growth_insights (topic_id);
+
+CREATE TABLE IF NOT EXISTS growth_modules (
+  id           TEXT   PRIMARY KEY,
+  topic_id     TEXT   NOT NULL REFERENCES growth_topics(id) ON DELETE CASCADE,
+  title        TEXT   NOT NULL,
+  modules      JSONB  NOT NULL DEFAULT '{}',
+  generated_at BIGINT NOT NULL,
+  UNIQUE (topic_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_growth_modules_topic ON growth_modules (topic_id);
+
+INSERT INTO growth_topics (id, label, description, is_custom, created_at) VALUES
+  ('data-engineering',        'Data Engineering',         'Pipelines, ETL/ELT, data lakes, warehouse design', FALSE, 0),
+  ('devops',                  'DevOps',                   'CI/CD, infrastructure as code, monitoring, SRE', FALSE, 0),
+  ('ml',                      'Machine Learning',         'Model training, evaluation, classical ML algorithms', FALSE, 0),
+  ('mlops',                   'MLOps',                    'ML pipelines, model versioning, deployment, drift monitoring', FALSE, 0),
+  ('kubernetes',              'Kubernetes',               'Container orchestration, Helm, service mesh, K8s internals', FALSE, 0),
+  ('sql',                     'SQL',                      'Query optimisation, window functions, indexing, modelling', FALSE, 0),
+  ('spark',                   'Apache Spark',             'Distributed processing, DataFrames, optimisation, Spark SQL', FALSE, 0),
+  ('python-dsa',              'Python (DSA)',              'Data structures, algorithms, complexity, LeetCode patterns', FALSE, 0),
+  ('aws-solutions-architect', 'AWS Solutions Architect',  'AWS services, well-architected framework, cost optimisation', FALSE, 0),
+  ('power-bi',                'Power BI',                 'DAX, data modelling, reports, gateway, row-level security', FALSE, 0),
+  ('dashboard-engineering',   'Dashboard Engineering',    'BI design principles, UX for data, Looker, Grafana', FALSE, 0),
+  ('business-consultancy',    'Business Consultancy',     'Stakeholder management, requirements gathering, strategy', FALSE, 0),
+  ('problem-solving',         'Problem Solving',          'Structured thinking, root cause analysis, frameworks', FALSE, 0),
+  ('active-listening',        'Active Listening',         'Communication, note-taking, empathy, feedback loops', FALSE, 0)
+ON CONFLICT (id) DO NOTHING;
+
 -- ── Performance history ────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS performance_history (

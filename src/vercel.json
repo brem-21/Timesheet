@@ -19,6 +19,11 @@
       "path": "/api/performance/slack?frequency=quarterly",
       "schedule": "0 16 15-21 1,4,7,10 5",
       "comment": "Quarterly performance insights — 3rd Friday of Jan/Apr/Jul/Oct at 4 PM UTC (covers previous quarter)"
+    },
+    {
+      "path": "/api/growth/quiz-reminder",
+      "schedule": "0 12 * * 1-5",
+      "comment": "Daily quiz reminder + pre-generation — Mon–Fri at 12:00 PM UTC (midday)"
     }
   ]
 }

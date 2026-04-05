@@ -271,6 +271,181 @@ function KpiCard({ title, value, subtitle, color, icon }: KpiCardProps) {
   );
 }
 
+// ─── Growth Summary Panel ─────────────────────────────────────────────────────
+
+interface TopicGrowthStat {
+  topicId: string;
+  label: string;
+  attemptCount: number;
+  avgScore: number;
+  bestScore: number;
+  latestScore: number | null;
+  lastAttempt: string | null;
+  uniqueActiveDays: number;
+  trend: "improving" | "declining" | "stable" | "insufficient_data";
+}
+
+interface GrowthStats {
+  topicStats: TopicGrowthStat[];
+  overallAvgScore: number;
+  totalAttempts: number;
+  topicsAttempted: number;
+  topicsTotal: number;
+  mostEngagedTopic: string | null;
+  weakestTopic: string | null;
+  strongestTopic: string | null;
+  quizCompletionRate: number;
+  growthPageVisits: number;
+}
+
+function GrowthTrendIcon({ trend }: { trend: TopicGrowthStat["trend"] }) {
+  if (trend === "improving") return <span className="text-emerald-500 text-xs font-bold">↑</span>;
+  if (trend === "declining") return <span className="text-red-400 text-xs font-bold">↓</span>;
+  if (trend === "stable") return <span className="text-amber-400 text-xs font-bold">→</span>;
+  return <span className="text-gray-300 text-xs">—</span>;
+}
+
+function GrowthScoreBadge({ score }: { score: number }) {
+  const cls = score >= 80 ? "bg-emerald-100 text-emerald-700"
+    : score >= 60 ? "bg-amber-100 text-amber-700"
+    : "bg-red-100 text-red-600";
+  return <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${cls}`}>{score}%</span>;
+}
+
+function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate: string }) {
+  const [growthStats, setGrowthStats] = useState<GrowthStats | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    if (!startDate || !endDate) return;
+    setLoading(true);
+    const params = new URLSearchParams({ startDate, endDate });
+    fetch(`/api/growth/stats?${params}`)
+      .then((r) => r.json())
+      .then((d) => { if (d.stats) setGrowthStats(d.stats); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [startDate, endDate]);
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-3 text-gray-400 text-sm">
+        <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        Loading growth data…
+      </div>
+    );
+  }
+
+  if (!growthStats || growthStats.totalAttempts === 0) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-sm font-semibold text-gray-700">Professional Growth — Quiz Analytics</h2>
+          <span className="text-xs text-gray-400 px-2 py-0.5 bg-gray-100 rounded-full">No quiz data yet</span>
+        </div>
+        <p className="text-sm text-gray-400">
+          Complete quizzes on the{" "}
+          <a href="/growth" className="text-indigo-500 hover:underline">Professional Growth page</a>{" "}
+          to see analytics here.
+        </p>
+      </div>
+    );
+  }
+
+  const attempted = growthStats.topicStats.filter((t) => t.attemptCount > 0);
+  const showTopics = expanded ? attempted : attempted.slice(0, 6);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-gray-700">Professional Growth — Quiz Analytics</h2>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">📈 Growth</span>
+        </div>
+        <a href="/growth" className="text-xs text-indigo-500 hover:underline">Open Growth page ↗</a>
+      </div>
+
+      {/* KPI row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { label: "Overall Avg Score", value: `${growthStats.overallAvgScore}%`, sub: `${growthStats.totalAttempts} quiz sessions`,
+            cls: growthStats.overallAvgScore >= 80 ? "text-emerald-600" : growthStats.overallAvgScore >= 60 ? "text-amber-600" : "text-red-600" },
+          { label: "Topic Coverage", value: `${growthStats.topicsAttempted} / ${growthStats.topicsTotal}`,
+            sub: `${growthStats.quizCompletionRate}% topics attempted`, cls: "text-indigo-600" },
+          { label: "Strongest Topic", value: growthStats.strongestTopic ?? "—",
+            sub: `${growthStats.topicStats.find(t => t.label === growthStats.strongestTopic)?.avgScore ?? 0}% avg`, cls: "text-emerald-600" },
+          { label: "Needs Attention", value: growthStats.weakestTopic ?? "—",
+            sub: `${growthStats.topicStats.find(t => t.label === growthStats.weakestTopic)?.avgScore ?? 0}% avg`, cls: "text-red-600" },
+        ].map(({ label, value, sub, cls }) => (
+          <div key={label} className="bg-gray-50 rounded-xl p-4">
+            <p className="text-xs text-gray-400 mb-1">{label}</p>
+            <p className={`text-sm font-bold truncate ${cls}`}>{value}</p>
+            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Per-topic table */}
+      {attempted.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Per-Topic Breakdown</p>
+          <div className="border border-gray-100 rounded-xl overflow-hidden">
+            <table className="w-full text-xs">
+              <thead className="bg-gray-50 text-gray-500">
+                <tr>
+                  <th className="text-left px-3 py-2 font-semibold">Topic</th>
+                  <th className="text-center px-3 py-2 font-semibold">Sessions</th>
+                  <th className="text-center px-3 py-2 font-semibold">Avg Score</th>
+                  <th className="text-center px-3 py-2 font-semibold">Best</th>
+                  <th className="text-center px-3 py-2 font-semibold">Latest</th>
+                  <th className="text-center px-3 py-2 font-semibold">Trend</th>
+                  <th className="text-right px-3 py-2 font-semibold">Last Active</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {showTopics.map((t) => (
+                  <tr key={t.topicId} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-3 py-2 font-medium text-gray-700">{t.label}</td>
+                    <td className="px-3 py-2 text-center text-gray-500">{t.attemptCount}</td>
+                    <td className="px-3 py-2 text-center"><GrowthScoreBadge score={t.avgScore} /></td>
+                    <td className="px-3 py-2 text-center text-gray-500">{t.bestScore}%</td>
+                    <td className="px-3 py-2 text-center">
+                      {t.latestScore !== null ? <GrowthScoreBadge score={t.latestScore} /> : <span className="text-gray-300">—</span>}
+                    </td>
+                    <td className="px-3 py-2 text-center"><GrowthTrendIcon trend={t.trend} /></td>
+                    <td className="px-3 py-2 text-right text-gray-400">{t.lastAttempt ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {attempted.length > 6 && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-2 text-xs text-indigo-500 hover:underline w-full text-center"
+            >
+              {expanded ? "Show less" : `Show all ${attempted.length} topics`}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Topics not yet attempted */}
+      {growthStats.topicsAttempted < growthStats.topicsTotal && (
+        <div className="text-xs text-gray-400">
+          <span className="font-medium text-gray-600">{growthStats.topicsTotal - growthStats.topicsAttempted} topics</span> not yet attempted —{" "}
+          {growthStats.topicStats.filter(t => t.attemptCount === 0).map(t => t.label).slice(0, 5).join(", ")}
+          {growthStats.topicsTotal - growthStats.topicsAttempted > 5 ? ` and ${growthStats.topicsTotal - growthStats.topicsAttempted - 5} more` : ""}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function PerformancePage() {
@@ -912,6 +1087,9 @@ export default function PerformancePage() {
 
         {!insightsLoading && insights && <InsightsRenderer text={insights} />}
       </div>
+
+      {/* ── Growth Summary ───────────────────────────────────────────────── */}
+      <GrowthSummaryPanel startDate={startDate} endDate={endDate} />
 
       {/* ── Bottom Grid: Milestones + ProfDev ────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

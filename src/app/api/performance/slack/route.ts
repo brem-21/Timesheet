@@ -6,6 +6,7 @@ import { loadTasks } from "@/lib/taskStoreServer";
 import { loadMilestones } from "@/lib/milestoneStore";
 import { loadProfDev } from "@/lib/profDevStore";
 import { loadSummaries } from "@/lib/summaryStore";
+import { loadTopicStats } from "@/lib/growthStore";
 import { callGemini } from "@/lib/summarize";
 import { savePerformanceEntry } from "@/lib/performanceStore";
 import {
@@ -132,6 +133,7 @@ async function generateAndSend(
   const allTasks = await loadTasks();
   const milestones = await loadMilestones();
   const allProfDev = await loadProfDev();
+  const topicStats = await loadTopicStats().catch(() => []);
   const filteredProfDev = allProfDev.filter(
     (e) => e.completedDate >= startDate && e.completedDate <= endDate
   );
@@ -177,6 +179,15 @@ async function generateAndSend(
 ${sampleContribs.map((c, i) => `  ${i + 1}. "${c}"`).join("\n")}`
     : "";
 
+  const quizSection = topicStats.length > 0
+    ? `\n\nProfessional Growth Quiz Performance (all-time):
+- Topics tracked: ${topicStats.length}
+- Overall avg score: ${Math.round(topicStats.reduce((s, t) => s + t.avgScore, 0) / topicStats.length)}%
+- Best topic: ${topicStats.reduce((b, t) => t.avgScore > b.avgScore ? t : b).label} (${topicStats.reduce((b, t) => t.avgScore > b.avgScore ? t : b).avgScore}%)
+- Weakest topic: ${topicStats[0].label} (${topicStats[0].avgScore}%)
+- Total quiz sessions: ${topicStats.reduce((s, t) => s + t.attemptCount, 0)}`
+    : "";
+
   const prompt = `You are a performance coach assessing a Senior Associate at a technology consulting/software company. For the period ${rangeLabel}, provide a structured performance summary with exactly these sections in order: ## Time Management, ## Delivery & Efficiency, ## Leadership & Collaboration, ## Communication & Influence, ## Professional Growth, ## Key Recommendations. Reference actual numbers. Be candid but constructive. 3-5 sentences per section.
 
 Data for ${rangeLabel}:
@@ -185,7 +196,7 @@ Data for ${rangeLabel}:
 - Meeting tasks: ${stats.meetingTasksDone} done, ${stats.meetingTasksActive} active of ${stats.meetingTasksTotal} total
 - Meetings attended: ${stats.meetingsCount}
 - Milestones: ${stats.milestonesCompleted}/${stats.milestonesTotal} done, ${stats.milestonesInProgress} in progress
-- Professional development: ${stats.profDevCount} activities, ${stats.profDevHours}h${communicationSection}`;
+- Professional development: ${stats.profDevCount} activities, ${stats.profDevHours}h${communicationSection}${quizSection}`;
 
   let insights: string;
   try {

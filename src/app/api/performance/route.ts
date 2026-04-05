@@ -6,6 +6,7 @@ import { loadTasks } from "@/lib/taskStoreServer";
 import { loadMilestones } from "@/lib/milestoneStore";
 import { loadProfDev } from "@/lib/profDevStore";
 import { loadSummaries } from "@/lib/summaryStore";
+import { loadGrowthStats } from "@/lib/growthStore";
 import { callGemini } from "@/lib/summarize";
 import { savePerformanceEntry } from "@/lib/performanceStore";
 import { format } from "date-fns";
@@ -96,6 +97,9 @@ export async function POST(request: NextRequest) {
     // 5. Load meeting summaries
     const summaries = await loadSummaries();
 
+    // 5b. Load growth quiz stats for the period
+    const growthStats = await loadGrowthStats(startDate, endDate).catch(() => null);
+
     // 6. Compute stats
     const done = tickets.filter((t) => {
       const s = t.status.toLowerCase();
@@ -163,6 +167,19 @@ export async function POST(request: NextRequest) {
 ${sampleContribs.map((c, i) => `  ${i + 1}. "${c}"`).join("\n")}`
       : "";
 
+    const growthSection = growthStats && growthStats.totalAttempts > 0
+      ? `\n\nProfessional Growth — Quiz Performance (${rangeLabel}):
+- Topics studied (quiz attempted): ${growthStats.topicsAttempted} of ${growthStats.topicsTotal} (${growthStats.quizCompletionRate}% topic coverage)
+- Total quiz sessions: ${growthStats.totalAttempts}
+- Overall avg score: ${growthStats.overallAvgScore}%
+- Strongest topic: ${growthStats.strongestTopic ?? "N/A"} (${growthStats.topicStats.find(t => t.label === growthStats.strongestTopic)?.avgScore ?? 0}%)
+- Weakest topic: ${growthStats.weakestTopic ?? "N/A"} (${growthStats.topicStats.find(t => t.label === growthStats.weakestTopic)?.avgScore ?? 0}%)
+- Most engaged topic: ${growthStats.mostEngagedTopic ?? "N/A"} (${growthStats.topicStats[0]?.attemptCount ?? 0} sessions)
+- Growth page visits: ${growthStats.growthPageVisits}
+- Topics with improving trend: ${growthStats.topicStats.filter(t => t.trend === "improving").map(t => t.label).join(", ") || "None yet"}
+- Topics needing attention: ${growthStats.topicStats.filter(t => t.attemptCount > 0 && t.avgScore < 60).map(t => `${t.label} (${t.avgScore}%)`).join(", ") || "None"}`
+      : "";
+
     const prompt = `You are a performance coach assessing a Senior Associate at a technology consulting/software company. Based on the data below for the period ${rangeLabel}, provide a structured performance summary with exactly these sections in order: ## Time Management, ## Delivery & Efficiency, ## Leadership & Collaboration, ## Communication & Influence, ## Professional Growth, ## Key Recommendations. Be specific, reference the actual numbers, and be candid but constructive. Keep each section to 3-5 sentences.
 
 Performance Data for ${rangeLabel}:
@@ -182,7 +199,7 @@ Performance Data for ${rangeLabel}:
 - Milestones completed: ${stats.milestonesCompleted}
 - Milestones in progress: ${stats.milestonesInProgress}
 - Professional development activities this period: ${stats.profDevCount}
-- Professional development hours this period: ${stats.profDevHours}h${communicationSection}`;
+- Professional development hours this period: ${stats.profDevHours}h${communicationSection}${growthSection}`;
 
     // 9. Call Gemini or fall back to extractive
     let insights: string;
