@@ -174,15 +174,15 @@ async function generateQuestions(
 
   let questionMix: string;
   if (isSoft) {
-    questionMix = `3 multiple-choice + 2 free_text`;
+    questionMix = `8 multiple_choice + 22 free_text`;
   } else if (supportsSQL && supportsCode) {
-    questionMix = `2 multiple-choice + 1 sql_write + 1 code_write + 1 free_text`;
+    questionMix = `7 multiple_choice + 8 sql_write + 8 code_write + 7 free_text`;
   } else if (supportsSQL) {
-    questionMix = `2 multiple-choice + 2 sql_write + 1 free_text`;
+    questionMix = `8 multiple_choice + 12 sql_write + 10 free_text`;
   } else if (supportsCode) {
-    questionMix = `2 multiple-choice + 2 code_write + 1 free_text`;
+    questionMix = `8 multiple_choice + 14 code_write + 8 free_text`;
   } else {
-    questionMix = `3 multiple-choice + 2 free_text`;
+    questionMix = `8 multiple_choice + 22 free_text`;
   }
 
   const prompt = `You are a ${firm} case interviewer and technical assessor. Generate 5 quiz questions for a Senior Associate on: ${topicLabel}
