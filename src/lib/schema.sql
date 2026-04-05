@@ -173,6 +173,31 @@ CREATE TABLE IF NOT EXISTS growth_modules (
 
 CREATE INDEX IF NOT EXISTS idx_growth_modules_topic ON growth_modules (topic_id);
 
+-- ── Projects ───────────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS projects (
+  id          TEXT   PRIMARY KEY,
+  name        TEXT   NOT NULL,
+  description TEXT,
+  color       TEXT   NOT NULL DEFAULT '#6366f1',
+  created_at  BIGINT NOT NULL
+);
+
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS project_id TEXT REFERENCES projects(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks (project_id);
+
+CREATE TABLE IF NOT EXISTS time_logs (
+  id            TEXT   PRIMARY KEY,
+  project_id    TEXT   NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  task_id       TEXT   REFERENCES tasks(id) ON DELETE SET NULL,
+  description   TEXT   NOT NULL,
+  duration_min  INT    NOT NULL,
+  logged_date   TEXT   NOT NULL,
+  created_at    BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_time_logs_project ON time_logs (project_id);
+
 INSERT INTO growth_topics (id, label, description, is_custom, created_at) VALUES
   ('data-engineering',        'Data Engineering',         'Pipelines, ETL/ELT, data lakes, warehouse design', FALSE, 0),
   ('devops',                  'DevOps',                   'CI/CD, infrastructure as code, monitoring, SRE', FALSE, 0),
