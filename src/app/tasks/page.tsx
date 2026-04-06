@@ -11,6 +11,8 @@ const TASK_FILTER_KEY = "clockit_task_filters";
 
 interface RecentUser { accountId: string; displayName: string; }
 
+interface Project { id: string; name: string; color: string; }
+
 /** Names saved specifically for the task filter (independent of team search history) */
 function loadTaskFilters(): string[] {
   if (typeof window === "undefined") return [];
@@ -41,9 +43,10 @@ function syncFromTeamSearches(): string[] {
   return merged;
 }
 
-const STATUS_STYLES: Record<TaskStatus, string> = {
+const STATUS_STYLES: Record<string, string> = {
   "todo": "bg-gray-100 text-gray-700 ring-1 ring-gray-200",
   "in-progress": "bg-blue-100 text-blue-700 ring-1 ring-blue-200",
+  "in-review": "bg-violet-100 text-violet-700 ring-1 ring-violet-200",
   "done": "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
 };
 
@@ -76,6 +79,7 @@ export default function TasksPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [taskFilterNames, setTaskFilterNames] = useState<string[]>([]);
   const [teamNames, setTeamNames] = useState<string[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   async function loadTasks() {
     setLoading(true);
@@ -104,6 +108,7 @@ export default function TasksPage() {
     const synced = syncFromTeamSearches();
     setTaskFilterNames(synced);
     setTeamNames(loadTeamSearchNames());
+    fetch("/api/projects").then(r => r.json()).then(d => setProjects(d.projects ?? [])).catch(() => {});
   }, []);
 
   async function patch(id: string, update: Partial<MeetingTask>) {
@@ -298,6 +303,7 @@ export default function TasksPage() {
                       onToggleExpand={() => setExpandedId(expandedId === task.id ? null : task.id)}
                       onPatch={(update) => patch(task.id, update)}
                       onDelete={() => deleteTask(task.id)}
+                      projects={projects}
                     />
                   ))}
                 </ul>
@@ -324,12 +330,14 @@ function TaskRow({
   onToggleExpand,
   onPatch,
   onDelete,
+  projects,
 }: {
   task: MeetingTask;
   expanded: boolean;
   onToggleExpand: () => void;
   onPatch: (update: Partial<MeetingTask>) => void;
   onDelete: () => void;
+  projects: Project[];
 }) {
   const { getTicketLoggedSeconds } = useTimer();
   const loggedSeconds = getTicketLoggedSeconds(taskTimerKey(task));
@@ -400,8 +408,8 @@ function TaskRow({
               <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority]}`}>
                 {task.priority}
               </span>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[task.status]}`}>
-                {task.status === "in-progress" ? "In Progress" : task.status === "todo" ? "To Do" : "Done"}
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[task.status] ?? STATUS_STYLES["todo"]}`}>
+                {task.status === "in-progress" ? "In Progress" : task.status === "in-review" ? "In Review" : task.status === "todo" ? "To Do" : "Done"}
               </span>
               {loggedSeconds > 0 && (
                 <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full ring-1 ring-indigo-200">
@@ -418,6 +426,15 @@ function TaskRow({
                   {task.checklist.filter(c => c.done).length}/{task.checklist.length} subtasks
                 </span>
               )}
+              {task.projectId && (() => {
+                const proj = projects.find(p => p.id === task.projectId);
+                return proj ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset" style={{ backgroundColor: proj.color + "22", color: proj.color }}>
+                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: proj.color }} />
+                    {proj.name}
+                  </span>
+                ) : null;
+              })()}
             </div>
           </div>
 
@@ -448,7 +465,7 @@ function TaskRow({
       {/* Detail panel */}
       {expanded && (
         <li className="bg-gray-50 border-t border-gray-100 px-5 py-5">
-          <TaskDetailPanel task={task} onPatch={onPatch} />
+          <TaskDetailPanel task={task} onPatch={onPatch} projects={projects} />
         </li>
       )}
     </>
@@ -457,7 +474,7 @@ function TaskRow({
 
 // ── Detail Panel ─────────────────────────────────────────────────────────────
 
-function TaskDetailPanel({ task, onPatch }: { task: MeetingTask; onPatch: (u: Partial<MeetingTask>) => void }) {
+function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPatch: (u: Partial<MeetingTask>) => void; projects: Project[] }) {
   const [description, setDescription] = useState(task.description ?? "");
   const [newItem, setNewItem] = useState("");
   const newItemRef = useRef<HTMLInputElement>(null);
@@ -493,17 +510,18 @@ function TaskDetailPanel({ task, onPatch }: { task: MeetingTask; onPatch: (u: Pa
 
   return (
     <div className="space-y-5">
-      {/* Status + Priority row */}
+      {/* Status + Priority + Project row */}
       <div className="flex flex-wrap gap-3">
         <div>
           <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Status</label>
           <select
             value={task.status}
             onChange={(e) => onPatch({ status: e.target.value as TaskStatus })}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border-0 cursor-pointer ${STATUS_STYLES[task.status]}`}
+            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border-0 cursor-pointer ${STATUS_STYLES[task.status] ?? STATUS_STYLES["todo"]}`}
           >
             <option value="todo">To Do</option>
             <option value="in-progress">In Progress</option>
+            <option value="in-review">In Review</option>
             <option value="done">Done</option>
           </select>
         </div>
@@ -519,6 +537,27 @@ function TaskDetailPanel({ task, onPatch }: { task: MeetingTask; onPatch: (u: Pa
             <option value="low">Low</option>
           </select>
         </div>
+        {projects.length > 0 && (
+          <div>
+            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Project</label>
+            <div className="relative flex items-center gap-1.5">
+              {task.projectId && (() => {
+                const proj = projects.find(p => p.id === task.projectId);
+                return proj ? <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: proj.color }} /> : null;
+              })()}
+              <select
+                value={task.projectId ?? ""}
+                onChange={(e) => onPatch({ projectId: e.target.value || null })}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 bg-white cursor-pointer text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              >
+                <option value="">No project</option>
+                {projects.map(p => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

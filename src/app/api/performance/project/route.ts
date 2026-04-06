@@ -101,6 +101,7 @@ export async function POST(request: NextRequest) {
     const totalMinutes = logsInRange.reduce((s, l) => s + l.duration_min, 0);
     const tasksDone = allTasks.filter((t) => t.status === "done").length;
     const tasksInProgress = allTasks.filter((t) => t.status === "in-progress").length;
+    const tasksInReview = allTasks.filter((t) => t.status === "in-review").length;
     const tasksTodo = allTasks.filter((t) => t.status === "todo").length;
     const taskCount = allTasks.length;
     const completionRate = taskCount > 0 ? Math.round((tasksDone / taskCount) * 100) : 0;
@@ -124,6 +125,7 @@ export async function POST(request: NextRequest) {
       taskCount,
       tasksDone,
       tasksInProgress,
+      tasksInReview,
       tasksTodo,
       completionRate,
       tasksCreatedInRange,
@@ -144,7 +146,7 @@ Period: ${rangeLabel} (${startDate} to ${endDate})
 Project Stats:
 - Total time logged in period: ${fmtMins(totalMinutes)} across ${logsInRange.length} log entries
 - Average time per active day: ${fmtMins(avgDailyMins)} (${activeDays} days with logs)
-- Tasks (current snapshot): ${taskCount} total — ${tasksDone} done, ${tasksInProgress} in progress, ${tasksTodo} todo
+- Tasks (current snapshot): ${taskCount} total — ${tasksDone} done, ${tasksInProgress} in progress, ${tasksInReview} in review, ${tasksTodo} todo
 - Completion rate: ${completionRate}%
 - Delivery velocity: ~${velocity} tasks completed per week
 - New tasks created in period: ${tasksCreatedInRange}

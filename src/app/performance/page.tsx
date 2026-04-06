@@ -451,7 +451,7 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
 interface ProjectSummaryItem {
   id: string; name: string; color: string;
   totalMinutes: number; taskCount: number; tasksDone: number;
-  tasksInProgress: number; tasksTodo: number; completionRate: number; logEntries: number;
+  tasksInProgress: number; tasksInReview: number; tasksTodo: number; completionRate: number; logEntries: number;
 }
 
 function fmtMinsLocal(mins: number): string {
@@ -533,9 +533,11 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
                 <span className="text-sm font-medium text-gray-700">{p.name}</span>
               </div>
-              <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-3 text-xs text-gray-500">
                 <span className="font-semibold text-indigo-600">{fmtMinsLocal(p.totalMinutes)}</span>
-                <span>{p.tasksDone}/{p.taskCount} done</span>
+                <span className="text-emerald-600 font-medium">{p.tasksDone} done</span>
+                {p.tasksInReview > 0 && <span className="text-violet-600 font-medium">{p.tasksInReview} review</span>}
+                {p.tasksInProgress > 0 && <span className="text-blue-600 font-medium">{p.tasksInProgress} active</span>}
                 <span className={`font-semibold ${p.completionRate >= 70 ? "text-emerald-600" : p.completionRate >= 40 ? "text-amber-600" : "text-gray-400"}`}>{p.completionRate}%</span>
               </div>
             </div>
@@ -551,6 +553,7 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
               <div className="flex h-1 rounded-full overflow-hidden gap-px">
                 {p.tasksDone > 0 && <div className="bg-emerald-400" style={{ flex: p.tasksDone }} />}
                 {p.tasksInProgress > 0 && <div className="bg-blue-400" style={{ flex: p.tasksInProgress }} />}
+                {p.tasksInReview > 0 && <div className="bg-violet-400" style={{ flex: p.tasksInReview }} />}
                 {p.tasksTodo > 0 && <div className="bg-gray-200" style={{ flex: p.tasksTodo }} />}
               </div>
             )}
@@ -561,6 +564,7 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
       <div className="flex items-center gap-4 text-[10px] text-gray-400">
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Done</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> In Progress</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-violet-400 inline-block" /> In Review</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" /> To Do</span>
       </div>
     </div>
@@ -979,16 +983,22 @@ export default function PerformancePage() {
         <div className="space-y-5">
           {/* Project selector */}
           <div className="flex flex-wrap items-center gap-3">
-            <select
-              value={selectedProjectId}
-              onChange={(e) => { setSelectedProjectId(e.target.value); setProjectPerfStats(null); setProjectInsights(""); setProjectTimeByDate([]); }}
-              className="text-sm border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white min-w-[200px]"
-            >
-              <option value="">Select a project…</option>
-              {perfProjects.map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              {selectedProjectId && (() => {
+                const proj = perfProjects.find(p => p.id === selectedProjectId);
+                return proj ? <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: proj.color }} /> : null;
+              })()}
+              <select
+                value={selectedProjectId}
+                onChange={(e) => { setSelectedProjectId(e.target.value); setProjectPerfStats(null); setProjectInsights(""); setProjectTimeByDate([]); setProjectInsightsError(null); }}
+                className="text-sm border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white min-w-[200px]"
+              >
+                <option value="">Select a project…</option>
+                {perfProjects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
             <button
               onClick={generateProjectInsights}
               disabled={!selectedProjectId || projectInsightsLoading}
@@ -1025,12 +1035,12 @@ export default function PerformancePage() {
               {/* KPIs */}
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {[
-                  { title: "Time Logged", value: String(projectPerfStats.timeLogged), sub: `${projectPerfStats.logEntries} entries`, color: "indigo" as const },
-                  { title: "Tasks Total", value: String(projectPerfStats.taskCount), sub: `this project`, color: "blue" as const },
-                  { title: "Done", value: String(projectPerfStats.tasksDone), sub: `${projectPerfStats.completionRate}% completion`, color: "emerald" as const },
+                  { title: "Time Logged", value: String(projectPerfStats.timeLogged), sub: `${projectPerfStats.logEntries} log entries`, color: "indigo" as const },
+                  { title: "Tasks Total", value: String(projectPerfStats.taskCount), sub: `${projectPerfStats.completionRate}% complete`, color: "blue" as const },
+                  { title: "Done", value: String(projectPerfStats.tasksDone), sub: `completed tasks`, color: "emerald" as const },
                   { title: "In Progress", value: String(projectPerfStats.tasksInProgress), sub: `active tasks`, color: "amber" as const },
-                  { title: "Velocity", value: `${projectPerfStats.velocity}/wk`, sub: `tasks done per week`, color: "violet" as const },
-                  { title: "Avg/Active Day", value: String(projectPerfStats.avgDailyTime), sub: `${projectPerfStats.activeDays} days with logs`, color: "rose" as const },
+                  { title: "In Review", value: String(projectPerfStats.tasksInReview ?? 0), sub: `pending review`, color: "violet" as const },
+                  { title: "Velocity", value: `${projectPerfStats.velocity}/wk`, sub: `${projectPerfStats.activeDays} days logged`, color: "rose" as const },
                 ].map(({ title, value, sub, color }) => (
                   <KpiCard key={title} title={title} value={value} subtitle={sub} color={color} icon={
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} className="w-4 h-4">
@@ -1045,8 +1055,9 @@ export default function PerformancePage() {
                 <h3 className="text-sm font-semibold text-gray-700 mb-4">Task Status — {projectName}</h3>
                 <div className="space-y-3">
                   {[
-                    { label: "To Do", count: Number(projectPerfStats.tasksTodo), color: "bg-gray-300", textColor: "text-gray-600" },
+                    { label: "To Do", count: Number(projectPerfStats.tasksTodo), color: "bg-gray-300", textColor: "text-gray-500" },
                     { label: "In Progress", count: Number(projectPerfStats.tasksInProgress), color: "bg-blue-400", textColor: "text-blue-600" },
+                    { label: "In Review", count: Number(projectPerfStats.tasksInReview ?? 0), color: "bg-violet-400", textColor: "text-violet-600" },
                     { label: "Done", count: Number(projectPerfStats.tasksDone), color: "bg-emerald-400", textColor: "text-emerald-600" },
                   ].map(({ label, count, color, textColor }) => {
                     const total = Number(projectPerfStats.taskCount);
@@ -1054,7 +1065,7 @@ export default function PerformancePage() {
                       <div key={label}>
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs text-gray-500">{label}</span>
-                          <span className={`text-xs font-semibold ${textColor}`}>{count} / {total}</span>
+                          <span className={`text-xs font-semibold ${textColor}`}>{count} <span className="font-normal text-gray-400">/ {total}</span></span>
                         </div>
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${color} transition-all`}
@@ -1064,6 +1075,15 @@ export default function PerformancePage() {
                     );
                   })}
                 </div>
+                {/* Stacked bar total */}
+                {Number(projectPerfStats.taskCount) > 0 && (
+                  <div className="mt-4 flex h-3 rounded-full overflow-hidden gap-px">
+                    {Number(projectPerfStats.tasksDone) > 0 && <div className="bg-emerald-400" style={{ flex: Number(projectPerfStats.tasksDone) }} title="Done" />}
+                    {Number(projectPerfStats.tasksInReview ?? 0) > 0 && <div className="bg-violet-400" style={{ flex: Number(projectPerfStats.tasksInReview ?? 0) }} title="In Review" />}
+                    {Number(projectPerfStats.tasksInProgress) > 0 && <div className="bg-blue-400" style={{ flex: Number(projectPerfStats.tasksInProgress) }} title="In Progress" />}
+                    {Number(projectPerfStats.tasksTodo) > 0 && <div className="bg-gray-200" style={{ flex: Number(projectPerfStats.tasksTodo) }} title="To Do" />}
+                  </div>
+                )}
               </div>
 
               {/* Time by date chart */}

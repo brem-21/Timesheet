@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTimer } from "@/components/TimerContext";
-import { formatDuration, formatDurationShort } from "@/lib/timerStore";
+import { formatDuration, formatDurationShort, updateSession } from "@/lib/timerStore";
 import { format, startOfDay, startOfWeek, startOfMonth, subDays, subWeeks, subMonths, isWithinInterval } from "date-fns";
+
+interface Project { id: string; name: string; color: string; }
 
 type DateRange = "today" | "yesterday" | "this-week" | "last-week" | "this-month" | "last-month" | "all";
 
@@ -64,7 +66,7 @@ function loadRecentSearches(): RecentSearch[] {
 }
 
 export default function TimeLogPage() {
-  const { sessions, deleteSession, clearAllSessions, activeTimer, elapsed, stopTimer } = useTimer();
+  const { sessions, deleteSession, clearAllSessions, activeTimer, elapsed, stopTimer, refreshSessions } = useTimer();
   const [dateRange, setDateRange] = useState<DateRange>("all");
   const [search, setSearch] = useState("");
   const [teamNames, setTeamNames] = useState<RecentSearch[]>([]);
@@ -72,13 +74,54 @@ export default function TimeLogPage() {
   const [reportsTo, setReportsTo] = useState("");
   const [filterName, setFilterName] = useState("");
   const [nameDropdownOpen, setNameDropdownOpen] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [linkingId, setLinkingId] = useState<string | null>(null); // session being linked
 
   useEffect(() => {
     const names = loadRecentSearches();
     setTeamNames(names);
     setAssignee(localStorage.getItem(TIMELOG_ASSIGNEE_KEY) ?? "");
     setReportsTo(localStorage.getItem(TIMELOG_REPORTS_TO_KEY) ?? "");
+    fetch("/api/projects").then(r => r.json()).then(d => setProjects(d.projects ?? [])).catch(() => {});
   }, []);
+
+  const linkSessionToProject = useCallback(async (sessionId: string, projectId: string | null) => {
+    setLinkingId(sessionId);
+    try {
+      const session = sessions.find(s => s.id === sessionId);
+      if (!session) return;
+
+      // Remove old DB entry if it existed
+      if (session.projectTimeLogId && session.projectId) {
+        await fetch(`/api/projects/${session.projectId}/timelogs`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: session.projectTimeLogId }),
+        });
+      }
+
+      if (projectId) {
+        const loggedDate = format(new Date(session.startTime), "yyyy-MM-dd");
+        const durationMin = Math.max(1, Math.round(session.duration / 60));
+        const res = await fetch(`/api/projects/${projectId}/timelogs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            description: `${session.ticketKey} — ${session.ticketSummary}`,
+            durationMin,
+            loggedDate,
+          }),
+        });
+        const data = await res.json();
+        updateSession(sessionId, { projectId, projectTimeLogId: data.log?.id });
+      } else {
+        updateSession(sessionId, { projectId: undefined, projectTimeLogId: undefined });
+      }
+      refreshSessions();
+    } finally {
+      setLinkingId(null);
+    }
+  }, [sessions, refreshSessions]);
 
   function saveAssignee(val: string) {
     setAssignee(val);
@@ -353,6 +396,7 @@ export default function TimeLogPage() {
               <tr>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket</th>
                 <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Summary</th>
+                {projects.length > 0 && <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Project</th>}
                 <th className="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Sessions</th>
                 <th className="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Time</th>
               </tr>
@@ -362,10 +406,29 @@ export default function TimeLogPage() {
                 .sort((a, b) => b[1].reduce((s, x) => s + x.duration, 0) - a[1].reduce((s, x) => s + x.duration, 0))
                 .map(([key, ticketSessions]) => {
                   const total = ticketSessions.reduce((s, x) => s + x.duration, 0);
+                  // Show the project if all sessions for this ticket share the same project
+                  const projIdSet: Record<string, true> = {};
+                  ticketSessions.forEach(s => { if (s.projectId) projIdSet[s.projectId] = true; });
+                  const projIds = Object.keys(projIdSet);
+                  const sharedProj = projIds.length === 1 ? projects.find(p => p.id === projIds[0]) : null;
                   return (
                     <tr key={key} className="hover:bg-gray-50">
                       <td className="px-5 py-3 font-mono text-xs font-semibold text-indigo-600">{key}</td>
                       <td className="px-5 py-3 text-sm text-gray-700 max-w-xs truncate">{ticketSessions[0].ticketSummary}</td>
+                      {projects.length > 0 && (
+                        <td className="px-5 py-3 text-sm text-gray-500">
+                          {sharedProj ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: sharedProj.color }}>
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sharedProj.color }} />
+                              {sharedProj.name}
+                            </span>
+                          ) : projIds.length > 1 ? (
+                            <span className="text-xs text-gray-400">Mixed</span>
+                          ) : (
+                            <span className="text-xs text-gray-300">—</span>
+                          )}
+                        </td>
+                      )}
                       <td className="px-5 py-3 text-right text-sm text-gray-500">{ticketSessions.length}</td>
                       <td className="px-5 py-3 text-right">
                         <span className="inline-flex items-center bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">
@@ -402,31 +465,65 @@ export default function TimeLogPage() {
             <p className="px-6 py-8 text-sm text-gray-400 text-center">No sessions for this period.</p>
           ) : (
             <ul className="divide-y divide-gray-50">
-              {filtered.map((s) => (
-                <li key={s.id} className="px-5 py-3.5 flex items-center gap-4 hover:bg-gray-50 group">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                  <span className="font-mono text-xs font-semibold text-indigo-600 w-24 shrink-0 truncate">{s.ticketKey}</span>
-                  <span className="text-sm text-gray-700 flex-1 truncate">{s.ticketSummary}</span>
-                  <div className="text-xs text-gray-400 shrink-0 hidden sm:block">
-                    <span>{formatTs(s.startTime)}</span>
-                    <span className="mx-1">→</span>
-                    <span>{format(new Date(s.endTime), "HH:mm")}</span>
-                  </div>
-                  <span className="inline-flex items-center bg-gray-100 text-gray-700 text-xs font-bold px-2 py-1 rounded-md shrink-0 w-20 justify-center tabular-nums">
-                    {formatDurationShort(s.duration)}
-                  </span>
-                  <button
-                    onClick={() => deleteSession(s.id)}
-                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all shrink-0"
-                    title="Delete session"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </li>
-              ))}
+              {filtered.map((s) => {
+                const linkedProj = projects.find(p => p.id === s.projectId);
+                const isLinking = linkingId === s.id;
+                return (
+                  <li key={s.id} className="px-5 py-3 hover:bg-gray-50 group">
+                    <div className="flex items-center gap-4">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${linkedProj ? "" : "bg-emerald-500"}`} style={linkedProj ? { backgroundColor: linkedProj.color } : {}} />
+                      <span className="font-mono text-xs font-semibold text-indigo-600 w-24 shrink-0 truncate">{s.ticketKey}</span>
+                      <span className="text-sm text-gray-700 flex-1 truncate">{s.ticketSummary}</span>
+                      <div className="text-xs text-gray-400 shrink-0 hidden sm:block">
+                        <span>{formatTs(s.startTime)}</span>
+                        <span className="mx-1">→</span>
+                        <span>{format(new Date(s.endTime), "HH:mm")}</span>
+                      </div>
+                      <span className="inline-flex items-center bg-gray-100 text-gray-700 text-xs font-bold px-2 py-1 rounded-md shrink-0 w-20 justify-center tabular-nums">
+                        {formatDurationShort(s.duration)}
+                      </span>
+                      <button
+                        onClick={() => deleteSession(s.id)}
+                        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all shrink-0"
+                        title="Delete session"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                    {projects.length > 0 && (
+                      <div className="flex items-center gap-2 mt-1.5 pl-6">
+                        {isLinking ? (
+                          <span className="text-[11px] text-gray-400">Saving…</span>
+                        ) : (
+                          <>
+                            {linkedProj && (
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: linkedProj.color }} />
+                            )}
+                            <select
+                              value={s.projectId ?? ""}
+                              onChange={(e) => linkSessionToProject(s.id, e.target.value || null)}
+                              className="text-[11px] border border-gray-200 rounded-md px-2 py-0.5 bg-white text-gray-500 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                            >
+                              <option value="">{linkedProj ? "Remove from project" : "Log to project…"}</option>
+                              {projects.map(p => (
+                                <option key={p.id} value={p.id}>{p.name}</option>
+                              ))}
+                            </select>
+                            {linkedProj && (
+                              <span className="text-[11px] font-medium" style={{ color: linkedProj.color }}>
+                                {linkedProj.name}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

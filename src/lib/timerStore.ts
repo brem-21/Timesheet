@@ -8,6 +8,8 @@ export interface TimeSession {
   endTime: number;     // Unix ms
   duration: number;    // seconds
   autoStopped: boolean;
+  projectId?: string;        // linked project
+  projectTimeLogId?: string; // corresponding time_logs.id in DB
 }
 
 export interface ActiveTimer {
@@ -60,6 +62,15 @@ export function appendSession(session: TimeSession): void {
   const sessions = loadSessions();
   sessions.unshift(session); // newest first
   saveSessions(sessions);
+}
+
+export function updateSession(id: string, patch: Partial<TimeSession>): void {
+  const sessions = loadSessions();
+  const idx = sessions.findIndex(s => s.id === id);
+  if (idx !== -1) {
+    sessions[idx] = { ...sessions[idx], ...patch };
+    saveSessions(sessions);
+  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

@@ -11,6 +11,7 @@ export interface ProjectSummaryItem {
   taskCount: number;
   tasksDone: number;
   tasksInProgress: number;
+  tasksInReview: number;
   tasksTodo: number;
   completionRate: number;
   logEntries: number;
@@ -47,12 +48,13 @@ export async function GET(req: NextRequest) {
 
   // Task stats per project (current snapshot)
   const tasksRes = await pool.query<{
-    project_id: string; total: number; done: number; in_progress: number; todo: number;
+    project_id: string; total: number; done: number; in_progress: number; in_review: number; todo: number;
   }>(
     `SELECT project_id,
             COUNT(*)::int AS total,
             COUNT(*) FILTER (WHERE status='done')::int AS done,
             COUNT(*) FILTER (WHERE status='in-progress')::int AS in_progress,
+            COUNT(*) FILTER (WHERE status='in-review')::int AS in_review,
             COUNT(*) FILTER (WHERE status='todo')::int AS todo
        FROM tasks
       WHERE project_id = ANY($1)
@@ -77,6 +79,7 @@ export async function GET(req: NextRequest) {
       taskCount,
       tasksDone,
       tasksInProgress: tk?.in_progress ?? 0,
+      tasksInReview: tk?.in_review ?? 0,
       tasksTodo: tk?.todo ?? 0,
       completionRate: taskCount > 0 ? Math.round((tasksDone / taskCount) * 100) : 0,
     };

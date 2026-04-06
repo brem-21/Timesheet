@@ -50,8 +50,8 @@ export function ActiveProjectProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(LS_KEY);
   }, []);
 
-  // Don't render children until hydrated to avoid SSR mismatch
-  if (!hydrated) return null;
+  // Render children immediately; context value is populated after hydration
+  if (!hydrated) return <>{children}</>;
 
   return (
     <ActiveProjectContext.Provider value={{ activeProject, setActiveProject, clearActiveProject }}>

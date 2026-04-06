@@ -106,14 +106,27 @@ export async function deleteTimeLog(id: string): Promise<void> {
   await pool.query(`DELETE FROM time_logs WHERE id = $1`, [id]);
 }
 
-export async function loadProjectStats(projectId: string): Promise<{ totalMinutes: number; taskCount: number; doneCount: number }> {
+export async function loadProjectStats(projectId: string): Promise<{
+  totalMinutes: number; taskCount: number; doneCount: number;
+  inProgressCount: number; inReviewCount: number; todoCount: number;
+}> {
   const [tl, tc] = await Promise.all([
     pool.query(`SELECT COALESCE(SUM(duration_min),0) AS total FROM time_logs WHERE project_id = $1`, [projectId]),
-    pool.query(`SELECT COUNT(*)::int AS total, COUNT(*) FILTER (WHERE status='done')::int AS done FROM tasks WHERE project_id = $1`, [projectId]),
+    pool.query(`
+      SELECT
+        COUNT(*)::int AS total,
+        COUNT(*) FILTER (WHERE status='done')::int AS done,
+        COUNT(*) FILTER (WHERE status='in-progress')::int AS in_progress,
+        COUNT(*) FILTER (WHERE status='in-review')::int AS in_review,
+        COUNT(*) FILTER (WHERE status='todo')::int AS todo
+      FROM tasks WHERE project_id = $1`, [projectId]),
   ]);
   return {
     totalMinutes: Number(tl.rows[0].total),
     taskCount: Number(tc.rows[0].total),
     doneCount: Number(tc.rows[0].done),
+    inProgressCount: Number(tc.rows[0].in_progress),
+    inReviewCount: Number(tc.rows[0].in_review),
+    todoCount: Number(tc.rows[0].todo),
   };
 }

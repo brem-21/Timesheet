@@ -32,6 +32,7 @@ interface TimerContextValue {
   getTicketLoggedSeconds: (ticketKey: string) => number;
   inactivityWarning: boolean;
   dismissWarning: () => void;
+  refreshSessions: () => void;
 }
 
 const TimerContext = createContext<TimerContextValue | null>(null);
@@ -150,6 +151,10 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
 
   const dismissWarning = useCallback(() => setInactivityWarning(false), []);
 
+  const refreshSessions = useCallback(() => {
+    setSessions(loadSessions());
+  }, []);
+
   return (
     <TimerContext.Provider
       value={{
@@ -163,6 +168,7 @@ export function TimerProvider({ children }: { children: React.ReactNode }) {
         getTicketLoggedSeconds,
         inactivityWarning,
         dismissWarning,
+        refreshSessions,
       }}
     >
       {children}

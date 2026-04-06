@@ -1,6 +1,6 @@
 import { pool } from "./db";
 
-export type TaskStatus = "todo" | "in-progress" | "done";
+export type TaskStatus = "todo" | "in-progress" | "in-review" | "done";
 export type TaskPriority = "high" | "medium" | "low";
 
 export interface ChecklistItem {
@@ -21,6 +21,7 @@ export interface MeetingTask {
   notes?: string;
   description?: string;
   checklist?: ChecklistItem[];
+  projectId?: string | null;
 }
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -38,6 +39,7 @@ function rowToTask(r: Record<string, unknown>): MeetingTask {
     notes: (r.notes as string) ?? undefined,
     description: (r.description as string) ?? undefined,
     checklist: (r.checklist as ChecklistItem[]) ?? [],
+    projectId: (r.project_id as string) ?? null,
   };
 }
 
@@ -73,7 +75,7 @@ export async function updateTask(id: string, patch: Partial<MeetingTask>): Promi
     text: "text", source: "source", createdAt: "created_at",
     status: "status", priority: "priority", assignee: "assignee",
     reportsTo: "reports_to", notes: "notes", description: "description",
-    checklist: "checklist",
+    checklist: "checklist", projectId: "project_id",
   };
 
   for (const [key, col] of Object.entries(colMap)) {

@@ -19,10 +19,13 @@ interface JiraTicket {
 interface MeetingTask {
   id: string;
   text: string;
-  status: "todo" | "in-progress" | "done";
+  status: "todo" | "in-progress" | "in-review" | "done";
   priority: "high" | "medium" | "low";
   source: string;
+  projectId?: string | null;
 }
+
+interface Project { id: string; name: string; color: string; }
 
 const LS_KEY = "clockit_standup_last_sent";
 
@@ -57,6 +60,7 @@ export default function StandupPage() {
   const [user, setUser] = useState<{ accountId: string; displayName: string } | null>(null);
   const [tickets, setTickets] = useState<JiraTicket[]>([]);
   const [meetingTasks, setMeetingTasks] = useState<MeetingTask[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [slackStatus, setSlackStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [slackError, setSlackError] = useState<string | null>(null);
@@ -80,16 +84,19 @@ export default function StandupPage() {
       const month = String(now.getMonth() + 1).padStart(2, "0");
       const year = String(now.getFullYear());
 
-      const [ticketsRes, tasksRes] = await Promise.all([
+      const [ticketsRes, tasksRes, projectsRes] = await Promise.all([
         fetch(`/api/jira/tickets?userId=${accountId}&month=${month}&year=${year}`),
         fetch("/api/tasks"),
+        fetch("/api/projects"),
       ]);
 
       const ticketsData = await ticketsRes.json();
       const tasksData = await tasksRes.json();
+      const projectsData = await projectsRes.json();
 
       setTickets(Array.isArray(ticketsData) ? ticketsData : ticketsData.tickets ?? []);
       setMeetingTasks(Array.isArray(tasksData) ? tasksData : tasksData.tasks ?? []);
+      setProjects(projectsData.projects ?? []);
     } catch (err) {
       console.error("[standup] fetch error", err);
     } finally {
@@ -125,6 +132,16 @@ export default function StandupPage() {
 
   const taskActive = meetingTasks.filter((t) => t.status === "todo" || t.status === "in-progress");
   const taskDone = meetingTasks.filter((t) => t.status === "done");
+
+  async function patchTask(id: string, update: Partial<MeetingTask>) {
+    const res = await fetch(`/api/tasks/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(update),
+    });
+    const data = await res.json();
+    setMeetingTasks(Array.isArray(data.tasks) ? data.tasks : meetingTasks);
+  }
 
   async function handleSendToSlack() {
     setSlackStatus("sending");
@@ -305,6 +322,7 @@ export default function StandupPage() {
                     <ul className="space-y-3">
                       {taskActive.map((task) => {
                         const timerKey = task.text.slice(0, 60).trim();
+                        const linkedProject = projects.find(p => p.id === task.projectId);
                         return (
                           <li key={task.id} className="flex items-start justify-between gap-3 p-3 rounded-xl bg-gray-50 hover:bg-indigo-50/40 transition-colors">
                             <div className="flex-1 min-w-0">
@@ -313,8 +331,29 @@ export default function StandupPage() {
                                   {task.source}
                                 </span>
                                 {statusBadge(task.status)}
+                                {linkedProject && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor: linkedProject.color + "22", color: linkedProject.color }}>
+                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: linkedProject.color }} />
+                                    {linkedProject.name}
+                                  </span>
+                                )}
                               </div>
                               <p className="text-sm text-gray-700 leading-snug">{task.text}</p>
+                              {projects.length > 0 && (
+                                <div className="mt-2 flex items-center gap-1.5">
+                                  {linkedProject && <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: linkedProject.color }} />}
+                                  <select
+                                    value={task.projectId ?? ""}
+                                    onChange={(e) => patchTask(task.id, { projectId: e.target.value || null })}
+                                    className="text-[10px] border border-gray-200 rounded-md px-2 py-0.5 bg-white text-gray-500 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                                  >
+                                    <option value="">Link to project…</option>
+                                    {projects.map(p => (
+                                      <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
                             </div>
                             <div className="shrink-0">
                               <TimerButton ticketKey={timerKey} ticketSummary={task.text} />
@@ -391,17 +430,28 @@ export default function StandupPage() {
                     <p className="text-sm text-gray-400 italic">No completed tasks</p>
                   ) : (
                     <ul className="space-y-2">
-                      {taskDone.slice(0, 8).map((task) => (
-                        <li key={task.id} className="flex items-start gap-2">
-                          <svg className="w-4 h-4 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <div className="min-w-0">
-                            <p className="text-xs text-gray-600 leading-snug">{task.text}</p>
-                            <span className="text-[10px] text-gray-400">{task.source}</span>
-                          </div>
-                        </li>
-                      ))}
+                      {taskDone.slice(0, 8).map((task) => {
+                        const linkedProject = projects.find(p => p.id === task.projectId);
+                        return (
+                          <li key={task.id} className="flex items-start gap-2">
+                            <svg className="w-4 h-4 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div className="min-w-0">
+                              <p className="text-xs text-gray-600 leading-snug">{task.text}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-[10px] text-gray-400">{task.source}</span>
+                                {linkedProject && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold" style={{ color: linkedProject.color }}>
+                                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: linkedProject.color }} />
+                                    {linkedProject.name}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      })}
                       {taskDone.length > 8 && (
                         <li className="text-xs text-gray-400 pl-6">+{taskDone.length - 8} more</li>
                       )}
