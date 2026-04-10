@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
 // ── POST: submit and evaluate answer ─────────────────────────────────────────
 
 export async function POST(request: NextRequest) {
-  const { assessmentId, dateKey, answer } = await request.json();
+  const { assessmentId, dateKey, answer, submissionType } = await request.json();
   if (!assessmentId || !dateKey || !answer?.trim()) {
     return NextResponse.json({ error: "assessmentId, dateKey, and answer required" }, { status: 400 });
   }
@@ -147,13 +147,27 @@ export async function POST(request: NextRequest) {
   const assessment = await getDailyAssessment(dateKey);
   if (!assessment) return NextResponse.json({ error: "Assessment not found" }, { status: 404 });
 
+  const isFolderSubmission = submissionType === "folder";
+
   // Evaluate with Gemini
   let feedback: import("@/lib/growthStore").AssessmentSubmission["feedback"];
   let score = 50;
 
   if (process.env.GEMINI_API_KEY) {
     try {
-      const evalPrompt = `You are a ${assessment.contextData.firm} Partner evaluating a Senior Associate's response to a complex business problem.
+      const folderInstructions = isFolderSubmission
+        ? `\nThe associate has submitted a FOLDER of files. Evaluate the folder structure and file organisation as the 5th dimension.`
+        : "";
+
+      const structureDimension = isFolderSubmission
+        ? `\n5. Structure: Quality of folder organisation (logical grouping of files, clear naming conventions, professional decomposition of deliverables across files — as you would expect from a consulting workstream folder)`
+        : "";
+
+      const structureJson = isFolderSubmission
+        ? `,\n  "structure": { "score": <0-100>, "comment": "2-3 sentences on folder organisation, file naming, and decomposition quality" }`
+        : "";
+
+      const evalPrompt = `You are a ${assessment.contextData.firm} Partner evaluating a Senior Associate's response to a complex business problem.${folderInstructions}
 
 SCENARIO:
 ${assessment.scenario}
@@ -161,21 +175,21 @@ ${assessment.scenario}
 EVALUATION CRITERIA:
 ${assessment.contextData.evaluationCriteria.join("\n")}
 
-ASSOCIATE'S ANSWER:
+ASSOCIATE'S SUBMISSION:
 ${answer}
 
-Evaluate this response across 4 dimensions (each scored 0-100):
+Evaluate this response across ${isFolderSubmission ? "5" : "4"} dimensions (each scored 0-100):
 1. Technicality: Accuracy and depth of technical recommendations
 2. Logic: MECE structure, cause-effect clarity, absence of logical gaps
 3. Problem-solving: Hypothesis-driven approach, root cause prioritisation, creative solutions
-4. Delivery: Communication clarity, executive-readiness, actionability
+4. Delivery: Communication clarity, executive-readiness, actionability${structureDimension}
 
 Return ONLY valid JSON (no markdown):
 {
   "technicality": { "score": <0-100>, "comment": "2-3 sentences of specific feedback" },
   "logic": { "score": <0-100>, "comment": "2-3 sentences of specific feedback" },
   "problemSolving": { "score": <0-100>, "comment": "2-3 sentences of specific feedback" },
-  "delivery": { "score": <0-100>, "comment": "2-3 sentences of specific feedback" },
+  "delivery": { "score": <0-100>, "comment": "2-3 sentences of specific feedback" }${structureJson},
   "overallVerdict": "3-4 sentence overall assessment of the response quality and readiness level",
   "strengthsHighlighted": ["Specific strength 1", "Specific strength 2", "Specific strength 3"],
   "areasToImprove": ["Specific improvement area 1", "Specific improvement area 2", "Specific improvement area 3"]
@@ -184,15 +198,16 @@ Return ONLY valid JSON (no markdown):
       const raw = await callGemini(evalPrompt);
       const cleaned = raw.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/, "").trim();
       feedback = JSON.parse(cleaned);
-      score = Math.round(
-        (feedback.technicality.score + feedback.logic.score + feedback.problemSolving.score + feedback.delivery.score) / 4
-      );
+      const dimCount = isFolderSubmission && feedback.structure ? 5 : 4;
+      const dimSum = feedback.technicality.score + feedback.logic.score + feedback.problemSolving.score + feedback.delivery.score + (feedback.structure?.score ?? 0);
+      score = Math.round(dimSum / dimCount);
     } catch {
       feedback = {
         technicality: { score: 50, comment: "Unable to evaluate automatically. Review your technical depth and accuracy." },
         logic: { score: 50, comment: "Check your answer follows a MECE structure with clear cause-effect reasoning." },
         problemSolving: { score: 50, comment: "Ensure you applied a hypothesis-driven approach and prioritised root causes." },
         delivery: { score: 50, comment: "Review your communication clarity and whether the answer is executive-ready." },
+        ...(isFolderSubmission ? { structure: { score: 50, comment: "Review your folder organisation and file naming." } } : {}),
         overallVerdict: "Your answer has been recorded. AI evaluation was unavailable — review against the criteria manually.",
         strengthsHighlighted: ["Answer submitted successfully"],
         areasToImprove: ["Retry evaluation when AI is available"],
@@ -204,6 +219,7 @@ Return ONLY valid JSON (no markdown):
       logic: { score: 50, comment: "Manual review required." },
       problemSolving: { score: 50, comment: "Manual review required." },
       delivery: { score: 50, comment: "Manual review required." },
+      ...(isFolderSubmission ? { structure: { score: 50, comment: "Manual review required." } } : {}),
       overallVerdict: "Answer recorded. Configure GEMINI_API_KEY to enable AI evaluation.",
       strengthsHighlighted: ["Submitted"],
       areasToImprove: ["Enable AI evaluation"],

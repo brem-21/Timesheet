@@ -174,9 +174,18 @@ interface AssessmentFeedback {
   logic: { score: number; comment: string };
   problemSolving: { score: number; comment: string };
   delivery: { score: number; comment: string };
+  structure?: { score: number; comment: string }; // folder submissions only
   overallVerdict: string;
   strengthsHighlighted: string[];
   areasToImprove: string[];
+}
+
+interface UploadedFile {
+  path: string;
+  name: string;
+  content: string;
+  binary: boolean;
+  size: number;
 }
 
 interface AssessmentSubmission {
@@ -192,6 +201,41 @@ interface AssessmentSubmission {
 type Tab = "materials" | "course" | "quiz" | "insights" | "assessment";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+const TEXT_EXTENSIONS = new Set([
+  ".txt", ".md", ".py", ".sql", ".js", ".ts", ".jsx", ".tsx", ".json", ".csv",
+  ".html", ".css", ".yaml", ".yml", ".sh", ".r", ".ipynb", ".java", ".go",
+  ".rb", ".php", ".cpp", ".c", ".h", ".rs", ".scala", ".kt", ".swift", ".xml",
+  ".toml", ".ini", ".env", ".dockerfile", ".makefile", ".tf", ".hcl",
+]);
+
+function buildFolderTreeText(files: UploadedFile[]): string {
+  if (files.length === 0) return "";
+  const sorted = [...files].sort((a, b) => a.path.localeCompare(b.path));
+  const root = sorted[0].path.split("/")[0] ?? "submission";
+  const lines: string[] = [root + "/"];
+  for (const f of sorted) {
+    const parts = f.path.split("/");
+    const depth = parts.length - 1;
+    const name = parts[parts.length - 1];
+    lines.push("  ".repeat(depth) + "├── " + name + (f.binary ? " (binary)" : ""));
+  }
+  return lines.join("\n");
+}
+
+function formatFolderSubmission(files: UploadedFile[]): string {
+  const tree = buildFolderTreeText(files);
+  const textFiles = [...files].filter((f) => !f.binary).sort((a, b) => a.path.localeCompare(b.path));
+  const contents = textFiles
+    .map((f) => `${"─".repeat(4)} ${f.path} ${"─".repeat(4)}\n${f.content}`)
+    .join("\n\n");
+  return `=== FOLDER SUBMISSION ===\n\nFOLDER STRUCTURE:\n${tree}\n\n=== FILE CONTENTS ===\n\n${contents}`;
+}
+
+function parseFolderTree(answer: string): string {
+  const match = answer.match(/FOLDER STRUCTURE:\n([\s\S]*?)\n\n===/);
+  return match ? match[1] : "";
+}
 
 function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
@@ -328,6 +372,9 @@ export default function GrowthPage() {
   const [assessmentSubmission, setAssessmentSubmission] = useState<AssessmentSubmission | null>(null);
   const [assessmentSubmitting, setAssessmentSubmitting] = useState(false);
   const [assessmentHistory, setAssessmentHistory] = useState<Array<{ dateKey: string; score: number; submittedAt: number }>>([]);
+  const [assessmentMode, setAssessmentMode] = useState<"text" | "folder">("text");
+  const [assessmentFiles, setAssessmentFiles] = useState<UploadedFile[]>([]);
+  const folderInputRef = useRef<HTMLInputElement>(null);
 
   // ── Data loading ──────────────────────────────────────────────────────────
 
@@ -398,14 +445,43 @@ export default function GrowthPage() {
     }
   }, []);
 
+  const handleFolderSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const parsed: UploadedFile[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const path = (file as File & { webkitRelativePath: string }).webkitRelativePath || file.name;
+      const ext = "." + (file.name.split(".").pop() ?? "").toLowerCase();
+      const isText = TEXT_EXTENSIONS.has(ext) && file.size <= 500_000;
+      if (isText) {
+        const content = await file.text();
+        parsed.push({ path, name: file.name, content, binary: false, size: file.size });
+      } else {
+        parsed.push({ path, name: file.name, content: `[${file.type || "binary"} — ${(file.size / 1024).toFixed(1)} KB]`, binary: true, size: file.size });
+      }
+    }
+    parsed.sort((a, b) => a.path.localeCompare(b.path));
+    setAssessmentFiles(parsed);
+    e.target.value = "";
+  }, []);
+
   const handleSubmitAssessment = async () => {
-    if (!assessment || !assessmentAnswer.trim() || assessmentSubmitting) return;
+    if (!assessment || assessmentSubmitting) return;
+    let answer: string;
+    if (assessmentMode === "folder") {
+      if (assessmentFiles.length === 0) return;
+      answer = formatFolderSubmission(assessmentFiles);
+    } else {
+      if (!assessmentAnswer.trim()) return;
+      answer = assessmentAnswer;
+    }
     setAssessmentSubmitting(true);
     try {
       const res = await fetch("/api/growth/assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ assessmentId: assessment.id, dateKey: todayKey(), answer: assessmentAnswer }),
+        body: JSON.stringify({ assessmentId: assessment.id, dateKey: todayKey(), answer, submissionType: assessmentMode }),
       });
       const data = await res.json();
       if (data.submission) setAssessmentSubmission(data.submission);
@@ -1769,6 +1845,19 @@ export default function GrowthPage() {
                                 </div>
                               );
                             })}
+                            {assessmentSubmission.feedback.structure && (() => {
+                              const d = assessmentSubmission.feedback.structure;
+                              const color = d.score >= 80 ? "emerald" : d.score >= 60 ? "amber" : "red";
+                              return (
+                                <div className={`bg-${color}-50 border border-${color}-100 rounded-xl p-4 col-span-2`}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <p className={`text-[10px] font-bold text-${color}-700 uppercase`}>Folder Structure</p>
+                                    <span className={`text-sm font-bold text-${color}-700`}>{d.score}/100</span>
+                                  </div>
+                                  <p className="text-xs text-gray-600 leading-relaxed">{d.comment}</p>
+                                </div>
+                              );
+                            })()}
                           </div>
 
                           {/* Strengths / improvements */}
@@ -1797,9 +1886,17 @@ export default function GrowthPage() {
 
                           {/* Your submitted answer */}
                           <details className="bg-gray-50 rounded-xl border border-gray-100">
-                            <summary className="px-4 py-3 text-xs font-semibold text-gray-500 cursor-pointer select-none">View your submitted answer</summary>
+                            <summary className="px-4 py-3 text-xs font-semibold text-gray-500 cursor-pointer select-none">
+                              {assessmentSubmission.answer.startsWith("=== FOLDER SUBMISSION ===") ? "View submitted folder structure" : "View your submitted answer"}
+                            </summary>
                             <div className="px-4 pb-4 pt-2">
-                              <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-sans">{assessmentSubmission.answer}</pre>
+                              {assessmentSubmission.answer.startsWith("=== FOLDER SUBMISSION ===") ? (
+                                <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed font-mono bg-gray-100 rounded-lg p-3">
+                                  {parseFolderTree(assessmentSubmission.answer)}
+                                </pre>
+                              ) : (
+                                <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-sans">{assessmentSubmission.answer}</pre>
+                              )}
                             </div>
                           </details>
 
@@ -1814,25 +1911,103 @@ export default function GrowthPage() {
                       ) : (
                         /* Answer form */
                         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
-                          <div>
-                            <p className="text-sm font-semibold text-gray-800 mb-1">Your Response</p>
-                            <p className="text-xs text-gray-400 mb-3">
-                              Write a comprehensive response covering all dimensions of the problem. Structure your answer clearly — the Partner is reading this tomorrow morning.
-                            </p>
-                            <textarea
-                              value={assessmentAnswer}
-                              onChange={(e) => setAssessmentAnswer(e.target.value)}
-                              placeholder={`Structure your response:\n\n1. Problem diagnosis — MECE decomposition of root causes\n2. Technical analysis — what the data/systems show\n3. Recommended interventions — specific, prioritised, with rationale\n4. Implementation roadmap — 30/60/90 day plan\n5. Risk mitigation — what could go wrong and how you'd prevent it\n6. Executive summary — 3 bullets for the board`}
-                              rows={20}
-                              className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-y leading-relaxed"
-                              disabled={assessmentSubmitting}
-                            />
+                          {/* Mode toggle */}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setAssessmentMode("text")}
+                              className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-colors ${assessmentMode === "text" ? "bg-purple-100 border-purple-300 text-purple-700" : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                            >
+                              Write Answer
+                            </button>
+                            <button
+                              onClick={() => setAssessmentMode("folder")}
+                              className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-colors ${assessmentMode === "folder" ? "bg-purple-100 border-purple-300 text-purple-700" : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                            >
+                              Upload Folder
+                            </button>
                           </div>
+
+                          {assessmentMode === "text" ? (
+                            <div>
+                              <p className="text-xs text-gray-400 mb-3">
+                                Write a comprehensive response covering all dimensions of the problem. Structure your answer clearly — the Partner is reading this tomorrow morning.
+                              </p>
+                              <textarea
+                                value={assessmentAnswer}
+                                onChange={(e) => setAssessmentAnswer(e.target.value)}
+                                placeholder={`Structure your response:\n\n1. Problem diagnosis — MECE decomposition of root causes\n2. Technical analysis — what the data/systems show\n3. Recommended interventions — specific, prioritised, with rationale\n4. Implementation roadmap — 30/60/90 day plan\n5. Risk mitigation — what could go wrong and how you'd prevent it\n6. Executive summary — 3 bullets for the board`}
+                                rows={20}
+                                className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-y leading-relaxed"
+                                disabled={assessmentSubmitting}
+                              />
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <p className="text-xs text-gray-400">
+                                Submit a folder of files as your deliverable. The AI will assess both the folder structure (file organisation, naming, decomposition) and the content of each file.
+                              </p>
+
+                              {/* Hidden folder input */}
+                              <input
+                                ref={folderInputRef}
+                                type="file"
+                                // @ts-expect-error webkitdirectory is non-standard
+                                webkitdirectory=""
+                                multiple
+                                className="hidden"
+                                onChange={handleFolderSelect}
+                              />
+
+                              {assessmentFiles.length === 0 ? (
+                                <button
+                                  onClick={() => folderInputRef.current?.click()}
+                                  disabled={assessmentSubmitting}
+                                  className="w-full border-2 border-dashed border-purple-200 rounded-xl p-8 text-center hover:border-purple-400 hover:bg-purple-50 transition-colors disabled:opacity-50"
+                                >
+                                  <p className="text-2xl mb-2">📂</p>
+                                  <p className="text-sm font-medium text-gray-700">Click to select a folder</p>
+                                  <p className="text-xs text-gray-400 mt-1">All text files will be read and assessed — code, markdown, SQL, notebooks, etc.</p>
+                                </button>
+                              ) : (
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-xs font-semibold text-gray-600">{assessmentFiles[0]?.path.split("/")[0]} — {assessmentFiles.length} file{assessmentFiles.length !== 1 ? "s" : ""}</p>
+                                    <button
+                                      onClick={() => { setAssessmentFiles([]); folderInputRef.current?.click(); }}
+                                      className="text-xs text-purple-500 hover:text-purple-700"
+                                    >
+                                      Change folder
+                                    </button>
+                                  </div>
+                                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 max-h-64 overflow-y-auto">
+                                    <pre className="text-xs font-mono text-gray-700 leading-relaxed">
+                                      {buildFolderTreeText(assessmentFiles)}
+                                    </pre>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {assessmentFiles.filter(f => !f.binary).length > 0 && (
+                                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                                        {assessmentFiles.filter(f => !f.binary).length} text files
+                                      </span>
+                                    )}
+                                    {assessmentFiles.filter(f => f.binary).length > 0 && (
+                                      <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                                        {assessmentFiles.filter(f => f.binary).length} binary files
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
                           <div className="flex items-center justify-between">
-                            <p className="text-xs text-gray-400">{assessmentAnswer.length} characters</p>
+                            <p className="text-xs text-gray-400">
+                              {assessmentMode === "text" ? `${assessmentAnswer.length} characters` : assessmentFiles.length > 0 ? `${assessmentFiles.length} files selected` : "No folder selected"}
+                            </p>
                             <button
                               onClick={handleSubmitAssessment}
-                              disabled={!assessmentAnswer.trim() || assessmentSubmitting}
+                              disabled={(assessmentMode === "text" ? !assessmentAnswer.trim() : assessmentFiles.length === 0) || assessmentSubmitting}
                               className="bg-purple-500 text-white text-sm px-6 py-2.5 rounded-xl hover:bg-purple-600 disabled:opacity-50 transition-colors flex items-center gap-2"
                             >
                               {assessmentSubmitting ? (

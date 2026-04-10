@@ -150,6 +150,7 @@ export interface AssessmentSubmission {
     logic: { score: number; comment: string };
     problemSolving: { score: number; comment: string };
     delivery: { score: number; comment: string };
+    structure?: { score: number; comment: string }; // folder submissions only
     overallVerdict: string;
     strengthsHighlighted: string[];
     areasToImprove: string[];
