@@ -37,6 +37,11 @@ export default function ProjectSidebarSection() {
 
   useEffect(() => { loadProjects(); }, [loadProjects]);
 
+  useEffect(() => {
+    window.addEventListener("projects-updated", loadProjects);
+    return () => window.removeEventListener("projects-updated", loadProjects);
+  }, [loadProjects]);
+
   // Determine active tab from URL hash / search params stored in sessionStorage
   useEffect(() => {
     if (pathname === "/projects") {
@@ -124,7 +129,7 @@ export default function ProjectSidebarSection() {
           {/* Project list */}
           {projects.length === 0 ? (
             <button
-              onClick={() => router.push("/projects")}
+              onClick={() => { sessionStorage.setItem("clockit_open_create_project", "1"); router.push("/projects"); }}
               className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs text-[#6b6b88] hover:text-[#a0a0b8] transition-colors"
             >
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
@@ -156,9 +161,9 @@ export default function ProjectSidebarSection() {
                 );
               })}
 
-              {/* Manage projects link */}
+              {/* New project link */}
               <button
-                onClick={() => { clearActiveProject(); router.push("/projects"); }}
+                onClick={() => { sessionStorage.setItem("clockit_open_create_project", "1"); router.push("/projects"); }}
                 className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs text-[#6b6b88] hover:text-[#a0a0b8] transition-colors mt-1"
               >
                 <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>

@@ -18,11 +18,13 @@ export interface TimeLog {
   createdAt: number;
 }
 
+import { randomUUID } from "crypto";
+
 function projectId(): string {
-  return `proj-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return `proj-${randomUUID()}`;
 }
 function timeLogId(): string {
-  return `tl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return `tl-${randomUUID()}`;
 }
 
 function rowToProject(r: Record<string, unknown>): Project {
@@ -56,11 +58,10 @@ export async function loadProjects(): Promise<Project[]> {
 export async function createProject(name: string, description?: string, color?: string): Promise<Project> {
   const id = projectId();
   const now = Date.now();
-  await pool.query(
-    `INSERT INTO projects (id, name, description, color, created_at) VALUES ($1,$2,$3,$4,$5)`,
+  const r = await pool.query(
+    `INSERT INTO projects (id, name, description, color, created_at) VALUES ($1,$2,$3,$4,$5) RETURNING *`,
     [id, name, description ?? null, color ?? "#6366f1", now]
   );
-  const r = await pool.query(`SELECT * FROM projects WHERE id = $1`, [id]);
   return rowToProject(r.rows[0]);
 }
 
@@ -94,11 +95,10 @@ export async function loadTimeLogsByProject(projectId: string): Promise<TimeLog[
 export async function createTimeLog(log: Omit<TimeLog, "id" | "createdAt">): Promise<TimeLog> {
   const id = timeLogId();
   const now = Date.now();
-  await pool.query(
-    `INSERT INTO time_logs (id, project_id, task_id, description, duration_min, logged_date, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+  const r = await pool.query(
+    `INSERT INTO time_logs (id, project_id, task_id, description, duration_min, logged_date, created_at) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
     [id, log.projectId, log.taskId ?? null, log.description, log.durationMin, log.loggedDate, now]
   );
-  const r = await pool.query(`SELECT * FROM time_logs WHERE id = $1`, [id]);
   return rowToTimeLog(r.rows[0]);
 }
 

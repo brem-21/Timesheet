@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { sendStandupToTeams } from "@/lib/teams";
 import { StandupSummary } from "@/lib/utils";

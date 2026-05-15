@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchTicketsByRange } from "@/lib/jira";
 import { generateCSVByRange } from "@/lib/utils";
@@ -16,7 +17,8 @@ export async function GET(request: NextRequest) {
   try {
     const tickets = await fetchTicketsByRange(userId, startDate, endDate);
     const csv = generateCSVByRange(tickets, name, startDate, endDate);
-    const filename = `clockit_${name.replace(/\s+/g, "_")}_${startDate}_${endDate}.csv`;
+    const safeName = name.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
+    const filename = `clockit_${safeName}_${startDate}_${endDate}.csv`;
 
     return new NextResponse(csv, {
       headers: {

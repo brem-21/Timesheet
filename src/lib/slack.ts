@@ -1,4 +1,5 @@
 import { StandupSummary } from "./utils";
+import { DailyUpdate } from "./dailyUpdateStore";
 
 export async function sendStandupToSlack(summary: StandupSummary): Promise<void> {
   const webhookUrl = process.env.SLACK_WEBHOOK_URL;
@@ -36,6 +37,50 @@ export async function sendStandupToSlack(summary: StandupSummary): Promise<void>
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(`Slack webhook error ${res.status}: ${body}`);
+  }
+}
+
+export async function sendDailyUpdateToSlack(update: DailyUpdate): Promise<void> {
+  const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+  if (!webhookUrl || webhookUrl.includes("placeholder") || webhookUrl.includes("YOUR")) {
+    throw new Error("SLACK_WEBHOOK_URL is not configured.");
+  }
+
+  const bullet = (items: string[]) =>
+    items.length === 0 ? "• None." : items.map((i) => `• ${i}`).join("\n");
+
+  const [year, month, day] = update.dateKey.split("-");
+  const dateLabel = `${day}-${month}-${year}`;
+
+  const sections: string[] = [
+    `*Daily Update (${dateLabel})*`,
+    "",
+  ];
+
+  if (update.project) {
+    sections.push(`*${update.project}*`, "");
+  }
+
+  sections.push(
+    `*What was done*`,
+    bullet(update.done),
+    "",
+    `*What I will be doing today*`,
+    bullet(update.today),
+    "",
+    `*Blockers*`,
+    bullet(update.blockers),
+  );
+
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: sections.join("\n"), unfurl_links: false, unfurl_media: false }),
   });
 
   if (!res.ok) {

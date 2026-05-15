@@ -5,6 +5,28 @@ export async function register() {
     const cron = (await import("node-cron")).default;
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
+    // ── 8:00 AM weekday morning daily update ────────────────────────────────
+    cron.schedule(
+      "0 8 * * 1-5",
+      async () => {
+        console.log("[Clock-It] Sending 8:00 AM morning daily update to Slack...");
+        try {
+          const res = await fetch(`${appUrl}/api/morning-update/send`, { method: "POST" });
+          const data = await res.json();
+          if (data.ok) {
+            console.log(`[Clock-It] Morning update sent for ${data.dateKey}.`);
+          } else {
+            console.error("[Clock-It] Morning update failed:", data.error);
+          }
+        } catch (err) {
+          console.error("[Clock-It] Morning update error:", err);
+        }
+      },
+      { timezone: "Africa/Accra" }
+    );
+
+    console.log("[Clock-It] ✅ 8:00 AM weekday morning update scheduled (Africa/Accra)");
+
     // ── 12:00 PM weekday midday Slack reminder ───────────────────────────────
     cron.schedule(
       "0 12 * * 1-5",

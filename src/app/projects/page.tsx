@@ -112,7 +112,7 @@ function fmtDate(ts: number) {
 
 // ── Empty State ───────────────────────────────────────────────────────────────
 
-function NoProjectState() {
+function NoProjectState({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="flex-1 flex items-center justify-center bg-gray-50 p-8">
       <div className="text-center max-w-sm">
@@ -124,12 +124,17 @@ function NoProjectState() {
         </div>
         <h2 className="text-lg font-bold text-gray-800 mb-2">No project selected</h2>
         <p className="text-sm text-gray-500 leading-relaxed mb-6">
-          Select a project from the <span className="font-semibold text-indigo-600">Projects</span> menu
-          in the sidebar to view tasks, time logs, and project insights.
+          Select a project from the sidebar, or create a new one to get started.
         </p>
-        <p className="text-xs text-gray-400">
-          No project selected · Tasks, time logs and exports are hidden
-        </p>
+        <button
+          onClick={onCreate}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-sm"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          New Project
+        </button>
       </div>
     </div>
   );
@@ -147,6 +152,14 @@ export default function ProjectsPage() {
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [loading, setLoading] = useState(false);
+
+  // Create project modal
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+  const [newColor, setNewColor] = useState(PROJECT_COLORS[0]);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   // Edit project
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -220,6 +233,14 @@ export default function ProjectsPage() {
     }
   }, []);
 
+  // Open create modal when sidebar signals it via sessionStorage
+  useEffect(() => {
+    if (sessionStorage.getItem("clockit_open_create_project") === "1") {
+      sessionStorage.removeItem("clockit_open_create_project");
+      setShowCreateProject(true);
+    }
+  }, []);
+
   // On mount: restore tab from sidebar navigation or keep existing context
   useEffect(() => {
     const ssTab = sessionStorage.getItem("clockit_project_tab") as Tab | null;
@@ -246,6 +267,30 @@ export default function ProjectsPage() {
   }, [activeTab, activeProject?.id, loadMeetings]);
 
   // ── Project CRUD ────────────────────────────────────────────────────────────
+
+  const handleCreateProject = async () => {
+    if (!newName.trim()) return;
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName.trim(), description: newDescription.trim() || undefined, color: newColor }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to create project");
+      const p: Project = data.project;
+      setActiveProject({ id: p.id, name: p.name, color: p.color, description: p.description });
+      setShowCreateProject(false);
+      setNewName(""); setNewDescription(""); setNewColor(PROJECT_COLORS[0]);
+      window.dispatchEvent(new Event("projects-updated"));
+    } catch (err) {
+      setCreateError(err instanceof Error ? err.message : "Unknown error");
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const handleUpdateProject = async () => {
     if (!editingProject || !activeProject) return;
@@ -419,12 +464,91 @@ export default function ProjectsPage() {
 
   // ── No project selected ───────────────────────────────────────────────────
 
-  if (!activeProject) return <NoProjectState />;
+  if (!activeProject) return (
+    <>
+      <NoProjectState onCreate={() => setShowCreateProject(true)} />
+      {showCreateProject && <CreateProjectModal />}
+    </>
+  );
 
   // ── Render ─────────────────────────────────────────────────────────────────
 
+  function CreateProjectModal() {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">New Project</h2>
+            <button onClick={() => setShowCreateProject(false)} className="text-gray-400 hover:text-gray-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Project Name *</label>
+              <input
+                autoFocus
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
+                placeholder="e.g. Coupa Integration"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Description</label>
+              <input
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                placeholder="Optional short description"
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Color</label>
+              <div className="flex gap-2 flex-wrap">
+                {PROJECT_COLORS.map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setNewColor(c)}
+                    style={{ backgroundColor: c }}
+                    className={`w-7 h-7 rounded-full border-2 transition-all ${newColor === c ? "border-gray-800 scale-110" : "border-transparent hover:scale-105"}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {createError && <p className="text-xs text-red-500">{createError}</p>}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setShowCreateProject(false); setCreateError(null); }}
+              className="flex-1 py-2 text-sm text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleCreateProject}
+              disabled={creating || !newName.trim()}
+              className="flex-1 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {creating ? "Creating…" : "Create Project"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+      {showCreateProject && <CreateProjectModal />}
 
       {/* ── Project Header ─────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 shrink-0">
@@ -456,6 +580,15 @@ export default function ProjectsPage() {
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
+              <button
+                onClick={() => setShowCreateProject(true)}
+                className="text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 rounded-lg px-3 py-1.5 flex items-center gap-1"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New
+              </button>
               {project && (
                 <button onClick={() => setEditingProject(project)} className="text-xs text-gray-400 hover:text-indigo-500 border border-gray-200 rounded-lg px-3 py-1.5">Edit</button>
               )}

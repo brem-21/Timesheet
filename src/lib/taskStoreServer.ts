@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { pool } from "./db";
 
 export type TaskStatus = "todo" | "in-progress" | "in-review" | "done";
@@ -107,5 +108,5 @@ export async function clearTasks(): Promise<void> {
 }
 
 export function generateTaskId(): string {
-  return `task-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+  return `task-${randomUUID()}`;
 }

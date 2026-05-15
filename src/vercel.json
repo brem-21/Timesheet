@@ -1,6 +1,11 @@
 {
   "crons": [
     {
+      "path": "/api/morning-update/send",
+      "schedule": "0 8 * * 1-5",
+      "comment": "Morning daily update — Mon–Fri at 8 AM UTC (8 AM Africa/Accra)"
+    },
+    {
       "path": "/api/reminder",
       "schedule": "0 16 * * 1-5",
       "comment": "Daily standup reminder — Mon–Fri at 4 PM UTC"

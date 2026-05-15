@@ -250,6 +250,22 @@ CREATE TABLE IF NOT EXISTS growth_assessment_submissions (
 CREATE INDEX IF NOT EXISTS idx_assessment_date ON growth_assessments (date_key);
 CREATE INDEX IF NOT EXISTS idx_assessment_sub_date ON growth_assessment_submissions (date_key);
 
+-- ── Daily Updates ─────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS daily_updates (
+  id         TEXT   PRIMARY KEY,
+  date_key   TEXT   NOT NULL UNIQUE,
+  project    TEXT,
+  done       JSONB  NOT NULL DEFAULT '[]',
+  today      JSONB  NOT NULL DEFAULT '[]',
+  blockers   JSONB  NOT NULL DEFAULT '[]',
+  sent_at    BIGINT,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_daily_updates_date ON daily_updates (date_key DESC);
+
 -- ── Performance history ────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS performance_history (

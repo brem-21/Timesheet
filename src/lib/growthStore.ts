@@ -450,11 +450,10 @@ export interface GrowthStats {
 }
 
 export async function loadGrowthStats(startDate?: string, endDate?: string): Promise<GrowthStats> {
-  const dateFilter = startDate && endDate
-    ? `AND a.date_key >= '${startDate}' AND a.date_key <= '${endDate}'`
-    : "";
+  const sd = startDate ?? null;
+  const ed = endDate ?? null;
 
-  // Per-topic aggregates
+  // Per-topic aggregates — parameterized to prevent SQL injection
   const perTopic = await pool.query(`
     SELECT
       t.id                                         AS topic_id,
@@ -465,10 +464,12 @@ export async function loadGrowthStats(startDate?: string, endDate?: string): Pro
       COUNT(DISTINCT a.date_key)::int              AS unique_active_days,
       MAX(a.date_key)                              AS last_attempt
     FROM growth_topics t
-    LEFT JOIN growth_quiz_attempts a ON a.topic_id = t.id ${dateFilter}
+    LEFT JOIN growth_quiz_attempts a ON a.topic_id = t.id
+      AND ($1::text IS NULL OR a.date_key >= $1)
+      AND ($2::text IS NULL OR a.date_key <= $2)
     GROUP BY t.id, t.label
     ORDER BY attempt_count DESC, t.label ASC
-  `);
+  `, [sd, ed]);
 
   // Latest score per topic (most recent attempt)
   const latestScores = await pool.query(`

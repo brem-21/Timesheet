@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { pool } from "./db";
 
 const MAX_HISTORY = 5;
@@ -36,7 +37,7 @@ export async function loadPerformanceHistory(): Promise<SavedPerformance[]> {
 export async function savePerformanceEntry(
   entry: Omit<SavedPerformance, "id" | "savedAt">
 ): Promise<SavedPerformance[]> {
-  const id = `perf-${Date.now()}`;
+  const id = `perf-${randomUUID()}`;
   const savedAt = Date.now();
   await pool.query(
     `INSERT INTO performance_history (id, saved_at, date_label, range_label, start_date, end_date, stats, insights)

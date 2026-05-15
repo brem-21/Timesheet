@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto";
 import { pool } from "./db";
 import { TranscriptSummary } from "./summarize";
 
@@ -25,7 +26,7 @@ export async function loadSummaries(): Promise<SavedSummary[]> {
 }
 
 export async function saveSummary(summary: TranscriptSummary): Promise<SavedSummary[]> {
-  const id = `sum-${Date.now()}`;
+  const id = `sum-${randomUUID()}`;
   const savedAt = Date.now();
   await pool.query(
     `INSERT INTO summaries (id, saved_at, summary) VALUES ($1, $2, $3)`,
