@@ -107,6 +107,13 @@ interface ProjectNote {
   updatedAt: number;
 }
 
+interface TaskComment {
+  id: string;
+  taskId: string;
+  body: string;
+  createdAt: number;
+}
+
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 
 function fmtMins(mins: number) {
@@ -179,6 +186,11 @@ export default function ProjectsPage() {
   const [taskPriority, setTaskPriority] = useState<"high" | "medium" | "low">("medium");
   const [taskDesc, setTaskDesc] = useState("");
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+
+  // Task comments (keyed by taskId)
+  const [taskCommentsMap, setTaskCommentsMap] = useState<Record<string, TaskComment[]>>({});
+  const [taskCommentsLoading, setTaskCommentsLoading] = useState<Record<string, boolean>>({});
+  const [newTaskComment, setNewTaskComment] = useState("");
 
   // Time log form
   const [showNewLog, setShowNewLog] = useState(false);
@@ -298,6 +310,24 @@ export default function ProjectsPage() {
   useEffect(() => {
     if (activeTab === "notes" && activeProject?.id && !notesLoaded) loadNotes(activeProject.id);
   }, [activeTab, activeProject?.id, notesLoaded, loadNotes]);
+
+  // Load comments when a task is expanded
+  useEffect(() => {
+    if (!expandedTaskId) return;
+    if (taskCommentsMap[expandedTaskId] !== undefined) return;
+    setTaskCommentsLoading(prev => ({ ...prev, [expandedTaskId]: true }));
+    fetch(`/api/tasks/${expandedTaskId}/comments`)
+      .then(r => r.json())
+      .then(d => {
+        setTaskCommentsMap(prev => ({ ...prev, [expandedTaskId]: d.comments ?? [] }));
+        setTaskCommentsLoading(prev => ({ ...prev, [expandedTaskId]: false }));
+      })
+      .catch(() => {
+        setTaskCommentsMap(prev => ({ ...prev, [expandedTaskId]: [] }));
+        setTaskCommentsLoading(prev => ({ ...prev, [expandedTaskId]: false }));
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedTaskId]);
 
   // ── Project CRUD ────────────────────────────────────────────────────────────
 
@@ -441,6 +471,27 @@ export default function ProjectsPage() {
     });
     setTimeLogs((prev) => prev.filter((l) => l.id !== logId));
     if (stats) setStats({ ...stats, totalMinutes: Math.max(0, stats.totalMinutes - durationMin) });
+  };
+
+  // ── Task Comments ───────────────────────────────────────────────────────────
+
+  const handleAddTaskComment = async (taskId: string) => {
+    if (!newTaskComment.trim()) return;
+    const res = await fetch(`/api/tasks/${taskId}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: newTaskComment.trim() }),
+    });
+    const data = await res.json();
+    if (data.comment) {
+      setTaskCommentsMap(prev => ({ ...prev, [taskId]: [...(prev[taskId] ?? []), data.comment] }));
+      setNewTaskComment("");
+    }
+  };
+
+  const handleDeleteTaskComment = async (taskId: string, commentId: string) => {
+    await fetch(`/api/tasks/${taskId}/comments/${commentId}`, { method: "DELETE" });
+    setTaskCommentsMap(prev => ({ ...prev, [taskId]: (prev[taskId] ?? []).filter(c => c.id !== commentId) }));
   };
 
   // ── Notes ───────────────────────────────────────────────────────────────────
@@ -899,15 +950,27 @@ export default function ProjectsPage() {
                                       )}
                                     </div>
 
-                                    <div className="flex items-center gap-1 shrink-0">
-                                      <button onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                                        className="text-gray-300 hover:text-gray-500 text-xs p-1">{isExpanded ? "▲" : "▼"}</button>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <button
+                                        onClick={() => { setExpandedTaskId(isExpanded ? null : task.id); setNewTaskComment(""); }}
+                                        className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                                          isExpanded ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"
+                                        }`}
+                                      >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        {isExpanded ? "Close" : "Comment"}
+                                      </button>
                                       <button onClick={() => handleDeleteTask(task.id)} className="text-gray-300 hover:text-red-400 text-sm p-1">✕</button>
                                     </div>
                                   </div>
 
-                                  {isExpanded && (
-                                    <div className="border-t border-gray-50 px-4 pb-4 pt-3 space-y-3">
+                                  {isExpanded && (() => {
+                                    const comments = taskCommentsMap[task.id] ?? [];
+                                    const commentsLoading = taskCommentsLoading[task.id] ?? false;
+                                    return (
+                                    <div className="border-t border-gray-50 px-4 pb-4 pt-3 space-y-4">
                                       {task.description && <p className="text-sm text-gray-600 leading-relaxed">{task.description}</p>}
                                       {task.checklist.length > 0 && (
                                         <div>
@@ -934,8 +997,64 @@ export default function ProjectsPage() {
                                           </button>
                                         ))}
                                       </div>
+
+                                      {/* Comments */}
+                                      <div>
+                                        <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                                          Comments {comments.length > 0 && <span className="normal-case font-normal ml-1">{comments.length}</span>}
+                                        </p>
+                                        {commentsLoading && <div className="h-8 bg-gray-100 rounded-lg animate-pulse" />}
+                                        {!commentsLoading && comments.length > 0 && (
+                                          <ul className="space-y-2 mb-2">
+                                            {comments.map(c => (
+                                              <li key={c.id} className="bg-gray-50 rounded-lg px-3 py-2.5 flex items-start gap-2.5 group/cmt">
+                                                <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+                                                  <svg className="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                                  </svg>
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                  <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                                                  <p className="text-[10px] text-gray-400 mt-0.5">
+                                                    {new Date(c.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+                                                  </p>
+                                                </div>
+                                                <button
+                                                  onClick={() => handleDeleteTaskComment(task.id, c.id)}
+                                                  className="opacity-0 group-hover/cmt:opacity-100 text-gray-300 hover:text-red-400 transition-all shrink-0"
+                                                >
+                                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                  </svg>
+                                                </button>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                        {!commentsLoading && comments.length === 0 && (
+                                          <p className="text-xs text-gray-400 mb-2">No comments yet.</p>
+                                        )}
+                                        <div className="flex gap-2">
+                                          <textarea
+                                            value={newTaskComment}
+                                            onChange={e => setNewTaskComment(e.target.value)}
+                                            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAddTaskComment(task.id); }}
+                                            placeholder="Add a comment… (Ctrl+Enter to post)"
+                                            rows={2}
+                                            className="flex-1 border border-gray-200 bg-white rounded-lg px-3 py-2 text-xs text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300"
+                                          />
+                                          <button
+                                            onClick={() => handleAddTaskComment(task.id)}
+                                            disabled={!newTaskComment.trim()}
+                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 disabled:opacity-40 transition-colors self-end"
+                                          >
+                                            Post
+                                          </button>
+                                        </div>
+                                      </div>
                                     </div>
-                                  )}
+                                    );
+                                  })()}
                                 </div>
                               );
                             })}

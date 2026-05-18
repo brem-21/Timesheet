@@ -24,6 +24,8 @@ import type { SavedPerformance } from "@/lib/performanceStore";
 const SECTION_ICONS: Record<string, string> = {
   "Time Management": "⏱",
   "Delivery & Efficiency": "🚀",
+  "Delivery Quality": "🎯",
+  "Skill Takeaways": "🧠",
   "Leadership & Collaboration": "🤝",
   "Communication & Influence": "💬",
   "Professional Growth": "📈",
@@ -33,6 +35,8 @@ const SECTION_ICONS: Record<string, string> = {
 const SECTION_COLORS: Record<string, string> = {
   "Time Management": "border-indigo-200 bg-indigo-50/60",
   "Delivery & Efficiency": "border-emerald-200 bg-emerald-50/60",
+  "Delivery Quality": "border-emerald-200 bg-emerald-50/60",
+  "Skill Takeaways": "border-purple-200 bg-purple-50/60",
   "Leadership & Collaboration": "border-violet-200 bg-violet-50/60",
   "Communication & Influence": "border-blue-200 bg-blue-50/60",
   "Professional Growth": "border-amber-200 bg-amber-50/60",
@@ -42,6 +46,8 @@ const SECTION_COLORS: Record<string, string> = {
 const TITLE_COLORS: Record<string, string> = {
   "Time Management": "text-indigo-700",
   "Delivery & Efficiency": "text-emerald-700",
+  "Delivery Quality": "text-emerald-700",
+  "Skill Takeaways": "text-purple-700",
   "Leadership & Collaboration": "text-violet-700",
   "Communication & Influence": "text-blue-700",
   "Professional Growth": "text-amber-700",
@@ -73,12 +79,25 @@ function InsightsRenderer({ text }: { text: string }) {
         const colorClass = SECTION_COLORS[title] ?? "border-gray-200 bg-gray-50";
         const titleColor = TITLE_COLORS[title] ?? "text-gray-700";
 
-        // For Key Recommendations, try to render numbered list items
         const isRecs = title.toLowerCase().includes("recommendation");
+        const isSkillTakeaways = title.toLowerCase().includes("skill takeaway");
+
         const recItems = isRecs
           ? body.split(/\n/).filter((l) => /^\d+[\.\)]/.test(l.trim()))
           : [];
-        const hasRecItems = recItems.length > 0;
+
+        // Parse **Skill:** Signal. Evidence. lines
+        const skillItems = isSkillTakeaways
+          ? body.split(/\n/).filter((l) => /^\*\*[^*]+\*\*/.test(l.trim()))
+          : [];
+
+        const SIGNAL_COLORS: Record<string, string> = {
+          strong: "bg-emerald-100 text-emerald-700",
+          developing: "bg-amber-100 text-amber-700",
+          active: "bg-emerald-100 text-emerald-700",
+          "needs attention": "bg-red-100 text-red-700",
+          "minimal activity": "bg-gray-100 text-gray-500",
+        };
 
         return (
           <div key={title} className={`rounded-xl border p-4 ${colorClass}`}>
@@ -86,17 +105,45 @@ function InsightsRenderer({ text }: { text: string }) {
               <span>{icon}</span>
               {title}
             </h3>
-            {hasRecItems ? (
+
+            {isRecs && recItems.length > 0 ? (
               <ol className="space-y-1.5">
                 {recItems.map((item, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className={`shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5 bg-rose-100 text-rose-700`}>
+                    <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5 bg-rose-100 text-rose-700">
                       {i + 1}
                     </span>
                     <span>{item.replace(/^\d+[\.\)]\s*/, "")}</span>
                   </li>
                 ))}
               </ol>
+            ) : isSkillTakeaways && skillItems.length > 0 ? (
+              <ul className="space-y-2.5">
+                {skillItems.map((line, i) => {
+                  const labelMatch = line.match(/^\*\*([^*]+)\*\*:?\s*(.*)/);
+                  if (!labelMatch) return null;
+                  const skill = labelMatch[1].trim();
+                  const rest = labelMatch[2].trim();
+                  // Extract signal word (first word before ".")
+                  const signalMatch = rest.match(/^(Strong|Developing|Needs Attention|Active|Minimal activity)[.:]?\s*(.*)/i);
+                  const signal = signalMatch ? signalMatch[1] : null;
+                  const evidence = signalMatch ? signalMatch[2] : rest;
+                  const signalClass = signal ? (SIGNAL_COLORS[signal.toLowerCase()] ?? "bg-gray-100 text-gray-600") : "";
+                  return (
+                    <li key={i} className="flex items-start gap-2.5">
+                      <div className="min-w-[130px] shrink-0 flex items-center gap-1.5 pt-0.5">
+                        <span className="text-xs font-bold text-gray-700">{skill}</span>
+                        {signal && (
+                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${signalClass}`}>
+                            {signal}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-700 leading-relaxed">{evidence}</p>
+                    </li>
+                  );
+                })}
+              </ul>
             ) : (
               <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{body}</p>
             )}
