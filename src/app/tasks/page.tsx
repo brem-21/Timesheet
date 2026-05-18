@@ -472,6 +472,15 @@ function TaskRow({
   );
 }
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface TaskComment {
+  id: string;
+  taskId: string;
+  body: string;
+  createdAt: number;
+}
+
 // ── Detail Panel ─────────────────────────────────────────────────────────────
 
 function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPatch: (u: Partial<MeetingTask>) => void; projects: Project[] }) {
@@ -479,6 +488,45 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
   const [newItem, setNewItem] = useState("");
   const newItemRef = useRef<HTMLInputElement>(null);
   const checklist = task.checklist ?? [];
+
+  const [comments, setComments] = useState<TaskComment[]>([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [savingComment, setSavingComment] = useState(false);
+
+  useEffect(() => {
+    fetch(`/api/tasks/${task.id}/comments`)
+      .then(r => r.json())
+      .then(d => { setComments(d.comments ?? []); setCommentsLoaded(true); })
+      .catch(() => setCommentsLoaded(true));
+  }, [task.id]);
+
+  async function addComment() {
+    if (!newComment.trim()) return;
+    setSavingComment(true);
+    const res = await fetch(`/api/tasks/${task.id}/comments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: newComment.trim() }),
+    });
+    const data = await res.json();
+    if (data.comment) {
+      setComments(prev => [...prev, data.comment]);
+      setNewComment("");
+    }
+    setSavingComment(false);
+  }
+
+  async function deleteComment(commentId: string) {
+    await fetch(`/api/tasks/${task.id}/comments/${commentId}`, { method: "DELETE" });
+    setComments(prev => prev.filter(c => c.id !== commentId));
+  }
+
+  function fmtCommentDate(ts: number) {
+    return new Date(ts).toLocaleString("en-GB", {
+      day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+    });
+  }
 
   const { activeTimer, elapsed, startTimer, stopTimer, getTicketLoggedSeconds } = useTimer();
   const timerKey = taskTimerKey(task);
@@ -664,6 +712,68 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
             </>
           )}
         </button>
+      </div>
+
+      {/* Comments section */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+          Comments {commentsLoaded && comments.length > 0 && <span className="normal-case font-normal text-gray-400 ml-1">{comments.length}</span>}
+        </label>
+
+        {!commentsLoaded && (
+          <div className="space-y-2">
+            {[1, 2].map(i => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}
+          </div>
+        )}
+
+        {commentsLoaded && comments.length > 0 && (
+          <ul className="space-y-2 mb-3">
+            {comments.map(c => (
+              <li key={c.id} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-start gap-3 group/cmt shadow-sm">
+                <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                  <p className="text-[11px] text-gray-400 mt-1">{fmtCommentDate(c.createdAt)}</p>
+                </div>
+                <button
+                  onClick={() => deleteComment(c.id)}
+                  className="opacity-0 group-hover/cmt:opacity-100 text-gray-300 hover:text-red-400 transition-all shrink-0 mt-0.5"
+                  title="Delete comment"
+                >
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {commentsLoaded && comments.length === 0 && (
+          <p className="text-xs text-gray-400 mb-3">No comments yet.</p>
+        )}
+
+        <div className="flex gap-2">
+          <textarea
+            value={newComment}
+            onChange={e => setNewComment(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addComment(); }}
+            placeholder="Add a comment… (Ctrl+Enter to submit)"
+            rows={2}
+            className="flex-1 border border-gray-200 bg-white rounded-xl px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300"
+          />
+          <button
+            onClick={addComment}
+            disabled={!newComment.trim() || savingComment}
+            className="px-3 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 transition-colors self-end"
+          >
+            Post
+          </button>
+        </div>
       </div>
     </div>
   );

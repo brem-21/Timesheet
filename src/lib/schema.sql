@@ -266,6 +266,30 @@ CREATE TABLE IF NOT EXISTS daily_updates (
 
 CREATE INDEX IF NOT EXISTS idx_daily_updates_date ON daily_updates (date_key DESC);
 
+-- ── Task Comments ────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS task_comments (
+  id         TEXT   PRIMARY KEY,
+  task_id    TEXT   NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+  body       TEXT   NOT NULL,
+  created_at BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_task_comments_task ON task_comments (task_id);
+
+-- ── Project Notes ─────────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS project_notes (
+  id         TEXT   PRIMARY KEY,
+  project_id TEXT   NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+  title      TEXT,
+  body       TEXT   NOT NULL,
+  created_at BIGINT NOT NULL,
+  updated_at BIGINT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_project_notes_project ON project_notes (project_id);
+
 -- ── Performance history ────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS performance_history (

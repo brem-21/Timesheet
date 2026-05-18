@@ -96,7 +96,16 @@ const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
   "done": "todo",
 };
 
-type Tab = "overview" | "tasks" | "timelogs" | "meetings" | "export";
+type Tab = "overview" | "tasks" | "timelogs" | "meetings" | "notes" | "export";
+
+interface ProjectNote {
+  id: string;
+  projectId: string;
+  title: string | null;
+  body: string;
+  createdAt: number;
+  updatedAt: number;
+}
 
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 
@@ -184,6 +193,17 @@ export default function ProjectsPage() {
   const [allMeetings, setAllMeetings] = useState<AllMeeting[]>([]);
   const [meetingsLoading, setMeetingsLoading] = useState(false);
 
+  // Notes
+  const [notes, setNotes] = useState<ProjectNote[]>([]);
+  const [notesLoaded, setNotesLoaded] = useState(false);
+  const [showNewNote, setShowNewNote] = useState(false);
+  const [noteTitle, setNoteTitle] = useState("");
+  const [noteBody, setNoteBody] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [editNoteTitle, setEditNoteTitle] = useState("");
+  const [editNoteBody, setEditNoteBody] = useState("");
+
   // Export
   const [exporting, setExporting] = useState(false);
 
@@ -210,6 +230,13 @@ export default function ProjectsPage() {
       setLoading(false);
     }
   }, [setActiveProject]);
+
+  const loadNotes = useCallback(async (id: string) => {
+    const r = await fetch(`/api/projects/${id}/notes`);
+    const d = await r.json();
+    setNotes(d.notes ?? []);
+    setNotesLoaded(true);
+  }, []);
 
   const loadMeetings = useCallback(async (id: string) => {
     setMeetingsLoading(true);
@@ -257,6 +284,7 @@ export default function ProjectsPage() {
     } else {
       setProject(null); setTasks([]); setTimeLogs([]); setStats(null);
       setLinkedMeetings([]); setAllMeetings([]);
+      setNotes([]); setNotesLoaded(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProject?.id]);
@@ -265,6 +293,11 @@ export default function ProjectsPage() {
   useEffect(() => {
     if (activeTab === "meetings" && activeProject?.id) loadMeetings(activeProject.id);
   }, [activeTab, activeProject?.id, loadMeetings]);
+
+  // Load notes lazily when tab is opened
+  useEffect(() => {
+    if (activeTab === "notes" && activeProject?.id && !notesLoaded) loadNotes(activeProject.id);
+  }, [activeTab, activeProject?.id, notesLoaded, loadNotes]);
 
   // ── Project CRUD ────────────────────────────────────────────────────────────
 
@@ -408,6 +441,44 @@ export default function ProjectsPage() {
     });
     setTimeLogs((prev) => prev.filter((l) => l.id !== logId));
     if (stats) setStats({ ...stats, totalMinutes: Math.max(0, stats.totalMinutes - durationMin) });
+  };
+
+  // ── Notes ───────────────────────────────────────────────────────────────────
+
+  const handleCreateNote = async () => {
+    if (!activeProject?.id || !noteBody.trim()) return;
+    setSavingNote(true);
+    const res = await fetch(`/api/projects/${activeProject.id}/notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: noteTitle.trim() || undefined, body: noteBody.trim() }),
+    });
+    const data = await res.json();
+    if (data.note) {
+      setNotes(prev => [data.note, ...prev]);
+      setNoteTitle(""); setNoteBody(""); setShowNewNote(false);
+    }
+    setSavingNote(false);
+  };
+
+  const handleUpdateNote = async (noteId: string) => {
+    if (!activeProject?.id || !editNoteBody.trim()) return;
+    const res = await fetch(`/api/projects/${activeProject.id}/notes/${noteId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: editNoteTitle.trim() || undefined, body: editNoteBody.trim() }),
+    });
+    const data = await res.json();
+    if (data.note) {
+      setNotes(prev => prev.map(n => n.id === noteId ? data.note : n));
+      setEditingNoteId(null);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: string) => {
+    if (!activeProject?.id) return;
+    await fetch(`/api/projects/${activeProject.id}/notes/${noteId}`, { method: "DELETE" });
+    setNotes(prev => prev.filter(n => n.id !== noteId));
   };
 
   // ── Meetings ────────────────────────────────────────────────────────────────
@@ -631,12 +702,12 @@ export default function ProjectsPage() {
 
         {/* Tab bar */}
         <div className="flex gap-1 mt-4 overflow-x-auto">
-          {(["overview", "tasks", "timelogs", "meetings", "export"] as Tab[]).map((t) => (
+          {(["overview", "tasks", "timelogs", "meetings", "notes", "export"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
               className={`px-4 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
                 activeTab === t ? "bg-indigo-100 text-indigo-700 font-medium" : "text-gray-500 hover:text-gray-700"
               }`}>
-              {t === "timelogs" ? "Time Log" : t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === "timelogs" ? "Time Log" : t === "notes" ? "Notes" : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
@@ -1024,6 +1095,149 @@ export default function ProjectsPage() {
                       </div>
                     )}
                   </>
+                )}
+              </div>
+            )}
+
+            {/* ── NOTES ──────────────────────────────────────────────────── */}
+            {activeTab === "notes" && (
+              <div className="max-w-3xl space-y-4">
+                {/* New note form */}
+                {showNewNote ? (
+                  <div className="bg-white rounded-xl border border-indigo-100 p-4 space-y-3 shadow-sm">
+                    <input
+                      value={noteTitle}
+                      onChange={e => setNoteTitle(e.target.value)}
+                      placeholder="Title (optional)"
+                      autoFocus
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    />
+                    <textarea
+                      value={noteBody}
+                      onChange={e => setNoteBody(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleCreateNote(); }}
+                      placeholder="Write your note… (Ctrl+Enter to save)"
+                      rows={5}
+                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleCreateNote}
+                        disabled={savingNote || !noteBody.trim()}
+                        className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
+                      >
+                        {savingNote ? "Saving…" : "Save Note"}
+                      </button>
+                      <button
+                        onClick={() => { setShowNewNote(false); setNoteTitle(""); setNoteBody(""); }}
+                        className="text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowNewNote(true)}
+                    className="w-full text-sm text-indigo-500 border-2 border-dashed border-indigo-200 rounded-xl py-3 hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
+                  >
+                    + New Note
+                  </button>
+                )}
+
+                {!notesLoaded && (
+                  <div className="space-y-3">
+                    {[1, 2].map(i => <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />)}
+                  </div>
+                )}
+
+                {notesLoaded && notes.length === 0 && (
+                  <div className="text-center py-16 text-gray-400">
+                    <p className="text-3xl mb-2">📝</p>
+                    <p className="text-sm">No notes yet for this project.</p>
+                    <p className="text-xs mt-1">Use notes to capture decisions, context, or anything worth remembering.</p>
+                  </div>
+                )}
+
+                {notesLoaded && notes.length > 0 && (
+                  <div className="space-y-3">
+                    {notes.map(note => (
+                      <div key={note.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group/note">
+                        {editingNoteId === note.id ? (
+                          <div className="p-4 space-y-3">
+                            <input
+                              value={editNoteTitle}
+                              onChange={e => setEditNoteTitle(e.target.value)}
+                              placeholder="Title (optional)"
+                              autoFocus
+                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                            />
+                            <textarea
+                              value={editNoteBody}
+                              onChange={e => setEditNoteBody(e.target.value)}
+                              onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleUpdateNote(note.id); }}
+                              rows={6}
+                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                            />
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => handleUpdateNote(note.id)}
+                                disabled={!editNoteBody.trim()}
+                                className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
+                              >
+                                Save
+                              </button>
+                              <button
+                                onClick={() => setEditingNoteId(null)}
+                                className="text-sm text-gray-500 hover:text-gray-700"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-4">
+                            <div className="flex items-start justify-between gap-3 mb-2">
+                              <div className="flex-1 min-w-0">
+                                {note.title && (
+                                  <h4 className="text-sm font-semibold text-gray-800 mb-1">{note.title}</h4>
+                                )}
+                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{note.body}</p>
+                              </div>
+                              <div className="flex gap-1 shrink-0 opacity-0 group-hover/note:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => {
+                                    setEditingNoteId(note.id);
+                                    setEditNoteTitle(note.title ?? "");
+                                    setEditNoteBody(note.body);
+                                  }}
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                                  title="Edit note"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteNote(note.id)}
+                                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                  title="Delete note"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-gray-400">
+                              {note.updatedAt !== note.createdAt ? "Updated " : ""}
+                              {new Date(note.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
