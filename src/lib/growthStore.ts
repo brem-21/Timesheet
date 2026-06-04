@@ -504,7 +504,7 @@ export async function loadGrowthStats(startDate?: string, endDate?: string): Pro
 
   function computeTrend(scores: number[]): TopicGrowthStat["trend"] {
     if (scores.length < 2) return "insufficient_data";
-    const diff = scores[scores.length - 1] - scores[0];
+    const diff = scores[0] - scores[scores.length - 1]; // scores[0] = most recent, scores[last] = oldest
     if (diff > 5) return "improving";
     if (diff < -5) return "declining";
     return "stable";

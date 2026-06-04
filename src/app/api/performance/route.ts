@@ -101,7 +101,7 @@ function buildExtractiveInsights(
     `You attended ${stats.meetingsCount} meetings generating ${stats.meetingTasksTotal} action items across ${stats.uniqueMeetingSources} unique meeting source(s). ${stats.meetingTasksDone} are done and ${stats.meetingTasksActive} remain active. Task delegation recorded for ${stats.tasksWithAssignees} item(s), and you were part of ${stats.decisionsCount} key decision(s).`,
     ``,
     `## Professional Growth`,
-    `${stats.profDevCount} development ${(stats.profDevCount as number) === 1 ? "activity" : "activities"} totalling ${stats.profDevHours}h logged this period. Milestones: ${stats.milestonesCompleted}/${stats.milestonesTotal} completed, ${stats.milestonesInProgress} in progress. Continued investment in deliberate learning and milestone delivery builds a compounding performance narrative.`,
+    `${stats.profDevCount} development ${(stats.profDevCount as number) === 1 ? "activity" : "activities"} totalling ${stats.profDevHours}h logged this period. Milestones: ${stats.milestonesCompleted}/${stats.milestonesTotal} completed, ${stats.milestonesInProgress} in progress. ${(stats.assessmentsCompleted as number) > 0 ? `${stats.assessmentsCompleted} scenario-based daily assessment(s) completed with an average score of ${stats.assessmentAvgScore}% — demonstrating deliberate applied learning. ` : ""}${(stats.dbTimeLogMinutes as number) > 0 ? `${Math.floor((stats.dbTimeLogMinutes as number)/60)}h logged directly against project tasks across ${stats.dbTimeLogActiveDays} active day(s). ` : ""}Continued investment in deliberate learning and milestone delivery builds a compounding performance narrative.`,
     ``,
     `## Key Recommendations`,
     `1. Unblock the ${stats.allHighPriStuck} high-priority task(s) currently stuck — these carry the most weighted delivery impact.`,
@@ -165,6 +165,42 @@ export async function POST(request: NextRequest) {
     );
     const summaries = await loadSummaries();
     const growthStats = await loadGrowthStats(startDate, endDate).catch(() => null);
+
+    // 4b. Load time logs from DB for the period (project task time — separate from Jira timer)
+    const timeLogsRes = await pool.query<{
+      description: string; duration_min: number; logged_date: string;
+      project_name: string | null; task_text: string | null;
+    }>(
+      `SELECT tl.description, tl.duration_min, tl.logged_date,
+              p.name AS project_name, t.text AS task_text
+       FROM time_logs tl
+       LEFT JOIN projects p ON p.id = tl.project_id
+       LEFT JOIN tasks t    ON t.id  = tl.task_id
+       WHERE tl.logged_date BETWEEN $1 AND $2
+       ORDER BY tl.logged_date DESC
+       LIMIT 25`,
+      [startDate, endDate]
+    );
+    const dbTimeLogs = timeLogsRes.rows;
+    const dbTotalMinutes = dbTimeLogs.reduce((s, l) => s + l.duration_min, 0);
+    const dbActiveDays = new Set(dbTimeLogs.map((l) => l.logged_date)).size;
+
+    // 4c. Load assessment submissions for the period
+    const assessRes = await pool.query<{
+      date_key: string; score: number; scenario: string;
+    }>(
+      `SELECT s.date_key, s.score::int AS score, a.scenario
+       FROM growth_assessment_submissions s
+       JOIN growth_assessments a ON a.id = s.assessment_id
+       WHERE s.date_key BETWEEN $1 AND $2
+       ORDER BY s.date_key DESC
+       LIMIT 10`,
+      [startDate, endDate]
+    );
+    const assessments = assessRes.rows;
+    const assessAvgScore = assessments.length > 0
+      ? Math.round(assessments.reduce((s, a) => s + a.score, 0) / assessments.length)
+      : null;
 
     // 5. Jira status buckets
     const jiraDone = tickets.filter((t) => {
@@ -314,6 +350,13 @@ export async function POST(request: NextRequest) {
       meetingLoggedSeconds: meetingSeconds,
       sessionCount,
       rangeLabel,
+      // DB-sourced time logs
+      dbTimeLogMinutes: dbTotalMinutes,
+      dbTimeLogEntries: dbTimeLogs.length,
+      dbTimeLogActiveDays: dbActiveDays,
+      // Assessment performance
+      assessmentsCompleted: assessments.length,
+      assessmentAvgScore: assessAvgScore ?? 0,
     };
 
     // 11. Build prompt sections
@@ -366,7 +409,27 @@ Professional Growth — Quiz Performance:
 - Below 60%: ${growthStats.topicStats.filter((t) => t.attemptCount > 0 && t.avgScore < 60).map((t) => `${t.label} (${t.avgScore}%)`).join(", ") || "None"}`
         : "";
 
-    const prompt = `You are a performance coach assessing a Senior Associate at a technology consulting/software company. Based on all the data below for ${rangeLabel}, produce a structured performance summary with exactly these sections in order:
+    const timeLogSection = dbTimeLogs.length > 0 ? `
+
+Logged Time on Project Tasks (from time_logs table — ${startDate} to ${endDate}):
+- Total: ${Math.floor(dbTotalMinutes / 60)}h ${dbTotalMinutes % 60}m across ${dbActiveDays} active day(s)
+- Log entries: ${dbTimeLogs.length}
+- Sample entries (assess depth of work and variety of tasks tackled):
+${dbTimeLogs.slice(0, 10).map((l) =>
+  `  • [${l.logged_date}] ${l.project_name ?? "—"} | ${Math.floor(l.duration_min/60)}h${l.duration_min%60>0?` ${l.duration_min%60}m`:""} | ${l.task_text ? `Task: "${l.task_text.slice(0,40)}" | ` : ""}${l.description.slice(0, 80)}`
+).join("\n")}` : "";
+
+    const assessmentSection = assessments.length > 0 ? `
+
+Daily Assessment Results (scenario-based evaluations — ${startDate} to ${endDate}):
+- Assessments completed: ${assessments.length} | Average score: ${assessAvgScore}%
+- Score range: ${Math.min(...assessments.map(a=>a.score))} – ${Math.max(...assessments.map(a=>a.score))}
+- Recent assessments:
+${assessments.slice(0, 5).map((a) =>
+  `  • [${a.date_key}] Score: ${a.score}% | ${a.scenario.slice(0, 90).replace(/\n/g," ")}…`
+).join("\n")}` : "";
+
+    const prompt = `You are a performance coach assessing a Senior Associate at a technology consulting firm. Based on ALL the data below for ${rangeLabel}, produce a structured performance summary with exactly these sections in order:
 
 ## Time Management
 ## Delivery Quality
@@ -385,10 +448,11 @@ Section guidelines:
   **Problem Solving:** [signal]. [evidence: high-priority resolution across all sources, handling of blocked/stuck work, systematic execution signals]
 
 Performance Data for ${rangeLabel}:
-- Time logged: ${jiraHrsLogged} (Jira, ${sessionCount} sessions) + ${meetingHrsLogged} (meeting tasks)
+- Time logged: ${jiraHrsLogged} (Jira timer, ${sessionCount} sessions) + ${meetingHrsLogged} (meetings) + ${Math.floor(dbTotalMinutes/60)}h ${dbTotalMinutes%60}m (project task logs, ${dbActiveDays} days)
 - Jira: ${tickets.length} tickets | done: ${jiraDone.length} (${stats.completionRate}% raw) | in-progress: ${jiraInProgress.length} | in-review: ${jiraInReview.length} | todo: ${jiraTodo.length}
 - All tasks (meeting + project): ${allTasks.length} total | ${allTasksDone} done (raw ${allTasksRawCompletionRate}%, weighted ${allTasksPriorityWeightedRate}%)
-- Meetings: ${summaries.length} | Milestones: ${stats.milestonesCompleted}/${stats.milestonesTotal} | Profdev: ${stats.profDevCount} activities, ${stats.profDevHours}h${jiraQualitySection}${taskQualitySection}${socialSection}${growthSection}`;
+- Meetings: ${summaries.length} | Milestones: ${stats.milestonesCompleted}/${stats.milestonesTotal} | Profdev: ${stats.profDevCount} activities, ${stats.profDevHours}h
+- Daily assessments: ${assessments.length} completed | Avg score: ${assessAvgScore ?? "N/A"}%${jiraQualitySection}${taskQualitySection}${timeLogSection}${assessmentSection}${socialSection}${growthSection}`;
 
     // 12. Call Gemini or fall back
     let insights: string;
