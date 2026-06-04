@@ -22,14 +22,14 @@ import type { SavedPerformance } from "@/lib/performanceStore";
 // ─── Insights Renderer ────────────────────────────────────────────────────────
 
 const SECTION_ICONS: Record<string, string> = {
-  "Time Management": "⏱",
-  "Delivery & Efficiency": "🚀",
-  "Delivery Quality": "🎯",
-  "Skill Takeaways": "🧠",
-  "Leadership & Collaboration": "🤝",
-  "Communication & Influence": "💬",
-  "Professional Growth": "📈",
-  "Key Recommendations": "✅",
+  "Time Management": "",
+  "Delivery & Efficiency": "",
+  "Delivery Quality": "",
+  "Skill Takeaways": "",
+  "Leadership & Collaboration": "",
+  "Communication & Influence": "",
+  "Professional Growth": "",
+  "Key Recommendations": "",
 };
 
 const SECTION_COLORS: Record<string, string> = {
