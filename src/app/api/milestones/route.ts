@@ -1,7 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { loadMilestones, addMilestone, Milestone } from "@/lib/milestoneStore";
+import {
+  loadMilestones, addMilestone, loadAllSkills,
+  addMilestoneSkill, Milestone, MilestoneSkill,
+} from "@/lib/milestoneStore";
 
 export async function GET() {
   try {
@@ -16,6 +19,24 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // Allow posting a skill directly
+    if (body._type === "skill") {
+      const skill: MilestoneSkill = {
+        id: body.id ?? `mskill-${Date.now()}`,
+        milestoneId: body.milestoneId,
+        domain: body.domain,
+        skillCategory: body.skillCategory,
+        specificSkills: body.specificSkills ?? [],
+        proficiencyLevel: body.proficiencyLevel,
+        evidenceTickets: body.evidenceTickets ?? [],
+        resumeBullet: body.resumeBullet,
+        createdAt: Date.now(),
+      };
+      const saved = await addMilestoneSkill(skill);
+      return NextResponse.json(saved, { status: 201 });
+    }
+
     const milestone: Milestone = {
       id: `milestone-${Date.now()}`,
       title: body.title,
@@ -25,6 +46,10 @@ export async function POST(request: NextRequest) {
       status: body.status ?? "pending",
       category: body.category ?? "other",
       createdAt: Date.now(),
+      whyItMatters: body.whyItMatters,
+      keyDeliverables: body.keyDeliverables ?? [],
+      careerImpact: body.careerImpact,
+      relatedTickets: body.relatedTickets ?? [],
     };
     const updated = await addMilestone(milestone);
     return NextResponse.json(updated, { status: 201 });

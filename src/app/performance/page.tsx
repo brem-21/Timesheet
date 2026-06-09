@@ -633,6 +633,8 @@ export default function PerformancePage() {
   const [insights, setInsights] = useState<string>("");
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
+  const [aiStatus, setAiStatus] = useState<"gemini" | "fallback" | null>(null);
+  const [aiError, setAiError] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState(false);
   const [labelDraft, setLabelDraft] = useState("");
@@ -659,6 +661,7 @@ export default function PerformancePage() {
   const [msTargetDate, setMsTargetDate] = useState("");
   const [msDescription, setMsDescription] = useState("");
   const [msStatus, setMsStatus] = useState<MilestoneStatus>("pending");
+  const [msProjectId, setMsProjectId] = useState<string>("");
   const [msSaving, setMsSaving] = useState(false);
 
   // ProfDev
@@ -778,6 +781,8 @@ export default function PerformancePage() {
       const data = await res.json();
       setStats(data.stats);
       setInsights(data.insights);
+      setAiStatus(data.aiStatus ?? null);
+      setAiError(data.aiError ?? null);
       if (data.savedId) {
         setSavedId(data.savedId);
         setLabelDraft(`${rangeLabel} — ${format(new Date(), "MMM yyyy")}`);
@@ -830,6 +835,7 @@ export default function PerformancePage() {
           targetDate: msTargetDate || undefined,
           description: msDescription.trim() || undefined,
           status: msStatus,
+          projectId: msProjectId || undefined,
         }),
       });
       if (res.ok) {
@@ -838,6 +844,7 @@ export default function PerformancePage() {
         setMsTargetDate("");
         setMsDescription("");
         setMsStatus("pending");
+        setMsProjectId("");
         setShowMilestoneForm(false);
         await loadMilestones();
       }
@@ -1335,9 +1342,18 @@ export default function PerformancePage() {
               Performance Insights
               {rangeLabel ? ` — ${rangeLabel}` : ""}
             </h2>
-            {insights && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">
-                ✨ AI Insights
+            {insights && aiStatus === "gemini" && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+                ✨ Gemini AI
+              </span>
+            )}
+            {insights && aiStatus === "fallback" && (
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 cursor-help"
+                title={aiError ?? "Gemini unavailable — showing structured summary. Try again in a moment."}
+              >
+                ⚡ Smart Summary
+                <span className="text-[10px] text-amber-500 ml-0.5">(Gemini unavailable — retry for full AI)</span>
               </span>
             )}
           </div>
@@ -1541,6 +1557,17 @@ export default function PerformancePage() {
                   <option value="completed">Completed</option>
                 </select>
               </div>
+              {/* Project assignment */}
+              <select
+                value={msProjectId}
+                onChange={(e) => setMsProjectId(e.target.value)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-700"
+              >
+                <option value="">No project (standalone)</option>
+                {perfProjects.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
               <input
                 type="date"
                 value={msTargetDate}

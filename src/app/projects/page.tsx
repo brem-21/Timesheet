@@ -96,7 +96,35 @@ const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
   "done": "todo",
 };
 
-type Tab = "overview" | "tasks" | "timelogs" | "meetings" | "notes" | "export";
+type Tab = "overview" | "tasks" | "timelogs" | "milestones" | "meetings" | "notes" | "export";
+
+type ProficiencyLevel = "Owner" | "Lead" | "Practitioner" | "Emerging";
+
+interface MilestoneSkill {
+  id: string;
+  milestoneId: string;
+  domain: string;
+  skillCategory: string;
+  specificSkills: string[];
+  proficiencyLevel: ProficiencyLevel;
+  evidenceTickets: string[];
+  resumeBullet?: string;
+}
+
+interface ProjectMilestone {
+  id: string;
+  title: string;
+  description?: string;
+  targetDate?: string;
+  completedAt?: string;
+  status: "pending" | "in-progress" | "completed";
+  category: string;
+  whyItMatters?: string;
+  keyDeliverables?: string[];
+  careerImpact?: string;
+  relatedTickets?: string[];
+  skills?: MilestoneSkill[];
+}
 
 interface ProjectNote {
   id: string;
@@ -216,6 +244,11 @@ export default function ProjectsPage() {
   const [editNoteTitle, setEditNoteTitle] = useState("");
   const [editNoteBody, setEditNoteBody] = useState("");
 
+  // Milestones
+  const [milestones, setMilestones] = useState<ProjectMilestone[]>([]);
+  const [milestonesLoaded, setMilestonesLoaded] = useState(false);
+  const [expandedMilestoneId, setExpandedMilestoneId] = useState<string | null>(null);
+
   // Export
   const [exporting, setExporting] = useState(false);
 
@@ -223,6 +256,10 @@ export default function ProjectsPage() {
 
   const loadProjectData = useCallback(async (id: string) => {
     setLoading(true);
+    // Clear all lazy-loaded tab state so switching projects always re-fetches
+    setMilestones([]); setMilestonesLoaded(false); setExpandedMilestoneId(null);
+    setNotes([]);      setNotesLoaded(false);
+    setLinkedMeetings([]); setAllMeetings([]);
     try {
       const [tasksRes, logsRes, projRes] = await Promise.all([
         fetch(`/api/projects/${id}/tasks`),
@@ -235,7 +272,6 @@ export default function ProjectsPage() {
       setStats(pd.stats ?? null);
       if (pd.project) {
         setProject(pd.project);
-        // Keep global context in sync
         setActiveProject({ id: pd.project.id, name: pd.project.name, color: pd.project.color, description: pd.project.description });
       }
     } finally {
@@ -248,6 +284,13 @@ export default function ProjectsPage() {
     const d = await r.json();
     setNotes(d.notes ?? []);
     setNotesLoaded(true);
+  }, []);
+
+  const loadMilestones = useCallback(async (id: string) => {
+    const r = await fetch(`/api/projects/${id}/milestones`);
+    const d = await r.json();
+    setMilestones(d.milestones ?? []);
+    setMilestonesLoaded(true);
   }, []);
 
   const loadMeetings = useCallback(async (id: string) => {
@@ -297,6 +340,7 @@ export default function ProjectsPage() {
       setProject(null); setTasks([]); setTimeLogs([]); setStats(null);
       setLinkedMeetings([]); setAllMeetings([]);
       setNotes([]); setNotesLoaded(false);
+      setMilestones([]); setMilestonesLoaded(false); setExpandedMilestoneId(null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeProject?.id]);
@@ -310,6 +354,11 @@ export default function ProjectsPage() {
   useEffect(() => {
     if (activeTab === "notes" && activeProject?.id && !notesLoaded) loadNotes(activeProject.id);
   }, [activeTab, activeProject?.id, notesLoaded, loadNotes]);
+
+  // Load milestones lazily when tab is opened
+  useEffect(() => {
+    if (activeTab === "milestones" && activeProject?.id && !milestonesLoaded) loadMilestones(activeProject.id);
+  }, [activeTab, activeProject?.id, milestonesLoaded, loadMilestones]);
 
   // Load comments when a task is expanded
   useEffect(() => {
@@ -753,12 +802,12 @@ export default function ProjectsPage() {
 
         {/* Tab bar */}
         <div className="flex gap-1 mt-4 overflow-x-auto">
-          {(["overview", "tasks", "timelogs", "meetings", "notes", "export"] as Tab[]).map((t) => (
+          {(["overview", "tasks", "timelogs", "milestones", "meetings", "notes", "export"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
               className={`px-4 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
                 activeTab === t ? "bg-indigo-100 text-indigo-700 font-medium" : "text-gray-500 hover:text-gray-700"
               }`}>
-              {t === "timelogs" ? "Time Log" : t === "notes" ? "Notes" : t.charAt(0).toUpperCase() + t.slice(1)}
+              {t === "timelogs" ? "Time Log" : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
           ))}
         </div>
@@ -1358,6 +1407,211 @@ export default function ProjectsPage() {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ── MILESTONES ─────────────────────────────────────────────── */}
+            {activeTab === "milestones" && (
+              <div className="max-w-3xl space-y-4">
+                {milestones.length === 0 && milestonesLoaded && (
+                  <div className="bg-white rounded-xl border border-gray-100 p-10 text-center shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-semibold text-gray-700">No milestones yet</p>
+                    <p className="text-xs text-gray-400 mt-1">Milestones linked to this project will appear here.</p>
+                  </div>
+                )}
+
+                {!milestonesLoaded && (
+                  <div className="flex items-center justify-center py-16 text-gray-400 text-sm gap-3">
+                    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Loading milestones…
+                  </div>
+                )}
+
+                {/* Summary strip */}
+                {milestones.length > 0 && (
+                  <div className="flex gap-6 bg-white rounded-xl border border-gray-100 px-5 py-3 shadow-sm">
+                    {[
+                      { label: "Total",       value: milestones.length,                                            color: "text-gray-700" },
+                      { label: "Completed",   value: milestones.filter(m => m.status === "completed").length,      color: "text-emerald-600" },
+                      { label: "In Progress", value: milestones.filter(m => m.status === "in-progress").length,    color: "text-blue-600" },
+                      { label: "Skills",      value: milestones.reduce((s,m)=>s+(m.skills?.length??0),0),          color: "text-violet-600" },
+                    ].map(({ label, value, color }) => (
+                      <div key={label}>
+                        <p className={`text-lg font-bold ${color}`}>{value}</p>
+                        <p className="text-[10px] text-gray-400 uppercase tracking-wide">{label}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Milestone cards */}
+                {milestones.map((m) => {
+                  const isOpen = expandedMilestoneId === m.id;
+                  // Strip "First " from the front of the title
+                  const displayTitle = m.title.replace(/^First\s+/i, "");
+                  const skills = m.skills ?? [];
+                  const delivers = m.keyDeliverables ?? [];
+                  const tickets = m.relatedTickets ?? [];
+
+                  const statusStyles: Record<string, { badge: string; dot: string; label: string }> = {
+                    completed:   { badge: "bg-emerald-100 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Completed" },
+                    "in-progress": { badge: "bg-blue-100 text-blue-700 border-blue-200",          dot: "bg-blue-500",   label: "In Progress" },
+                    pending:     { badge: "bg-gray-100 text-gray-600 border-gray-200",            dot: "bg-gray-400",   label: "Pending" },
+                  };
+                  const ss = statusStyles[m.status] ?? statusStyles.pending;
+
+                  const profColors: Record<string, string> = {
+                    Owner:        "bg-emerald-100 text-emerald-800 border-emerald-200",
+                    Lead:         "bg-blue-100 text-blue-800 border-blue-200",
+                    Practitioner: "bg-violet-100 text-violet-800 border-violet-200",
+                    Emerging:     "bg-amber-100 text-amber-800 border-amber-200",
+                  };
+
+                  return (
+                    <div key={m.id} className={`bg-white rounded-xl border shadow-sm transition-all ${isOpen ? "border-indigo-200 shadow-indigo-50" : "border-gray-100"}`}>
+                      {/* Card header — always visible */}
+                      <button
+                        onClick={() => setExpandedMilestoneId(isOpen ? null : m.id)}
+                        className="w-full text-left px-5 py-4 flex items-start gap-4"
+                      >
+                        {/* Status dot + completion line */}
+                        <div className="flex flex-col items-center pt-0.5 gap-1 shrink-0">
+                          <span className={`w-3 h-3 rounded-full border-2 ${m.status === "completed" ? "bg-emerald-500 border-emerald-500" : m.status === "in-progress" ? "bg-blue-400 border-blue-400" : "bg-white border-gray-300"}`} />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-sm font-semibold text-gray-900 leading-snug">{displayTitle}</h3>
+                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${ss.badge}`}>{ss.label}</span>
+                            {m.careerImpact && (
+                              <span className="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">
+                                {m.careerImpact}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                            {m.completedAt && (
+                              <span>✓ {m.completedAt.slice(0, 10)}</span>
+                            )}
+                            {m.targetDate && !m.completedAt && (
+                              <span>Target: {m.targetDate}</span>
+                            )}
+                            {tickets.length > 0 && (
+                              <span>{tickets.slice(0, 3).join(", ")}{tickets.length > 3 ? ` +${tickets.length - 3}` : ""}</span>
+                            )}
+                            {skills.length > 0 && (
+                              <span className="text-violet-500">{skills.length} skill area{skills.length > 1 ? "s" : ""}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <svg className={`w-4 h-4 text-gray-400 shrink-0 mt-0.5 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+
+                      {/* Expanded detail */}
+                      {isOpen && (
+                        <div className="px-5 pb-5 space-y-5 border-t border-gray-50 pt-4">
+                          {/* Why it matters */}
+                          {m.whyItMatters && (
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Why It Matters</p>
+                              <p className="text-sm text-gray-600 leading-relaxed">{m.whyItMatters}</p>
+                            </div>
+                          )}
+
+                          {/* Key deliverables + tickets side by side */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {delivers.length > 0 && (
+                              <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Key Deliverables</p>
+                                <ul className="space-y-1.5">
+                                  {delivers.map((d, i) => (
+                                    <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
+                                      <svg className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                      </svg>
+                                      {d}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {tickets.length > 0 && (
+                              <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Related Tickets</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {tickets.map((t) => (
+                                    <span key={t} className="text-[10px] font-mono px-2 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-200">{t}</span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Skills gained */}
+                          {skills.length > 0 && (
+                            <div>
+                              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Skills Gained</p>
+                              <div className="space-y-3">
+                                {skills.map((s) => (
+                                  <div key={s.id} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                                    <div className="flex items-start justify-between gap-2 mb-2">
+                                      <div>
+                                        <p className="text-xs font-semibold text-gray-800">{s.skillCategory}</p>
+                                        <p className="text-[10px] text-gray-400 mt-0.5">{s.domain}</p>
+                                      </div>
+                                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${profColors[s.proficiencyLevel] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                                        {s.proficiencyLevel}
+                                      </span>
+                                    </div>
+
+                                    {/* Specific skills */}
+                                    <div className="flex flex-wrap gap-1 mb-2">
+                                      {s.specificSkills.map((sk, i) => (
+                                        <span key={i} className="text-[10px] px-1.5 py-0.5 bg-white border border-gray-200 text-gray-500 rounded">
+                                          {sk}
+                                        </span>
+                                      ))}
+                                    </div>
+
+                                    {/* Resume bullet */}
+                                    {s.resumeBullet && (
+                                      <div className="mt-2 pt-2 border-t border-gray-200">
+                                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Resume Bullet</p>
+                                        <p className="text-[11px] text-gray-600 italic leading-relaxed">{s.resumeBullet}</p>
+                                      </div>
+                                    )}
+
+                                    {/* Evidence tickets */}
+                                    {s.evidenceTickets.length > 0 && (
+                                      <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                                        <span className="text-[10px] text-gray-400">Evidence:</span>
+                                        {s.evidenceTickets.map((t) => (
+                                          <span key={t} className="text-[9px] font-mono px-1.5 py-0.5 bg-indigo-50 text-indigo-500 rounded border border-indigo-100">{t}</span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
 
