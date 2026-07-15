@@ -260,10 +260,10 @@ function materialIcon(type: GrowthMaterial["type"], mimeType?: string): string {
 
 function trendBadge(trend: GrowthInsight["trend"]) {
   const cfg = {
-    improving:         { label: "Improving ↑",        cls: "bg-emerald-100 text-emerald-700" },
-    declining:         { label: "Declining ↓",        cls: "bg-red-100 text-red-700" },
-    stable:            { label: "Stable →",            cls: "bg-amber-100 text-amber-700" },
-    insufficient_data: { label: "Not enough data",    cls: "bg-gray-100 text-gray-500" },
+    improving:         { label: "Improving ↑",        cls: "bg-teal-sage/20 text-teal-pine" },
+    declining:         { label: "Declining ↓",        cls: "bg-[#e07a5f]/15 text-[#b3492f]" },
+    stable:            { label: "Stable →",            cls: "bg-blush text-charcoal" },
+    insufficient_data: { label: "Not enough data",    cls: "bg-mint text-charcoal/50" },
   };
   const { label, cls } = cfg[trend] ?? cfg.insufficient_data;
   return <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>;
@@ -271,9 +271,9 @@ function trendBadge(trend: GrowthInsight["trend"]) {
 
 function scoreBadge(score?: number) {
   if (score === undefined) return null;
-  const cls = score >= 80 ? "bg-emerald-100 text-emerald-700"
-    : score >= 60 ? "bg-amber-100 text-amber-700"
-    : "bg-red-100 text-red-700";
+  const cls = score >= 80 ? "bg-teal-sage/20 text-teal-pine"
+    : score >= 60 ? "bg-blush text-charcoal"
+    : "bg-[#e07a5f]/15 text-[#b3492f]";
   return <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${cls}`}>{score}%</span>;
 }
 
@@ -281,7 +281,7 @@ function scoreBadge(score?: number) {
 
 function ScoreChart({ attempts }: { attempts: GrowthQuizAttempt[] }) {
   const data = [...attempts].reverse().slice(-14);
-  if (data.length === 0) return <p className="text-xs text-gray-400 text-center py-4">No attempts yet</p>;
+  if (data.length === 0) return <p className="text-xs text-charcoal/40 text-center py-4">No attempts yet</p>;
 
   const max = 100;
   const h = 60;
@@ -294,11 +294,11 @@ function ScoreChart({ attempts }: { attempts: GrowthQuizAttempt[] }) {
         const x = (i / data.length) * w + 2;
         const barH = (a.score / max) * h;
         const y = h - barH;
-        const fill = a.score >= 80 ? "#10b981" : a.score >= 60 ? "#f59e0b" : "#ef4444";
+        const fill = a.score >= 80 ? "#65b8a2" : a.score >= 60 ? "#d6aec1" : "#e07a5f";
         return (
           <g key={a.id}>
             <rect x={x} y={y} width={barW} height={barH} fill={fill} rx={2} opacity={0.85} />
-            <text x={x + barW / 2} y={h + 14} textAnchor="middle" fontSize={7} fill="#9ca3af">
+            <text x={x + barW / 2} y={h + 14} textAnchor="middle" fontSize={7} fill="#9c978a">
               {a.dateKey.slice(5)}
             </text>
           </g>
@@ -792,16 +792,16 @@ export default function GrowthPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-full bg-paper overflow-hidden">
 
       {/* ── Topic selector bar ────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-4 flex-wrap shrink-0">
+      <div className="bg-white border-b border-mint-mist px-6 py-3 flex items-center gap-4 flex-wrap shrink-0">
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide shrink-0">Topic</label>
+          <label className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide shrink-0">Topic</label>
           <select
             value={selectedId ?? ""}
             onChange={(e) => setSelectedId(e.target.value || null)}
-            className="flex-1 min-w-0 max-w-xs text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+            className="input-field flex-1 min-w-0 max-w-xs"
           >
             <option value="">— Select a topic —</option>
             {topics.map((t) => (
@@ -811,7 +811,7 @@ export default function GrowthPage() {
             ))}
           </select>
           {selectedTopic?.isCustom && (
-            <button onClick={() => handleDeleteTopic(selectedTopic.id)} className="text-xs text-red-400 hover:text-red-600 shrink-0">Remove</button>
+            <button onClick={() => handleDeleteTopic(selectedTopic.id)} className="text-xs text-[#e07a5f] hover:text-[#b3492f] shrink-0">Remove</button>
           )}
         </div>
 
@@ -820,25 +820,23 @@ export default function GrowthPage() {
           <div className="flex items-center gap-2 flex-wrap">
             <input value={newTopicLabel} onChange={(e) => setNewTopicLabel(e.target.value)}
               placeholder="Topic name" autoFocus
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-400 w-32" />
+              className="input-field text-xs !py-1.5 w-32" />
             <input value={newTopicDesc} onChange={(e) => setNewTopicDesc(e.target.value)}
               placeholder="Description (optional)"
-              className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none w-40" />
-            <button onClick={handleAddTopic} className="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-600">Add</button>
-            <button onClick={() => setShowAddTopic(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+              className="input-field text-xs !py-1.5 w-40" />
+            <button onClick={handleAddTopic} className="btn-primary-sm">Add</button>
+            <button onClick={() => setShowAddTopic(false)} className="text-xs text-charcoal/40 hover:text-charcoal/70">Cancel</button>
           </div>
         ) : (
-          <button onClick={() => setShowAddTopic(true)} className="text-xs text-indigo-500 hover:text-indigo-700 shrink-0">+ Custom topic</button>
+          <button onClick={() => setShowAddTopic(true)} className="text-xs text-teal-deep hover:text-teal-pine shrink-0">+ Custom topic</button>
         )}
 
         {selectedTopic && (
           <div className="flex gap-2 shrink-0">
-            <button onClick={() => { setTab("quiz"); loadQuiz(); }}
-              className="text-sm px-3 py-1.5 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors">
+            <button onClick={() => { setTab("quiz"); loadQuiz(); }} className="btn-primary-sm">
               Today&apos;s Quiz
             </button>
-            <button onClick={() => { setTab("insights"); handleRegenerateInsight(); }}
-              className="text-sm px-3 py-1.5 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button onClick={() => { setTab("insights"); handleRegenerateInsight(); }} className="btn-ghost-sm">
               Insights
             </button>
           </div>
@@ -850,17 +848,17 @@ export default function GrowthPage() {
         {!selectedTopic ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <p className="text-4xl mb-3">📚</p>
-              <p className="text-gray-500 text-sm">Select a topic from the dropdown above to get started</p>
+              <p className="eyebrow justify-center mb-2"><span className="eyebrow-dot" />Growth</p>
+              <p className="text-charcoal/50 text-[14px]">Select a topic from the dropdown above to get started</p>
             </div>
           </div>
         ) : (
           <>
             {/* Topic header + tabs */}
-            <div className="bg-white border-b border-gray-200 px-6 pt-4 pb-0">
+            <div className="bg-white border-b border-mint-mist px-6 pt-4 pb-0">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-base font-bold text-gray-900">{selectedTopic.label}</h1>
-                {selectedTopic.description && <span className="text-sm text-gray-400">— {selectedTopic.description}</span>}
+                <h1 className="headline !text-[20px]">{selectedTopic.label}</h1>
+                {selectedTopic.description && <span className="text-sm text-charcoal/40">— {selectedTopic.description}</span>}
                 {topicScores[selectedId!] !== undefined && scoreBadge(topicScores[selectedId!])}
               </div>
 
@@ -878,10 +876,10 @@ export default function GrowthPage() {
                         loadAssessment();
                       }
                     }}
-                    className={`px-4 py-1.5 text-sm rounded-lg transition-colors ${
+                    className={`px-4 py-1.5 text-sm rounded-nav transition-colors ${
                       tab === t
-                        ? t === "assessment" ? "bg-purple-100 text-purple-700 font-medium" : "bg-indigo-100 text-indigo-700 font-medium"
-                        : "text-gray-500 hover:text-gray-700"
+                        ? t === "assessment" ? "bg-navy/10 text-navy font-medium" : "bg-mint text-teal-pine font-medium"
+                        : "text-charcoal/50 hover:text-charcoal/80"
                     }`}
                   >
                     {t === "materials" ? "Study Materials"
@@ -903,7 +901,7 @@ export default function GrowthPage() {
                   {/* Upload zone */}
                   <div
                     className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${
-                      dragOver ? "border-indigo-400 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
+                      dragOver ? "border-teal-sage bg-mint" : "border-mint-mist hover:border-mint-mist"
                     }`}
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
@@ -916,12 +914,12 @@ export default function GrowthPage() {
                     onClick={() => fileInputRef.current?.click()}
                   >
                     {uploadLoading ? (
-                      <p className="text-sm text-indigo-500">Uploading...</p>
+                      <p className="text-sm text-teal-deep">Uploading...</p>
                     ) : (
                       <>
                         <p className="text-2xl mb-1">📁</p>
-                        <p className="text-sm font-medium text-gray-700">Drop files here or click to upload</p>
-                        <p className="text-xs text-gray-400 mt-1">PDF, DOCX, PPTX, MP4, MP3, images — up to 20 MB</p>
+                        <p className="text-sm font-medium text-charcoal/80">Drop files here or click to upload</p>
+                        <p className="text-xs text-charcoal/40 mt-1">PDF, DOCX, PPTX, MP4, MP3, images — up to 20 MB</p>
                       </>
                     )}
                     <input
@@ -936,58 +934,58 @@ export default function GrowthPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setAddMode(addMode === "link" ? "none" : "link")}
-                      className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${addMode === "link" ? "bg-blue-50 border-blue-300 text-blue-700" : "border-gray-200 hover:bg-gray-50"}`}
+                      className={`text-sm px-3 py-1.5 rounded-button border transition-colors ${addMode === "link" ? "bg-navy/10 border-navy/30 text-navy" : "border-mint-mist hover:bg-paper"}`}
                     >
                       🔗 Add Link
                     </button>
                     <button
                       onClick={() => setAddMode(addMode === "note" ? "none" : "note")}
-                      className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${addMode === "note" ? "bg-amber-50 border-amber-300 text-amber-700" : "border-gray-200 hover:bg-gray-50"}`}
+                      className={`text-sm px-3 py-1.5 rounded-lg border transition-colors ${addMode === "note" ? "bg-blush border-rose text-charcoal" : "border-mint-mist hover:bg-paper"}`}
                     >
                       📝 Add Note
                     </button>
                     <button
                       onClick={handleSuggest}
                       disabled={suggestLoading}
-                      className="text-sm px-3 py-1.5 rounded-lg border border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 disabled:opacity-50 transition-colors"
+                      className="text-sm px-3 py-1.5 rounded-button border border-navy/20 bg-navy/10 text-navy hover:bg-navy/10 disabled:opacity-50 transition-colors"
                     >
                       {suggestLoading ? "Asking AI..." : "✨ AI Suggest"}
                     </button>
                   </div>
 
                   {addMode === "link" && (
-                    <div className="bg-blue-50 rounded-xl p-4 space-y-2 border border-blue-100">
+                    <div className="bg-navy/10 rounded-button p-4 space-y-2 border border-navy/10">
                       <input
                         value={linkTitle}
                         onChange={(e) => setLinkTitle(e.target.value)}
                         placeholder="Title (optional)"
-                        className="w-full text-sm border border-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        className="w-full text-sm border border-mint-mist rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-navy/40"
                       />
                       <input
                         value={linkUrl}
                         onChange={(e) => setLinkUrl(e.target.value)}
                         placeholder="https://..."
-                        className="w-full text-sm border border-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        className="w-full text-sm border border-mint-mist rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-navy/40"
                       />
                       <div className="flex gap-2">
-                        <button onClick={handleAddLink} className="text-sm bg-blue-500 text-white px-4 py-1.5 rounded-lg hover:bg-blue-600">Save Link</button>
-                        <button onClick={() => setAddMode("none")} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                        <button onClick={handleAddLink} className="text-sm bg-navy text-white px-4 py-1.5 rounded-button hover:bg-navy">Save Link</button>
+                        <button onClick={() => setAddMode("none")} className="text-sm text-charcoal/50 hover:text-charcoal/80">Cancel</button>
                       </div>
                     </div>
                   )}
 
                   {addMode === "note" && (
-                    <div className="bg-amber-50 rounded-xl p-4 space-y-2 border border-amber-100">
+                    <div className="bg-blush rounded-xl p-4 space-y-2 border border-blush">
                       <textarea
                         value={noteText}
                         onChange={(e) => setNoteText(e.target.value)}
                         placeholder="Write your note or key takeaways..."
                         rows={4}
-                        className="w-full text-sm border border-gray-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-400 resize-none"
+                        className="w-full text-sm border border-mint-mist rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-rose resize-none"
                       />
                       <div className="flex gap-2">
-                        <button onClick={handleAddNote} className="text-sm bg-amber-500 text-white px-4 py-1.5 rounded-lg hover:bg-amber-600">Save Note</button>
-                        <button onClick={() => setAddMode("none")} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                        <button onClick={handleAddNote} className="btn-primary-sm">Save Note</button>
+                        <button onClick={() => setAddMode("none")} className="text-sm text-charcoal/50 hover:text-charcoal/80">Cancel</button>
                       </div>
                     </div>
                   )}
@@ -995,20 +993,20 @@ export default function GrowthPage() {
                   {/* AI suggestions */}
                   {suggestions.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">AI Suggestions</p>
+                      <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide">AI Suggestions</p>
                       {suggestions.map((s, i) => (
-                        <div key={i} className="bg-purple-50 border border-purple-100 rounded-xl p-4 flex gap-3">
+                        <div key={i} className="bg-navy/10 border border-navy/10 rounded-button p-4 flex gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-sm font-medium text-gray-800">{s.title}</span>
-                              <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded">{s.type}</span>
+                              <span className="text-sm font-medium text-charcoal">{s.title}</span>
+                              <span className="text-xs px-1.5 py-0.5 bg-navy/10 text-navy rounded">{s.type}</span>
                             </div>
-                            <p className="text-xs text-gray-500 mt-0.5">{s.why}</p>
-                            <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline break-all">{s.url}</a>
+                            <p className="text-xs text-charcoal/50 mt-0.5">{s.why}</p>
+                            <a href={s.url} target="_blank" rel="noopener noreferrer" className="text-xs text-teal-deep hover:underline break-all">{s.url}</a>
                           </div>
                           <button
                             onClick={() => handleAddSuggestion(s)}
-                            className="shrink-0 text-xs bg-purple-500 text-white px-3 py-1.5 rounded-lg hover:bg-purple-600 self-start"
+                            className="shrink-0 text-xs bg-navy text-white px-3 py-1.5 rounded-button hover:bg-navy self-start"
                           >
                             Add
                           </button>
@@ -1019,30 +1017,30 @@ export default function GrowthPage() {
 
                   {/* Materials list */}
                   {matLoading ? (
-                    <p className="text-sm text-gray-400">Loading materials...</p>
+                    <p className="text-sm text-charcoal/40">Loading materials...</p>
                   ) : materials.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400">
+                    <div className="text-center py-12 text-charcoal/40">
                       <p className="text-3xl mb-2">📚</p>
                       <p className="text-sm">No materials yet. Upload files, add links, or ask AI to suggest resources.</p>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{materials.length} material{materials.length !== 1 ? "s" : ""}</p>
+                      <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide">{materials.length} material{materials.length !== 1 ? "s" : ""}</p>
                       {materials.map((m) => (
-                        <div key={m.id} className="bg-white border border-gray-100 rounded-xl p-4 flex items-start gap-3 hover:shadow-sm transition-shadow">
+                        <div key={m.id} className="bg-white border border-mint rounded-xl p-4 flex items-start gap-3 hover:shadow-sm transition-shadow">
                           <span className="text-xl shrink-0">{materialIcon(m.type, m.mimeType)}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800 truncate">{m.title}</p>
+                            <p className="text-sm font-medium text-charcoal truncate">{m.title}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                              <span className="text-xs text-gray-400 capitalize">{m.type.replace("_", " ")}</span>
-                              {m.fileSize && <span className="text-xs text-gray-400">{formatBytes(m.fileSize)}</span>}
-                              {m.contentText && <span className="text-xs text-gray-500 truncate max-w-xs">{m.contentText.slice(0, 80)}…</span>}
+                              <span className="text-xs text-charcoal/40 capitalize">{m.type.replace("_", " ")}</span>
+                              {m.fileSize && <span className="text-xs text-charcoal/40">{formatBytes(m.fileSize)}</span>}
+                              {m.contentText && <span className="text-xs text-charcoal/50 truncate max-w-xs">{m.contentText.slice(0, 80)}…</span>}
                               {(m.url || m.sourceUrl) && (
-                                <a href={m.url ?? m.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-500 hover:underline">Open ↗</a>
+                                <a href={m.url ?? m.sourceUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-teal-deep hover:underline">Open ↗</a>
                               )}
                             </div>
                           </div>
-                          <button onClick={() => handleDeleteMaterial(m.id)} className="text-gray-300 hover:text-red-400 text-sm shrink-0">✕</button>
+                          <button onClick={() => handleDeleteMaterial(m.id)} className="text-charcoal/30 hover:text-[#e07a5f] text-sm shrink-0">✕</button>
                         </div>
                       ))}
                     </div>
@@ -1056,9 +1054,9 @@ export default function GrowthPage() {
                   {/* Loading */}
                   {courseLoading && (
                     <div className="text-center py-16">
-                      <div className="inline-block w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-                      <p className="text-sm font-medium text-gray-600 mb-1">Designing your course curriculum…</p>
-                      <p className="text-xs text-gray-400">AI is structuring chapters, sections & exercises for Senior Associate level</p>
+                      <div className="inline-block w-8 h-8 border-2 border-teal-deep border-t-transparent rounded-full animate-spin mb-3" />
+                      <p className="text-sm font-medium text-charcoal/70 mb-1">Designing your course curriculum…</p>
+                      <p className="text-xs text-charcoal/40">AI is structuring chapters, sections & exercises for Senior Associate level</p>
                     </div>
                   )}
 
@@ -1066,11 +1064,11 @@ export default function GrowthPage() {
                   {!courseLoading && !courseRecord && (
                     <div className="text-center py-16">
                       <p className="text-4xl mb-3">📚</p>
-                      <p className="text-base font-semibold text-gray-700 mb-1">{selectedTopic.label} Course</p>
-                      <p className="text-sm text-gray-400 mb-6">AI will design a structured curriculum with chapters, sections and hands-on exercises tailored to Senior Associate level.</p>
+                      <p className="text-base font-semibold text-charcoal/80 mb-1">{selectedTopic.label} Course</p>
+                      <p className="text-sm text-charcoal/40 mb-6">AI will design a structured curriculum with chapters, sections and hands-on exercises tailored to Senior Associate level.</p>
                       <button
                         onClick={() => selectedId && loadModules(selectedId)}
-                        className="bg-indigo-500 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-600 text-sm font-medium"
+                        className="bg-teal-deep text-white px-6 py-2.5 rounded-button hover:bg-teal-forest text-sm font-medium"
                       >
                         Generate Course Modules
                       </button>
@@ -1083,37 +1081,37 @@ export default function GrowthPage() {
                     return (
                       <>
                         {/* Course header */}
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                        <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex-1 min-w-0">
-                              <h2 className="text-base font-bold text-gray-900 mb-1">{cm.title}</h2>
-                              <p className="text-sm text-gray-500 leading-relaxed">{cm.description}</p>
+                              <h2 className="text-base font-bold text-charcoal mb-1">{cm.title}</h2>
+                              <p className="text-sm text-charcoal/50 leading-relaxed">{cm.description}</p>
                             </div>
                             <button
                               onClick={() => selectedId && loadModules(selectedId, true)}
-                              className="shrink-0 text-xs text-gray-400 hover:text-indigo-500 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+                              className="shrink-0 text-xs text-charcoal/40 hover:text-teal-deep border border-mint-mist rounded-lg px-3 py-1.5 transition-colors"
                             >
                               Regenerate
                             </button>
                           </div>
-                          <div className="flex gap-4 mt-4 pt-4 border-t border-gray-50">
+                          <div className="flex gap-4 mt-4 pt-4 border-t border-paper">
                             <div className="text-center">
-                              <p className="text-lg font-bold text-indigo-600">{cm.chapters.length}</p>
-                              <p className="text-[10px] text-gray-400 uppercase">Chapters</p>
+                              <p className="text-lg font-bold text-teal-forest">{cm.chapters.length}</p>
+                              <p className="text-[10px] text-charcoal/40 uppercase">Chapters</p>
                             </div>
                             <div className="text-center">
-                              <p className="text-lg font-bold text-indigo-600">
+                              <p className="text-lg font-bold text-teal-forest">
                                 {cm.chapters.reduce((s, c) => s + c.sections.length, 0)}
                               </p>
-                              <p className="text-[10px] text-gray-400 uppercase">Sections</p>
+                              <p className="text-[10px] text-charcoal/40 uppercase">Sections</p>
                             </div>
                             <div className="text-center">
-                              <p className="text-lg font-bold text-indigo-600">{cm.totalHours}h</p>
-                              <p className="text-[10px] text-gray-400 uppercase">Total Hours</p>
+                              <p className="text-lg font-bold text-teal-forest">{cm.totalHours}h</p>
+                              <p className="text-[10px] text-charcoal/40 uppercase">Total Hours</p>
                             </div>
                             <div className="text-center">
-                              <p className="text-lg font-bold text-indigo-600">{cm.level}</p>
-                              <p className="text-[10px] text-gray-400 uppercase">Level</p>
+                              <p className="text-lg font-bold text-teal-forest">{cm.level}</p>
+                              <p className="text-[10px] text-charcoal/40 uppercase">Level</p>
                             </div>
                           </div>
                         </div>
@@ -1122,7 +1120,7 @@ export default function GrowthPage() {
                         {cm.chapters.map((chapter) => {
                           const isOpen = expandedChapters.has(chapter.id);
                           return (
-                            <div key={chapter.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                            <div key={chapter.id} className="bg-white rounded-2xl border border-mint shadow-sm overflow-hidden">
                               {/* Chapter header — clickable */}
                               <button
                                 onClick={() => {
@@ -1133,17 +1131,17 @@ export default function GrowthPage() {
                                     return next;
                                   });
                                 }}
-                                className="w-full text-left p-5 flex items-center gap-4 hover:bg-gray-50 transition-colors"
+                                className="w-full text-left p-5 flex items-center gap-4 hover:bg-paper transition-colors"
                               >
-                                <div className="w-8 h-8 rounded-full bg-indigo-500 text-white text-sm font-bold flex items-center justify-center shrink-0">
+                                <div className="w-8 h-8 rounded-full bg-teal-deep text-white text-sm font-bold flex items-center justify-center shrink-0">
                                   {chapter.number}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-semibold text-gray-900">{chapter.title}</p>
-                                  <p className="text-xs text-gray-400 mt-0.5">{chapter.sections.length} sections · {chapter.estimatedHours}h</p>
+                                  <p className="text-sm font-semibold text-charcoal">{chapter.title}</p>
+                                  <p className="text-xs text-charcoal/40 mt-0.5">{chapter.sections.length} sections · {chapter.estimatedHours}h</p>
                                 </div>
                                 <svg
-                                  className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
+                                  className={`w-4 h-4 text-charcoal/40 transition-transform shrink-0 ${isOpen ? "rotate-180" : ""}`}
                                   fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
                                 >
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -1152,8 +1150,8 @@ export default function GrowthPage() {
 
                               {/* Chapter description + sections */}
                               {isOpen && (
-                                <div className="border-t border-gray-50 px-5 pb-5 pt-4 space-y-5">
-                                  <p className="text-sm text-gray-500">{chapter.description}</p>
+                                <div className="border-t border-paper px-5 pb-5 pt-4 space-y-5">
+                                  <p className="text-sm text-charcoal/50">{chapter.description}</p>
 
                                   {chapter.sections.map((section, si) => {
                                     const secKey = section.id;
@@ -1163,7 +1161,7 @@ export default function GrowthPage() {
                                     const isCodeExercise = !!section.exerciseLanguage;
 
                                     return (
-                                    <div key={section.id} className="border border-gray-100 rounded-xl overflow-hidden">
+                                    <div key={section.id} className="border border-mint rounded-xl overflow-hidden">
                                       {/* Section header — clickable */}
                                       <button
                                         onClick={() => {
@@ -1173,27 +1171,27 @@ export default function GrowthPage() {
                                             return next;
                                           });
                                         }}
-                                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-gray-50 transition-colors"
+                                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-paper transition-colors"
                                       >
-                                        <span className="w-6 h-6 rounded bg-indigo-100 text-indigo-700 text-[10px] font-bold flex items-center justify-center shrink-0">
+                                        <span className="w-6 h-6 rounded bg-mint text-teal-pine text-[10px] font-bold flex items-center justify-center shrink-0">
                                           {chapter.number}.{si + 1}
                                         </span>
-                                        <p className="flex-1 text-sm font-semibold text-gray-800">{section.title}</p>
-                                        {exResult && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${exResult.score >= 70 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>{exResult.score}%</span>}
-                                        <svg className={`w-4 h-4 text-gray-400 transition-transform shrink-0 ${isSectionOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <p className="flex-1 text-sm font-semibold text-charcoal">{section.title}</p>
+                                        {exResult && <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${exResult.score >= 70 ? "bg-teal-sage/20 text-teal-pine" : "bg-blush text-charcoal"}`}>{exResult.score}%</span>}
+                                        <svg className={`w-4 h-4 text-charcoal/40 transition-transform shrink-0 ${isSectionOpen ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                                         </svg>
                                       </button>
 
                                       {isSectionOpen && (
-                                        <div className="border-t border-gray-50 px-4 pb-5 pt-4 space-y-4">
+                                        <div className="border-t border-paper px-4 pb-5 pt-4 space-y-4">
                                           {/* Objectives */}
                                           <div>
-                                            <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1.5">Learning Objectives</p>
+                                            <p className="text-[10px] font-bold text-teal-pine uppercase mb-1.5">Learning Objectives</p>
                                             <ul className="space-y-1">
                                               {section.objectives.map((obj, i) => (
-                                                <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
-                                                  <span className="text-emerald-500 mt-0.5 shrink-0">✓</span>{obj}
+                                                <li key={i} className="flex items-start gap-1.5 text-xs text-charcoal/70">
+                                                  <span className="text-teal-sage mt-0.5 shrink-0">✓</span>{obj}
                                                 </li>
                                               ))}
                                             </ul>
@@ -1201,30 +1199,30 @@ export default function GrowthPage() {
 
                                           {/* Key topics */}
                                           <div>
-                                            <p className="text-[10px] font-bold text-indigo-600 uppercase mb-1.5">Key Topics</p>
+                                            <p className="text-[10px] font-bold text-teal-forest uppercase mb-1.5">Key Topics</p>
                                             <div className="flex flex-wrap gap-1.5">
                                               {section.keyTopics.map((topic, i) => (
-                                                <span key={i} className="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">{topic}</span>
+                                                <span key={i} className="text-xs bg-mint text-teal-pine px-2 py-0.5 rounded-full">{topic}</span>
                                               ))}
                                             </div>
                                           </div>
 
                                           {/* Rich explanation */}
                                           {section.explanation && (
-                                            <div className="bg-white border border-gray-100 rounded-xl p-4 space-y-2">
-                                              <p className="text-[10px] font-bold text-gray-500 uppercase">Explanation</p>
-                                              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{section.explanation}</div>
+                                            <div className="bg-white border border-mint rounded-xl p-4 space-y-2">
+                                              <p className="text-[10px] font-bold text-charcoal/50 uppercase">Explanation</p>
+                                              <div className="text-sm text-charcoal/80 leading-relaxed whitespace-pre-line">{section.explanation}</div>
                                             </div>
                                           )}
 
                                           {/* Teaching points */}
                                           {section.teachingPoints && section.teachingPoints.length > 0 && (
-                                            <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-                                              <p className="text-[10px] font-bold text-indigo-600 uppercase mb-2">Key Takeaways</p>
+                                            <div className="bg-mint rounded-xl p-4 border border-mint">
+                                              <p className="text-[10px] font-bold text-teal-forest uppercase mb-2">Key Takeaways</p>
                                               <ul className="space-y-1.5">
                                                 {section.teachingPoints.map((pt, i) => (
-                                                  <li key={i} className="flex items-start gap-2 text-sm text-indigo-900">
-                                                    <span className="text-indigo-400 shrink-0 mt-0.5">▸</span>{pt}
+                                                  <li key={i} className="flex items-start gap-2 text-sm text-teal-pine">
+                                                    <span className="text-teal-sage shrink-0 mt-0.5">▸</span>{pt}
                                                   </li>
                                                 ))}
                                               </ul>
@@ -1233,27 +1231,27 @@ export default function GrowthPage() {
 
                                           {/* Real-world example */}
                                           {section.realWorldExample && (
-                                            <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
-                                              <p className="text-[10px] font-bold text-amber-700 uppercase mb-1">Real-World Example</p>
-                                              <p className="text-sm text-amber-900 leading-relaxed">{section.realWorldExample}</p>
+                                            <div className="bg-blush rounded-xl p-4 border border-blush">
+                                              <p className="text-[10px] font-bold text-charcoal uppercase mb-1">Real-World Example</p>
+                                              <p className="text-sm text-charcoal leading-relaxed">{section.realWorldExample}</p>
                                             </div>
                                           )}
 
                                           {/* Code example */}
                                           {section.codeExample && (
-                                            <div className="rounded-xl overflow-hidden border border-gray-200">
-                                              <div className="bg-gray-900 px-4 py-2 flex items-center gap-2">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase">Code Example</span>
+                                            <div className="rounded-xl overflow-hidden border border-mint-mist">
+                                              <div className="bg-charcoal px-4 py-2 flex items-center gap-2">
+                                                <span className="text-[10px] font-bold text-charcoal/40 uppercase">Code Example</span>
                                               </div>
-                                              <pre className="bg-gray-950 text-gray-200 text-xs px-4 py-3 overflow-x-auto font-mono leading-relaxed">{section.codeExample}</pre>
+                                              <pre className="bg-ink text-mint-mist text-xs px-4 py-3 overflow-x-auto font-mono leading-relaxed">{section.codeExample}</pre>
                                             </div>
                                           )}
 
                                           {/* Practice exercise */}
-                                          <div className="border border-amber-200 rounded-xl overflow-hidden">
-                                            <div className="bg-amber-50 px-4 py-3">
-                                              <p className="text-[10px] font-bold text-amber-700 uppercase mb-1">Practice Exercise</p>
-                                              <p className="text-sm text-amber-900 leading-relaxed">{section.practiceExercise}</p>
+                                          <div className="border border-rose/50 rounded-xl overflow-hidden">
+                                            <div className="bg-blush px-4 py-3">
+                                              <p className="text-[10px] font-bold text-charcoal uppercase mb-1">Practice Exercise</p>
+                                              <p className="text-sm text-charcoal leading-relaxed">{section.practiceExercise}</p>
                                             </div>
 
                                             <div className="bg-white p-4 space-y-3">
@@ -1263,7 +1261,7 @@ export default function GrowthPage() {
                                                   onChange={(e) => setExerciseCode((prev) => ({ ...prev, [secKey]: e.target.value }))}
                                                   placeholder={`Write your ${section.exerciseLanguage} code here…`}
                                                   rows={12}
-                                                  className="w-full font-mono text-xs bg-gray-950 text-gray-100 border border-gray-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-violet-500 resize-y"
+                                                  className="w-full font-mono text-xs bg-ink text-mint border border-charcoal/80 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-sage resize-y"
                                                 />
                                               ) : (
                                                 <textarea
@@ -1271,19 +1269,19 @@ export default function GrowthPage() {
                                                   onChange={(e) => setExerciseNotes((prev) => ({ ...prev, [secKey]: e.target.value }))}
                                                   placeholder="Write your answer, analysis, or notes here…"
                                                   rows={8}
-                                                  className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-y leading-relaxed"
+                                                  className="w-full text-sm border border-mint-mist rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-mint-mist resize-y leading-relaxed"
                                                 />
                                               )}
 
                                               <div className="flex items-center justify-between flex-wrap gap-2">
-                                                <p className="text-xs text-gray-400">
+                                                <p className="text-xs text-charcoal/40">
                                                   {isCodeExercise ? `${section.exerciseLanguage} editor` : "Text answer"}
-                                                  {exResult && <span className={`ml-2 font-semibold ${exResult.score >= 70 ? "text-emerald-600" : "text-amber-600"}`}>Score: {exResult.score}/100</span>}
+                                                  {exResult && <span className={`ml-2 font-semibold ${exResult.score >= 70 ? "text-teal-pine" : "text-charcoal/70"}`}>Score: {exResult.score}/100</span>}
                                                 </p>
                                                 <button
                                                   onClick={() => handleEvaluateExercise(secKey, section)}
                                                   disabled={isEvaluating || (!(exerciseCode[secKey] || "").trim() && !(exerciseNotes[secKey] || "").trim())}
-                                                  className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600 disabled:opacity-50 flex items-center gap-2"
+                                                  className="text-sm bg-teal-deep text-white px-4 py-1.5 rounded-button hover:bg-teal-forest disabled:opacity-50 flex items-center gap-2"
                                                 >
                                                   {isEvaluating ? (
                                                     <><svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>Evaluating…</>
@@ -1292,9 +1290,9 @@ export default function GrowthPage() {
                                               </div>
 
                                               {exResult && (
-                                                <div className={`rounded-xl p-3 border-l-4 ${exResult.score >= 70 ? "bg-emerald-50 border-emerald-400" : "bg-amber-50 border-amber-400"}`}>
-                                                  <p className="text-xs font-semibold text-gray-600 mb-1">AI Feedback</p>
-                                                  <p className="text-sm text-gray-700 leading-relaxed">{exResult.feedback}</p>
+                                                <div className={`rounded-xl p-3 border-l-4 ${exResult.score >= 70 ? "bg-teal-sage/10 border-teal-sage" : "bg-blush border-rose"}`}>
+                                                  <p className="text-xs font-semibold text-charcoal/70 mb-1">AI Feedback</p>
+                                                  <p className="text-sm text-charcoal/80 leading-relaxed">{exResult.feedback}</p>
                                                 </div>
                                               )}
                                             </div>
@@ -1322,9 +1320,9 @@ export default function GrowthPage() {
                   {quizPhase === "idle" && !quizLoading && (
                     <div className="text-center py-16">
                       <p className="text-4xl mb-3">🧠</p>
-                      <p className="text-base font-semibold text-gray-700 mb-1">Today&apos;s {selectedTopic.label} Quiz</p>
-                      <p className="text-sm text-gray-400 mb-6">Senior Associate difficulty · 30 questions (MC + code + theory) · Daily rotation</p>
-                      <button onClick={loadQuiz} className="bg-indigo-500 text-white px-6 py-2.5 rounded-xl hover:bg-indigo-600 text-sm font-medium">
+                      <p className="text-base font-semibold text-charcoal/80 mb-1">Today&apos;s {selectedTopic.label} Quiz</p>
+                      <p className="text-sm text-charcoal/40 mb-6">Senior Associate difficulty · 30 questions (MC + code + theory) · Daily rotation</p>
+                      <button onClick={loadQuiz} className="bg-teal-deep text-white px-6 py-2.5 rounded-button hover:bg-teal-forest text-sm font-medium">
                         Generate Today&apos;s Quiz
                       </button>
                     </div>
@@ -1333,9 +1331,9 @@ export default function GrowthPage() {
                   {/* Phase: loading */}
                   {quizLoading && (
                     <div className="text-center py-16">
-                      <div className="inline-block w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3" />
-                      <p className="text-sm font-medium text-gray-600 mb-1">Curating your expert lesson…</p>
-                      <p className="text-xs text-gray-400">Generating consulting-framed questions next</p>
+                      <div className="inline-block w-8 h-8 border-2 border-teal-deep border-t-transparent rounded-full animate-spin mb-3" />
+                      <p className="text-sm font-medium text-charcoal/70 mb-1">Curating your expert lesson…</p>
+                      <p className="text-xs text-charcoal/40">Generating consulting-framed questions next</p>
                     </div>
                   )}
 
@@ -1343,45 +1341,45 @@ export default function GrowthPage() {
                   {quizPhase === "lesson" && quiz && quiz.lesson && (
                     <div className="space-y-5">
                       {/* Expert header */}
-                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                      <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
                         <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-xl shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-mint flex items-center justify-center text-xl shrink-0">
                             🎓
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              <p className="text-sm font-bold text-gray-900">{quiz.lesson.expertName}</p>
-                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full uppercase tracking-wide">Expert Curated</span>
+                              <p className="text-sm font-bold text-charcoal">{quiz.lesson.expertName}</p>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-mint text-teal-pine rounded-full uppercase tracking-wide">Expert Curated</span>
                             </div>
-                            <p className="text-xs text-gray-500 mb-1">{quiz.lesson.expertCredentials}</p>
-                            <p className="text-[11px] text-indigo-500 truncate">{quiz.lesson.expertSource}</p>
+                            <p className="text-xs text-charcoal/50 mb-1">{quiz.lesson.expertCredentials}</p>
+                            <p className="text-[11px] text-teal-deep truncate">{quiz.lesson.expertSource}</p>
                           </div>
                         </div>
-                        <div className="mt-4 pt-4 border-t border-gray-50">
-                          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Today&apos;s Focus</p>
-                          <p className="text-sm font-medium text-gray-800">{quiz.lesson.todaysFocus}</p>
+                        <div className="mt-4 pt-4 border-t border-paper">
+                          <p className="text-[10px] font-semibold text-charcoal/40 uppercase tracking-wide mb-1">Today&apos;s Focus</p>
+                          <p className="text-sm font-medium text-charcoal">{quiz.lesson.todaysFocus}</p>
                         </div>
                       </div>
 
                       {/* Concepts */}
                       {quiz.lesson.concepts && quiz.lesson.concepts.length > 0 && (
                         <div className="space-y-3">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide px-1">Key Concepts</p>
+                          <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide px-1">Key Concepts</p>
                           {quiz.lesson.concepts.map((concept, i) => (
-                            <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-2.5">
+                            <div key={i} className="bg-white rounded-xl border border-mint shadow-sm p-5 space-y-2.5">
                               <div className="flex items-center gap-2">
-                                <span className="w-5 h-5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
-                                <p className="text-sm font-semibold text-gray-800">{concept.title}</p>
+                                <span className="w-5 h-5 rounded-full bg-teal-deep text-white text-[10px] font-bold flex items-center justify-center shrink-0">{i + 1}</span>
+                                <p className="text-sm font-semibold text-charcoal">{concept.title}</p>
                               </div>
-                              <p className="text-sm text-gray-600 leading-relaxed">{concept.explanation}</p>
+                              <p className="text-sm text-charcoal/70 leading-relaxed">{concept.explanation}</p>
                               <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                <div className="bg-emerald-50 rounded-lg p-3">
-                                  <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1">Why It Matters</p>
-                                  <p className="text-xs text-emerald-800">{concept.whyItMatters}</p>
+                                <div className="bg-teal-sage/10 rounded-lg p-3">
+                                  <p className="text-[10px] font-bold text-teal-pine uppercase mb-1">Why It Matters</p>
+                                  <p className="text-xs text-teal-pine">{concept.whyItMatters}</p>
                                 </div>
-                                <div className="bg-red-50 rounded-lg p-3">
-                                  <p className="text-[10px] font-bold text-red-500 uppercase mb-1">Common Mistake</p>
-                                  <p className="text-xs text-red-700">{concept.commonMistake}</p>
+                                <div className="bg-[#e07a5f]/10 rounded-lg p-3">
+                                  <p className="text-[10px] font-bold text-[#e07a5f] uppercase mb-1">Common Mistake</p>
+                                  <p className="text-xs text-[#b3492f]">{concept.commonMistake}</p>
                                 </div>
                               </div>
                             </div>
@@ -1391,25 +1389,25 @@ export default function GrowthPage() {
 
                       {/* Consulting context */}
                       {quiz.lesson.consultingContext && (
-                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-3">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Consulting Context</p>
+                        <div className="bg-white rounded-xl border border-mint shadow-sm p-5 space-y-3">
+                          <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide">Consulting Context</p>
                           <div className="space-y-3">
                             <div>
-                              <p className="text-[10px] font-bold text-purple-600 uppercase mb-1">Firm Perspective</p>
-                              <p className="text-sm text-gray-700">{quiz.lesson.consultingContext.firmPerspective}</p>
+                              <p className="text-[10px] font-bold text-navy uppercase mb-1">Firm Perspective</p>
+                              <p className="text-sm text-charcoal/80">{quiz.lesson.consultingContext.firmPerspective}</p>
                             </div>
                             <div>
-                              <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Real Client Scenario</p>
-                              <p className="text-sm text-gray-700">{quiz.lesson.consultingContext.realClientScenario}</p>
+                              <p className="text-[10px] font-bold text-navy uppercase mb-1">Real Client Scenario</p>
+                              <p className="text-sm text-charcoal/80">{quiz.lesson.consultingContext.realClientScenario}</p>
                             </div>
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                              <div className="bg-violet-50 rounded-lg p-3">
-                                <p className="text-[10px] font-bold text-violet-600 uppercase mb-1">Debugging Framework</p>
-                                <p className="text-xs text-violet-800">{quiz.lesson.consultingContext.debuggingFramework}</p>
+                              <div className="bg-navy/10 rounded-button p-3">
+                                <p className="text-[10px] font-bold text-navy uppercase mb-1">Debugging Framework</p>
+                                <p className="text-xs text-navy">{quiz.lesson.consultingContext.debuggingFramework}</p>
                               </div>
-                              <div className="bg-sky-50 rounded-lg p-3">
-                                <p className="text-[10px] font-bold text-sky-600 uppercase mb-1">Methodology</p>
-                                <p className="text-xs text-sky-800">{quiz.lesson.consultingContext.methodologyApproach}</p>
+                              <div className="bg-teal-sage/10 rounded-lg p-3">
+                                <p className="text-[10px] font-bold text-teal-pine uppercase mb-1">Methodology</p>
+                                <p className="text-xs text-teal-pine">{quiz.lesson.consultingContext.methodologyApproach}</p>
                               </div>
                             </div>
                           </div>
@@ -1418,12 +1416,12 @@ export default function GrowthPage() {
 
                       {/* Cheat sheet */}
                       {quiz.lesson.cheatSheet && quiz.lesson.cheatSheet.length > 0 && (
-                        <div className="bg-amber-50 rounded-xl border border-amber-100 p-5">
-                          <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide mb-3">📋 Quick Cheat Sheet</p>
+                        <div className="bg-blush rounded-xl border border-blush p-5">
+                          <p className="text-xs font-semibold text-charcoal uppercase tracking-wide mb-3">📋 Quick Cheat Sheet</p>
                           <ul className="space-y-1.5">
                             {quiz.lesson.cheatSheet.map((item, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-amber-900">
-                                <span className="text-amber-500 mt-0.5 shrink-0">▸</span>
+                              <li key={i} className="flex items-start gap-2 text-sm text-charcoal">
+                                <span className="text-rose mt-0.5 shrink-0">▸</span>
                                 <span>{item}</span>
                               </li>
                             ))}
@@ -1432,12 +1430,12 @@ export default function GrowthPage() {
                       )}
 
                       {/* Quiz preview + CTA */}
-                      <div className="bg-indigo-50 rounded-xl border border-indigo-100 p-5">
-                        <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-2">What&apos;s Coming Up</p>
-                        <p className="text-sm text-indigo-800 mb-4">{quiz.lesson.quizPreview}</p>
+                      <div className="bg-mint rounded-xl border border-mint p-5">
+                        <p className="text-xs font-semibold text-teal-forest uppercase tracking-wide mb-2">What&apos;s Coming Up</p>
+                        <p className="text-sm text-teal-pine mb-4">{quiz.lesson.quizPreview}</p>
                         <button
                           onClick={() => setQuizPhase("quiz")}
-                          className="w-full bg-indigo-500 text-white text-sm py-3 rounded-xl hover:bg-indigo-600 transition-colors font-medium"
+                          className="w-full bg-teal-deep text-white text-sm py-3 rounded-button hover:bg-teal-forest transition-colors font-medium"
                         >
                           I&apos;m Ready — Start Quiz →
                         </button>
@@ -1455,14 +1453,14 @@ export default function GrowthPage() {
                             <div
                               key={i}
                               className={`h-1.5 w-8 rounded-full transition-colors ${
-                                i < currentQ ? "bg-emerald-400"
-                                : i === currentQ ? "bg-indigo-500"
-                                : "bg-gray-200"
+                                i < currentQ ? "bg-teal-sage"
+                                : i === currentQ ? "bg-teal-deep"
+                                : "bg-mint-mist"
                               }`}
                             />
                           ))}
                         </div>
-                        <span className="text-xs text-gray-400">Q{currentQ + 1} of {quiz.questions.length}</span>
+                        <span className="text-xs text-charcoal/40">Q{currentQ + 1} of {quiz.questions.length}</span>
                       </div>
 
                       {/* Question card */}
@@ -1473,18 +1471,18 @@ export default function GrowthPage() {
                         const isLastQ = currentQ === quiz.questions.length - 1;
 
                         const typeBadge = qType === "sql_write"
-                          ? { label: "SQL", cls: "bg-blue-100 text-blue-700" }
+                          ? { label: "SQL", cls: "bg-navy/10 text-navy" }
                           : qType === "code_write"
-                          ? { label: q.language ? q.language.toUpperCase() : "Code", cls: "bg-violet-100 text-violet-700" }
+                          ? { label: q.language ? q.language.toUpperCase() : "Code", cls: "bg-navy/10 text-navy" }
                           : qType === "free_text"
-                          ? { label: "Written", cls: "bg-amber-100 text-amber-700" }
-                          : { label: "Multiple Choice", cls: "bg-gray-100 text-gray-600" };
+                          ? { label: "Written", cls: "bg-blush text-charcoal" }
+                          : { label: "Multiple Choice", cls: "bg-mint text-charcoal/70" };
 
                         return (
-                          <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+                          <div className="bg-white rounded-2xl border border-mint p-6 shadow-sm space-y-4">
                             {/* Question header */}
                             <div className="flex items-start justify-between gap-3">
-                              <p className="text-sm font-medium text-gray-800 leading-relaxed flex-1 whitespace-pre-wrap">{q.text}</p>
+                              <p className="text-sm font-medium text-charcoal leading-relaxed flex-1 whitespace-pre-wrap">{q.text}</p>
                               <span className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${typeBadge.cls}`}>{typeBadge.label}</span>
                             </div>
 
@@ -1492,11 +1490,11 @@ export default function GrowthPage() {
                             {!isOpenEnded && q.options && (
                               <div className="space-y-2.5">
                                 {q.options.map((opt, i) => {
-                                  let cls = "border border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50";
+                                  let cls = "border border-mint-mist text-charcoal/80 hover:border-mint-mist hover:bg-mint";
                                   if (revealed) {
-                                    if (i === q.correctIndex) cls = "border-emerald-400 bg-emerald-50 text-emerald-800";
-                                    else if (i === selectedOption) cls = "border-red-300 bg-red-50 text-red-700";
-                                    else cls = "border-gray-100 text-gray-400";
+                                    if (i === q.correctIndex) cls = "border-teal-sage bg-teal-sage/10 text-teal-pine";
+                                    else if (i === selectedOption) cls = "border-[#e07a5f]/60 bg-[#e07a5f]/10 text-[#b3492f]";
+                                    else cls = "border-mint text-charcoal/40";
                                   }
                                   return (
                                     <button
@@ -1505,7 +1503,7 @@ export default function GrowthPage() {
                                       disabled={revealed}
                                       className={`w-full text-left text-sm px-4 py-3 rounded-xl transition-all border ${cls}`}
                                     >
-                                      <span className="font-semibold mr-2 text-gray-400">{String.fromCharCode(65 + i)}.</span>
+                                      <span className="font-semibold mr-2 text-charcoal/40">{String.fromCharCode(65 + i)}.</span>
                                       {opt}
                                     </button>
                                   );
@@ -1528,14 +1526,14 @@ export default function GrowthPage() {
                                   disabled={evaluating}
                                   className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 resize-y ${
                                     (qType === "sql_write" || qType === "code_write")
-                                      ? "font-mono bg-gray-950 text-gray-100 border-gray-700 focus:ring-violet-500"
-                                      : "border-gray-200 focus:ring-indigo-300"
+                                      ? "font-mono bg-ink text-mint border-charcoal/80 focus:ring-teal-sage"
+                                      : "border-mint-mist focus:ring-mint-mist"
                                   }`}
                                 />
                                 <button
                                   onClick={handleSubmitWritten}
                                   disabled={!writtenAnswer.trim() || evaluating}
-                                  className="w-full bg-indigo-500 text-white text-sm py-2.5 rounded-xl hover:bg-indigo-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                                  className="w-full bg-teal-deep text-white text-sm py-2.5 rounded-button hover:bg-teal-forest disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
                                 >
                                   {evaluating ? (
                                     <>
@@ -1552,54 +1550,54 @@ export default function GrowthPage() {
 
                             {/* Open-ended — show submitted answer */}
                             {isOpenEnded && revealed && (
-                              <div className="bg-gray-950 rounded-xl p-4">
-                                <p className="text-[10px] text-gray-400 mb-1 uppercase font-semibold">Your Answer</p>
-                                <pre className="text-sm text-gray-200 whitespace-pre-wrap font-mono">{writtenAnswer}</pre>
+                              <div className="bg-ink rounded-xl p-4">
+                                <p className="text-[10px] text-charcoal/40 mb-1 uppercase font-semibold">Your Answer</p>
+                                <pre className="text-sm text-mint-mist whitespace-pre-wrap font-mono">{writtenAnswer}</pre>
                               </div>
                             )}
 
                             {/* AI evaluation result */}
                             {revealed && isOpenEnded && evalFeedback && (
-                              <div className={`p-4 rounded-xl border-l-4 ${evalFeedback.isCorrect ? "bg-emerald-50 border-emerald-400" : "bg-amber-50 border-amber-400"}`}>
+                              <div className={`p-4 rounded-xl border-l-4 ${evalFeedback.isCorrect ? "bg-teal-sage/10 border-teal-sage" : "bg-blush border-rose"}`}>
                                 <div className="flex items-center gap-2 mb-1">
-                                  <p className={`text-xs font-bold ${evalFeedback.isCorrect ? "text-emerald-700" : "text-amber-700"}`}>
+                                  <p className={`text-xs font-bold ${evalFeedback.isCorrect ? "text-teal-pine" : "text-charcoal"}`}>
                                     AI Score: {evalFeedback.score}/100
                                   </p>
-                                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${evalFeedback.isCorrect ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${evalFeedback.isCorrect ? "bg-teal-sage/20 text-teal-pine" : "bg-blush text-charcoal"}`}>
                                     {evalFeedback.isCorrect ? "Pass ≥60" : "Needs Improvement"}
                                   </span>
                                 </div>
-                                <p className="text-sm text-gray-700">{evalFeedback.feedback}</p>
+                                <p className="text-sm text-charcoal/80">{evalFeedback.feedback}</p>
                               </div>
                             )}
 
                             {/* MC explanation */}
                             {revealed && !isOpenEnded && (
-                              <div className="p-3 bg-gray-50 rounded-lg border-l-4 border-indigo-400">
-                                <p className="text-xs font-semibold text-indigo-600 mb-1">Explanation</p>
-                                <p className="text-sm text-gray-600">{q.explanation}</p>
+                              <div className="p-3 bg-paper rounded-lg border-l-4 border-teal-sage">
+                                <p className="text-xs font-semibold text-teal-forest mb-1">Explanation</p>
+                                <p className="text-sm text-charcoal/70">{q.explanation}</p>
                               </div>
                             )}
 
                             {/* Model answer (collapsible) */}
                             {revealed && isOpenEnded && q.expectedAnswer && (
                               <details>
-                                <summary className="text-xs text-gray-400 cursor-pointer hover:text-indigo-500 select-none">View model answer / key points</summary>
-                                <div className="mt-2 p-3 bg-gray-50 rounded-lg border-l-4 border-indigo-300 space-y-1">
-                                  <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono">{q.expectedAnswer}</pre>
-                                  <p className="text-xs text-gray-400">{q.explanation}</p>
+                                <summary className="text-xs text-charcoal/40 cursor-pointer hover:text-teal-deep select-none">View model answer / key points</summary>
+                                <div className="mt-2 p-3 bg-paper rounded-lg border-l-4 border-mint-mist space-y-1">
+                                  <pre className="text-xs text-charcoal/70 whitespace-pre-wrap font-mono">{q.expectedAnswer}</pre>
+                                  <p className="text-xs text-charcoal/40">{q.explanation}</p>
                                 </div>
                               </details>
                             )}
 
                             {/* Navigation */}
                             {revealed && !isLastQ && (
-                              <button onClick={handleNextQuestion} className="w-full bg-indigo-500 text-white text-sm py-2.5 rounded-xl hover:bg-indigo-600 transition-colors">
+                              <button onClick={handleNextQuestion} className="w-full bg-teal-deep text-white text-sm py-2.5 rounded-button hover:bg-teal-forest transition-colors">
                                 Next Question →
                               </button>
                             )}
                             {revealed && isLastQ && (
-                              <div className="text-center text-sm text-gray-400">
+                              <div className="text-center text-sm text-charcoal/40">
                                 {submitLoading ? "Submitting your score…" : "Score submitted ✓"}
                               </div>
                             )}
@@ -1613,23 +1611,23 @@ export default function GrowthPage() {
                   {quizPhase === "done" && quizResult && (
                     <div className="space-y-5">
                       {/* Score card */}
-                      <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center shadow-sm">
-                        <p className="text-5xl font-bold mb-1 text-gray-900">{quizResult.score}%</p>
-                        <p className="text-base text-gray-500 mb-4">{quizResult.correctQ} / {quizResult.totalQ} correct</p>
+                      <div className="bg-white rounded-2xl border border-mint p-8 text-center shadow-sm">
+                        <p className="text-5xl font-bold mb-1 text-charcoal">{quizResult.score}%</p>
+                        <p className="text-base text-charcoal/50 mb-4">{quizResult.correctQ} / {quizResult.totalQ} correct</p>
                         <p className={`text-sm font-medium ${
-                          quizResult.score >= 80 ? "text-emerald-600"
-                          : quizResult.score >= 60 ? "text-amber-600"
-                          : "text-red-600"
+                          quizResult.score >= 80 ? "text-teal-pine"
+                          : quizResult.score >= 60 ? "text-charcoal/70"
+                          : "text-[#b3492f]"
                         }`}>
                           {quizResult.score >= 80 ? "Excellent work! You have strong command of this topic."
                           : quizResult.score >= 60 ? "Good effort. Review the explanations to strengthen weak areas."
                           : "Keep practising. Focus on the explanations and revisit your materials."}
                         </p>
                         <div className="flex gap-2 justify-center mt-5">
-                          <button onClick={loadQuiz} className="text-sm px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">
+                          <button onClick={loadQuiz} className="text-sm px-4 py-2 bg-teal-deep text-white rounded-button hover:bg-teal-forest">
                             Retake Quiz
                           </button>
-                          <button onClick={() => setTab("insights")} className="text-sm px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                          <button onClick={() => setTab("insights")} className="btn-ghost-sm">
                             View Insights
                           </button>
                         </div>
@@ -1637,8 +1635,8 @@ export default function GrowthPage() {
 
                       {/* Score history chart */}
                       {quizHistory.length > 1 && (
-                        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-                          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Score History</p>
+                        <div className="bg-white rounded-2xl border border-mint p-5 shadow-sm">
+                          <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide mb-3">Score History</p>
                           <ScoreChart attempts={quizHistory} />
                         </div>
                       )}
@@ -1652,16 +1650,16 @@ export default function GrowthPage() {
                 <div className="max-w-2xl space-y-5">
                   {insightLoading && (
                     <div className="text-center py-12">
-                      <div className="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-2" />
-                      <p className="text-sm text-gray-400">Generating insights with AI...</p>
+                      <div className="inline-block w-6 h-6 border-2 border-teal-deep border-t-transparent rounded-full animate-spin mb-2" />
+                      <p className="text-sm text-charcoal/40">Generating insights with AI...</p>
                     </div>
                   )}
 
                   {!insightLoading && !insight && (
-                    <div className="text-center py-12 text-gray-400">
+                    <div className="text-center py-12 text-charcoal/40">
                       <p className="text-3xl mb-2">📊</p>
                       <p className="text-sm mb-4">No insights yet. Take a quiz first, then click Refresh Insights.</p>
-                      <button onClick={handleRegenerateInsight} className="text-sm px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600">
+                      <button onClick={handleRegenerateInsight} className="text-sm px-4 py-2 bg-teal-deep text-white rounded-button hover:bg-teal-forest">
                         Generate Insights
                       </button>
                     </div>
@@ -1676,26 +1674,26 @@ export default function GrowthPage() {
                           { label: "Attempts", value: String(attemptCount) },
                           { label: "Trend", value: trendBadge(insight.trend) },
                         ].map(({ label, value }) => (
-                          <div key={label} className="bg-white rounded-xl border border-gray-100 p-4 text-center shadow-sm">
-                            <p className="text-xs text-gray-400 mb-1">{label}</p>
-                            <div className="text-sm font-bold text-gray-800">{value}</div>
+                          <div key={label} className="bg-white rounded-xl border border-mint p-4 text-center shadow-sm">
+                            <p className="text-xs text-charcoal/40 mb-1">{label}</p>
+                            <div className="text-sm font-bold text-charcoal">{value}</div>
                           </div>
                         ))}
                       </div>
 
                       {/* Summary */}
-                      <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-                        <p className="text-sm text-gray-600 leading-relaxed">{insight.summaryText}</p>
+                      <div className="bg-white rounded-xl border border-mint p-5 shadow-sm">
+                        <p className="text-sm text-charcoal/70 leading-relaxed">{insight.summaryText}</p>
                       </div>
 
                       {/* Takeaways */}
                       {insight.takeaways.length > 0 && (
-                        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5">
-                          <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-3">What you know well</p>
+                        <div className="bg-teal-sage/10 border border-teal-sage/20 rounded-xl p-5">
+                          <p className="text-xs font-semibold text-teal-pine uppercase tracking-wide mb-3">What you know well</p>
                           <ul className="space-y-1.5">
                             {insight.takeaways.map((t, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                                <span className="text-emerald-500 mt-0.5">✓</span>{t}
+                              <li key={i} className="flex items-start gap-2 text-sm text-charcoal/80">
+                                <span className="text-teal-sage mt-0.5">✓</span>{t}
                               </li>
                             ))}
                           </ul>
@@ -1704,12 +1702,12 @@ export default function GrowthPage() {
 
                       {/* Weaknesses */}
                       {insight.weaknesses.length > 0 && (
-                        <div className="bg-red-50 border border-red-100 rounded-xl p-5">
-                          <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-3">Knowledge gaps</p>
+                        <div className="bg-[#e07a5f]/10 border border-[#e07a5f]/15 rounded-xl p-5">
+                          <p className="text-xs font-semibold text-[#b3492f] uppercase tracking-wide mb-3">Knowledge gaps</p>
                           <ul className="space-y-1.5">
                             {insight.weaknesses.map((w, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                                <span className="text-red-400 mt-0.5">△</span>{w}
+                              <li key={i} className="flex items-start gap-2 text-sm text-charcoal/80">
+                                <span className="text-[#e07a5f] mt-0.5">△</span>{w}
                               </li>
                             ))}
                           </ul>
@@ -1718,12 +1716,12 @@ export default function GrowthPage() {
 
                       {/* Improvements */}
                       {insight.improvements.length > 0 && (
-                        <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-5">
-                          <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wide mb-3">Next steps</p>
+                        <div className="bg-mint border border-mint rounded-xl p-5">
+                          <p className="text-xs font-semibold text-teal-pine uppercase tracking-wide mb-3">Next steps</p>
                           <ul className="space-y-1.5">
                             {insight.improvements.map((imp, i) => (
-                              <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                                <span className="text-indigo-500 mt-0.5">→</span>{imp}
+                              <li key={i} className="flex items-start gap-2 text-sm text-charcoal/80">
+                                <span className="text-teal-deep mt-0.5">→</span>{imp}
                               </li>
                             ))}
                           </ul>
@@ -1734,7 +1732,7 @@ export default function GrowthPage() {
                         <button
                           onClick={handleRegenerateInsight}
                           disabled={insightLoading}
-                          className="text-xs text-gray-400 hover:text-indigo-500 transition-colors"
+                          className="text-xs text-charcoal/40 hover:text-teal-deep transition-colors"
                         >
                           ↻ Regenerate insights
                         </button>
@@ -1750,9 +1748,9 @@ export default function GrowthPage() {
                   {/* Loading */}
                   {assessmentLoading && (
                     <div className="text-center py-16">
-                      <div className="inline-block w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mb-3" />
-                      <p className="text-sm font-medium text-gray-600 mb-1">Generating today&apos;s comprehensive assessment…</p>
-                      <p className="text-xs text-gray-400">AI is designing a real-world business scenario across all your topics</p>
+                      <div className="inline-block w-8 h-8 border-2 border-navy border-t-transparent rounded-full animate-spin mb-3" />
+                      <p className="text-sm font-medium text-charcoal/70 mb-1">Generating today&apos;s comprehensive assessment…</p>
+                      <p className="text-xs text-charcoal/40">AI is designing a real-world business scenario across all your topics</p>
                     </div>
                   )}
 
@@ -1760,11 +1758,11 @@ export default function GrowthPage() {
                   {!assessmentLoading && !assessment && (
                     <div className="text-center py-16">
                       <p className="text-4xl mb-3">🎯</p>
-                      <p className="text-base font-semibold text-gray-700 mb-1">Daily Business Assessment</p>
-                      <p className="text-sm text-gray-400 mb-6 max-w-md mx-auto">
+                      <p className="text-base font-semibold text-charcoal/80 mb-1">Daily Business Assessment</p>
+                      <p className="text-sm text-charcoal/40 mb-6 max-w-md mx-auto">
                         A daily consulting scenario designed to test your command of ALL topics simultaneously — as a business consultant solving a real client problem.
                       </p>
-                      <button onClick={loadAssessment} className="bg-purple-500 text-white px-6 py-2.5 rounded-xl hover:bg-purple-600 text-sm font-medium">
+                      <button onClick={loadAssessment} className="bg-navy text-white px-6 py-2.5 rounded-button hover:bg-navy text-sm font-medium">
                         Generate Today&apos;s Assessment
                       </button>
                     </div>
@@ -1773,46 +1771,46 @@ export default function GrowthPage() {
                   {!assessmentLoading && assessment && (
                     <>
                       {/* Assessment header */}
-                      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                      <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
                         <div className="flex items-start gap-4 mb-4">
-                          <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0 text-lg">🎯</div>
+                          <div className="w-10 h-10 rounded-button bg-navy/10 flex items-center justify-center shrink-0 text-lg">🎯</div>
                           <div className="flex-1">
                             <div className="flex items-center gap-2 flex-wrap mb-1">
-                              <p className="text-sm font-bold text-gray-900">Daily Assessment — {assessment.dateKey}</p>
-                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full uppercase">{assessment.contextData.firm}</span>
-                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{assessment.contextData.industry}</span>
+                              <p className="text-sm font-bold text-charcoal">Daily Assessment — {assessment.dateKey}</p>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-navy/10 text-navy rounded-full uppercase">{assessment.contextData.firm}</span>
+                              <span className="text-[10px] font-semibold px-2 py-0.5 bg-mint text-charcoal/70 rounded-full">{assessment.contextData.industry}</span>
                             </div>
-                            <p className="text-xs text-gray-500">{assessment.contextData.companyType}</p>
+                            <p className="text-xs text-charcoal/50">{assessment.contextData.companyType}</p>
                           </div>
                         </div>
 
                         {/* Problem statement */}
-                        <div className="bg-purple-50 rounded-xl p-4 mb-4">
-                          <p className="text-[10px] font-bold text-purple-600 uppercase mb-1">Problem Statement</p>
-                          <p className="text-sm font-medium text-purple-900">{assessment.contextData.problemStatement}</p>
+                        <div className="bg-navy/10 rounded-button p-4 mb-4">
+                          <p className="text-[10px] font-bold text-navy uppercase mb-1">Problem Statement</p>
+                          <p className="text-sm font-medium text-navy">{assessment.contextData.problemStatement}</p>
                         </div>
 
                         {/* Scenario */}
                         <div className="space-y-2">
-                          <p className="text-[10px] font-bold text-gray-500 uppercase">Full Scenario</p>
-                          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{assessment.scenario}</div>
+                          <p className="text-[10px] font-bold text-charcoal/50 uppercase">Full Scenario</p>
+                          <div className="text-sm text-charcoal/80 leading-relaxed whitespace-pre-line">{assessment.scenario}</div>
                         </div>
 
                         {/* Skills + criteria */}
                         <div className="grid grid-cols-1 gap-3 mt-5 sm:grid-cols-2">
-                          <div className="bg-indigo-50 rounded-lg p-3">
-                            <p className="text-[10px] font-bold text-indigo-600 uppercase mb-2">Skills to Apply</p>
+                          <div className="bg-mint rounded-lg p-3">
+                            <p className="text-[10px] font-bold text-teal-forest uppercase mb-2">Skills to Apply</p>
                             <div className="flex flex-wrap gap-1">
                               {assessment.contextData.expectedSkills.map((s, i) => (
-                                <span key={i} className="text-xs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full">{s}</span>
+                                <span key={i} className="text-xs bg-mint text-teal-pine px-1.5 py-0.5 rounded-full">{s}</span>
                               ))}
                             </div>
                           </div>
-                          <div className="bg-amber-50 rounded-lg p-3">
-                            <p className="text-[10px] font-bold text-amber-600 uppercase mb-2">Evaluation Criteria</p>
+                          <div className="bg-blush rounded-lg p-3">
+                            <p className="text-[10px] font-bold text-charcoal/70 uppercase mb-2">Evaluation Criteria</p>
                             <ul className="space-y-0.5">
                               {assessment.contextData.evaluationCriteria.slice(0, 4).map((c, i) => (
-                                <li key={i} className="text-xs text-amber-800 truncate">{c.split(":")[0]}</li>
+                                <li key={i} className="text-xs text-charcoal truncate">{c.split(":")[0]}</li>
                               ))}
                             </ul>
                           </div>
@@ -1823,10 +1821,10 @@ export default function GrowthPage() {
                       {assessmentSubmission ? (
                         <div className="space-y-4">
                           {/* Score overview */}
-                          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
-                            <p className="text-5xl font-bold text-gray-900 mb-1">{assessmentSubmission.score}%</p>
-                            <p className="text-sm text-gray-500 mb-4">Overall Assessment Score</p>
-                            <p className="text-sm text-gray-600 max-w-md mx-auto leading-relaxed">{assessmentSubmission.feedback.overallVerdict}</p>
+                          <div className="bg-white rounded-2xl border border-mint shadow-sm p-6 text-center">
+                            <p className="text-5xl font-bold text-charcoal mb-1">{assessmentSubmission.score}%</p>
+                            <p className="text-sm text-charcoal/50 mb-4">Overall Assessment Score</p>
+                            <p className="text-sm text-charcoal/70 max-w-md mx-auto leading-relaxed">{assessmentSubmission.feedback.overallVerdict}</p>
                           </div>
 
                           {/* Dimension scores */}
@@ -1841,7 +1839,7 @@ export default function GrowthPage() {
                                     <p className={`text-[10px] font-bold text-${color}-700 uppercase`}>{label}</p>
                                     <span className={`text-sm font-bold text-${color}-700`}>{d.score}/100</span>
                                   </div>
-                                  <p className="text-xs text-gray-600 leading-relaxed">{d.comment}</p>
+                                  <p className="text-xs text-charcoal/70 leading-relaxed">{d.comment}</p>
                                 </div>
                               );
                             })}
@@ -1854,7 +1852,7 @@ export default function GrowthPage() {
                                     <p className={`text-[10px] font-bold text-${color}-700 uppercase`}>Folder Structure</p>
                                     <span className={`text-sm font-bold text-${color}-700`}>{d.score}/100</span>
                                   </div>
-                                  <p className="text-xs text-gray-600 leading-relaxed">{d.comment}</p>
+                                  <p className="text-xs text-charcoal/70 leading-relaxed">{d.comment}</p>
                                 </div>
                               );
                             })()}
@@ -1863,21 +1861,21 @@ export default function GrowthPage() {
                           {/* Strengths / improvements */}
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {assessmentSubmission.feedback.strengthsHighlighted.length > 0 && (
-                              <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-                                <p className="text-[10px] font-bold text-emerald-700 uppercase mb-2">Strengths</p>
+                              <div className="bg-teal-sage/10 rounded-xl p-4 border border-teal-sage/20">
+                                <p className="text-[10px] font-bold text-teal-pine uppercase mb-2">Strengths</p>
                                 <ul className="space-y-1">
                                   {assessmentSubmission.feedback.strengthsHighlighted.map((s, i) => (
-                                    <li key={i} className="flex items-start gap-1.5 text-xs text-gray-700"><span className="text-emerald-500 shrink-0">✓</span>{s}</li>
+                                    <li key={i} className="flex items-start gap-1.5 text-xs text-charcoal/80"><span className="text-teal-sage shrink-0">✓</span>{s}</li>
                                   ))}
                                 </ul>
                               </div>
                             )}
                             {assessmentSubmission.feedback.areasToImprove.length > 0 && (
-                              <div className="bg-red-50 rounded-xl p-4 border border-red-100">
-                                <p className="text-[10px] font-bold text-red-600 uppercase mb-2">Areas to Improve</p>
+                              <div className="bg-[#e07a5f]/10 rounded-xl p-4 border border-[#e07a5f]/15">
+                                <p className="text-[10px] font-bold text-[#b3492f] uppercase mb-2">Areas to Improve</p>
                                 <ul className="space-y-1">
                                   {assessmentSubmission.feedback.areasToImprove.map((s, i) => (
-                                    <li key={i} className="flex items-start gap-1.5 text-xs text-gray-700"><span className="text-red-400 shrink-0">△</span>{s}</li>
+                                    <li key={i} className="flex items-start gap-1.5 text-xs text-charcoal/80"><span className="text-[#e07a5f] shrink-0">△</span>{s}</li>
                                   ))}
                                 </ul>
                               </div>
@@ -1885,43 +1883,43 @@ export default function GrowthPage() {
                           </div>
 
                           {/* Your submitted answer */}
-                          <details className="bg-gray-50 rounded-xl border border-gray-100">
-                            <summary className="px-4 py-3 text-xs font-semibold text-gray-500 cursor-pointer select-none">
+                          <details className="bg-paper rounded-xl border border-mint">
+                            <summary className="px-4 py-3 text-xs font-semibold text-charcoal/50 cursor-pointer select-none">
                               {assessmentSubmission.answer.startsWith("=== FOLDER SUBMISSION ===") ? "View submitted folder structure" : "View your submitted answer"}
                             </summary>
                             <div className="px-4 pb-4 pt-2">
                               {assessmentSubmission.answer.startsWith("=== FOLDER SUBMISSION ===") ? (
-                                <pre className="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed font-mono bg-gray-100 rounded-lg p-3">
+                                <pre className="text-xs text-charcoal/80 whitespace-pre-wrap leading-relaxed font-mono bg-mint rounded-lg p-3">
                                   {parseFolderTree(assessmentSubmission.answer)}
                                 </pre>
                               ) : (
-                                <pre className="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed font-sans">{assessmentSubmission.answer}</pre>
+                                <pre className="text-sm text-charcoal/80 whitespace-pre-wrap leading-relaxed font-sans">{assessmentSubmission.answer}</pre>
                               )}
                             </div>
                           </details>
 
                           {/* Score history */}
                           {assessmentHistory.length > 1 && (
-                            <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-                              <p className="text-xs font-semibold text-gray-500 uppercase mb-3">Assessment Score History</p>
+                            <div className="bg-white rounded-xl border border-mint p-5 shadow-sm">
+                              <p className="text-xs font-semibold text-charcoal/50 uppercase mb-3">Assessment Score History</p>
                               <ScoreChart attempts={assessmentHistory.map((h, i) => ({ id: String(i), topicId: "", dateKey: h.dateKey, score: h.score, totalQ: 100, correctQ: h.score, completedAt: h.submittedAt }))} />
                             </div>
                           )}
                         </div>
                       ) : (
                         /* Answer form */
-                        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                        <div className="bg-white rounded-2xl border border-mint shadow-sm p-6 space-y-4">
                           {/* Mode toggle */}
                           <div className="flex gap-2">
                             <button
                               onClick={() => setAssessmentMode("text")}
-                              className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-colors ${assessmentMode === "text" ? "bg-purple-100 border-purple-300 text-purple-700" : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                              className={`flex-1 py-2 text-xs font-semibold rounded-button border transition-colors ${assessmentMode === "text" ? "bg-navy/10 border-navy/30 text-navy" : "bg-white border-mint-mist text-charcoal/50 hover:border-charcoal/30"}`}
                             >
                               Write Answer
                             </button>
                             <button
                               onClick={() => setAssessmentMode("folder")}
-                              className={`flex-1 py-2 text-xs font-semibold rounded-lg border transition-colors ${assessmentMode === "folder" ? "bg-purple-100 border-purple-300 text-purple-700" : "bg-white border-gray-200 text-gray-500 hover:border-gray-300"}`}
+                              className={`flex-1 py-2 text-xs font-semibold rounded-button border transition-colors ${assessmentMode === "folder" ? "bg-navy/10 border-navy/30 text-navy" : "bg-white border-mint-mist text-charcoal/50 hover:border-charcoal/30"}`}
                             >
                               Upload Folder
                             </button>
@@ -1929,7 +1927,7 @@ export default function GrowthPage() {
 
                           {assessmentMode === "text" ? (
                             <div>
-                              <p className="text-xs text-gray-400 mb-3">
+                              <p className="text-xs text-charcoal/40 mb-3">
                                 Write a comprehensive response covering all dimensions of the problem. Structure your answer clearly — the Partner is reading this tomorrow morning.
                               </p>
                               <textarea
@@ -1937,13 +1935,13 @@ export default function GrowthPage() {
                                 onChange={(e) => setAssessmentAnswer(e.target.value)}
                                 placeholder={`Structure your response:\n\n1. Problem diagnosis — MECE decomposition of root causes\n2. Technical analysis — what the data/systems show\n3. Recommended interventions — specific, prioritised, with rationale\n4. Implementation roadmap — 30/60/90 day plan\n5. Risk mitigation — what could go wrong and how you'd prevent it\n6. Executive summary — 3 bullets for the board`}
                                 rows={20}
-                                className="w-full text-sm border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-300 resize-y leading-relaxed"
+                                className="w-full text-sm border border-mint-mist rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-navy/30 resize-y leading-relaxed"
                                 disabled={assessmentSubmitting}
                               />
                             </div>
                           ) : (
                             <div className="space-y-3">
-                              <p className="text-xs text-gray-400">
+                              <p className="text-xs text-charcoal/40">
                                 Submit a folder of files as your deliverable. The AI will assess both the folder structure (file organisation, naming, decomposition) and the content of each file.
                               </p>
 
@@ -1962,36 +1960,36 @@ export default function GrowthPage() {
                                 <button
                                   onClick={() => folderInputRef.current?.click()}
                                   disabled={assessmentSubmitting}
-                                  className="w-full border-2 border-dashed border-purple-200 rounded-xl p-8 text-center hover:border-purple-400 hover:bg-purple-50 transition-colors disabled:opacity-50"
+                                  className="w-full border-2 border-dashed border-navy/20 rounded-button p-8 text-center hover:border-navy hover:bg-navy/10 transition-colors disabled:opacity-50"
                                 >
                                   <p className="text-2xl mb-2">📂</p>
-                                  <p className="text-sm font-medium text-gray-700">Click to select a folder</p>
-                                  <p className="text-xs text-gray-400 mt-1">All text files will be read and assessed — code, markdown, SQL, notebooks, etc.</p>
+                                  <p className="text-sm font-medium text-charcoal/80">Click to select a folder</p>
+                                  <p className="text-xs text-charcoal/40 mt-1">All text files will be read and assessed — code, markdown, SQL, notebooks, etc.</p>
                                 </button>
                               ) : (
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
-                                    <p className="text-xs font-semibold text-gray-600">{assessmentFiles[0]?.path.split("/")[0]} — {assessmentFiles.length} file{assessmentFiles.length !== 1 ? "s" : ""}</p>
+                                    <p className="text-xs font-semibold text-charcoal/70">{assessmentFiles[0]?.path.split("/")[0]} — {assessmentFiles.length} file{assessmentFiles.length !== 1 ? "s" : ""}</p>
                                     <button
                                       onClick={() => { setAssessmentFiles([]); folderInputRef.current?.click(); }}
-                                      className="text-xs text-purple-500 hover:text-purple-700"
+                                      className="text-xs text-navy hover:text-navy"
                                     >
                                       Change folder
                                     </button>
                                   </div>
-                                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 max-h-64 overflow-y-auto">
-                                    <pre className="text-xs font-mono text-gray-700 leading-relaxed">
+                                  <div className="bg-paper rounded-xl border border-mint-mist p-3 max-h-64 overflow-y-auto">
+                                    <pre className="text-xs font-mono text-charcoal/80 leading-relaxed">
                                       {buildFolderTreeText(assessmentFiles)}
                                     </pre>
                                   </div>
                                   <div className="flex flex-wrap gap-1">
                                     {assessmentFiles.filter(f => !f.binary).length > 0 && (
-                                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                                      <span className="text-[10px] bg-teal-sage/20 text-teal-pine px-2 py-0.5 rounded-full font-medium">
                                         {assessmentFiles.filter(f => !f.binary).length} text files
                                       </span>
                                     )}
                                     {assessmentFiles.filter(f => f.binary).length > 0 && (
-                                      <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">
+                                      <span className="text-[10px] bg-mint text-charcoal/50 px-2 py-0.5 rounded-full font-medium">
                                         {assessmentFiles.filter(f => f.binary).length} binary files
                                       </span>
                                     )}
@@ -2002,13 +2000,13 @@ export default function GrowthPage() {
                           )}
 
                           <div className="flex items-center justify-between">
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-charcoal/40">
                               {assessmentMode === "text" ? `${assessmentAnswer.length} characters` : assessmentFiles.length > 0 ? `${assessmentFiles.length} files selected` : "No folder selected"}
                             </p>
                             <button
                               onClick={handleSubmitAssessment}
                               disabled={(assessmentMode === "text" ? !assessmentAnswer.trim() : assessmentFiles.length === 0) || assessmentSubmitting}
-                              className="bg-purple-500 text-white text-sm px-6 py-2.5 rounded-xl hover:bg-purple-600 disabled:opacity-50 transition-colors flex items-center gap-2"
+                              className="bg-navy text-white text-sm px-6 py-2.5 rounded-button hover:bg-navy disabled:opacity-50 transition-colors flex items-center gap-2"
                             >
                               {assessmentSubmitting ? (
                                 <>

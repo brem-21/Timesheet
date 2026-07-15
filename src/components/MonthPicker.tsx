@@ -36,10 +36,10 @@ export default function MonthPicker({ month, year, onChange }: MonthPickerProps)
     currentDate.getFullYear() === new Date().getFullYear();
 
   return (
-    <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
+    <div className="flex items-center gap-2 input-field !py-1.5">
       <button
         onClick={goToPrevious}
-        className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800"
+        className="p-1 rounded-pill hover:bg-mint transition-colors text-charcoal/60 hover:text-charcoal"
         aria-label="Previous month"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -47,14 +47,14 @@ export default function MonthPicker({ month, year, onChange }: MonthPickerProps)
         </svg>
       </button>
 
-      <span className="text-sm font-semibold text-gray-700 min-w-[120px] text-center">
+      <span className="text-[14px] font-semibold text-charcoal min-w-[120px] text-center">
         {format(currentDate, "MMMM yyyy")}
       </span>
 
       <button
         onClick={goToNext}
         disabled={isCurrentMonth}
-        className="p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-800 disabled:opacity-30 disabled:cursor-not-allowed"
+        className="p-1 rounded-pill hover:bg-mint transition-colors text-charcoal/60 hover:text-charcoal disabled:opacity-30 disabled:cursor-not-allowed"
         aria-label="Next month"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

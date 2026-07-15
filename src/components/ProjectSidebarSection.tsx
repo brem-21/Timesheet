@@ -74,13 +74,11 @@ export default function ProjectSidebarSection() {
       {/* Section heading + toggle */}
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center justify-between px-3 py-1 mb-1"
+        className="w-full flex items-center justify-between px-4 mb-1"
       >
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#6b6b88]">
-          Projects
-        </p>
+        <p className="nav-section-label !mb-0 !mt-0 !px-0">Projects</p>
         <svg
-          className={`w-3 h-3 text-[#6b6b88] transition-transform ${expanded ? "rotate-180" : ""}`}
+          className={`w-3 h-3 text-charcoal/50 transition-transform ${expanded ? "rotate-180" : ""}`}
           fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
@@ -88,17 +86,17 @@ export default function ProjectSidebarSection() {
       </button>
 
       {expanded && (
-        <div className="space-y-0.5">
+        <div className="px-2">
           {/* Active project + its sub-nav */}
           {activeProject && (
-            <div className="mb-1">
+            <div className="mb-2 card-mint !p-0 overflow-hidden">
               {/* Active project header */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 mx-1 mb-1">
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: activeProject.color }} />
-                <span className="text-xs font-semibold text-white truncate flex-1">{activeProject.name}</span>
+              <div className="flex items-center gap-2 px-3 py-2.5 border-b border-mint-mist">
+                <span className="w-2.5 h-2.5 rounded-pill shrink-0" style={{ backgroundColor: activeProject.color }} />
+                <span className="text-[13px] font-medium text-charcoal truncate flex-1">{activeProject.name}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); clearActiveProject(); router.push("/projects"); }}
-                  className="text-[#6b6b88] hover:text-white shrink-0"
+                  className="text-charcoal/40 hover:text-charcoal shrink-0"
                   title="Deselect project"
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
@@ -113,14 +111,11 @@ export default function ProjectSidebarSection() {
                   <button
                     key={tab.key}
                     onClick={() => selectTab(tab.key)}
-                    className={`w-full flex items-center gap-2.5 pl-6 pr-3 py-2 text-left text-sm transition-colors rounded-lg mx-0 ${
-                      isActive ? "bg-indigo-500/20 text-indigo-300 font-medium" : "text-[#a0a0b8] hover:bg-white/5 hover:text-white"
+                    className={`w-full text-left px-4 py-2 text-[13px] transition-colors ${
+                      isActive ? "bg-teal-deep text-white font-medium" : "text-charcoal/70 hover:bg-white"
                     }`}
                   >
-                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d={tab.icon} />
-                    </svg>
-                    <span className="text-xs">{tab.label}</span>
+                    {tab.label}
                   </button>
                 );
               })}
@@ -131,12 +126,9 @@ export default function ProjectSidebarSection() {
           {projects.length === 0 ? (
             <button
               onClick={() => { sessionStorage.setItem("clockit_open_create_project", "1"); router.push("/projects"); }}
-              className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs text-[#6b6b88] hover:text-[#a0a0b8] transition-colors"
+              className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-teal-pine hover:text-teal-deep transition-colors"
             >
-              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              Create a project
+              + Create a project
             </button>
           ) : (
             <>
@@ -147,17 +139,14 @@ export default function ProjectSidebarSection() {
                   <button
                     key={p.id}
                     onClick={() => selectProject(p)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors rounded-lg ${
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-nav text-left text-[13px] transition-colors ${
                       isActive
-                        ? "text-indigo-300"
-                        : "text-[#a0a0b8] hover:bg-white/5 hover:text-white"
+                        ? "bg-mint text-charcoal font-medium"
+                        : "text-charcoal/60 hover:bg-mint/60 hover:text-charcoal"
                     }`}
                   >
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
-                    <span className="text-xs truncate flex-1">{p.name}</span>
-                    {isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
-                    )}
+                    <span className="w-2 h-2 rounded-pill shrink-0" style={{ backgroundColor: p.color }} />
+                    <span className="truncate flex-1">{p.name}</span>
                   </button>
                 );
               })}
@@ -165,12 +154,9 @@ export default function ProjectSidebarSection() {
               {/* New project link */}
               <button
                 onClick={() => { sessionStorage.setItem("clockit_open_create_project", "1"); router.push("/projects"); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-xs text-[#6b6b88] hover:text-[#a0a0b8] transition-colors mt-1"
+                className="w-full flex items-center gap-2 px-3 py-2 text-left text-[13px] text-teal-pine hover:text-teal-deep transition-colors mt-1"
               >
-                <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                New project
+                + New project
               </button>
             </>
           )}

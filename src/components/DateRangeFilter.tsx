@@ -79,17 +79,13 @@ export default function DateRangeFilter({ onChange, defaultPreset = "this-month"
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-sm text-gray-500 font-medium mr-1">Period:</span>
-      <div className="flex flex-wrap gap-1.5">
+      <span className="text-[14px] text-charcoal/60 font-medium mr-1">Period:</span>
+      <div className="flex flex-wrap gap-2">
         {PRESETS.map((p) => (
           <button
             key={p.value}
             onClick={() => handlePreset(p.value)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
-              selected === p.value
-                ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
-                : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
-            }`}
+            className={`filter-pill ${selected === p.value ? "active" : ""}`}
           >
             {p.label}
           </button>
@@ -102,19 +98,16 @@ export default function DateRangeFilter({ onChange, defaultPreset = "this-month"
             type="date"
             value={customStart}
             onChange={(e) => setCustomStart(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="input-field"
           />
-          <span className="text-gray-400 text-sm">to</span>
+          <span className="text-charcoal/40 text-[14px]">to</span>
           <input
             type="date"
             value={customEnd}
             onChange={(e) => setCustomEnd(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="input-field"
           />
-          <button
-            onClick={applyCustom}
-            className="px-4 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
-          >
+          <button onClick={applyCustom} className="btn-primary-sm">
             Apply
           </button>
         </div>

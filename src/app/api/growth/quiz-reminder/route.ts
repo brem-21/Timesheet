@@ -52,7 +52,7 @@ export async function GET() {
     "━━━━━━━━━━━━━━━━━━━━",
     `👉 *Take your quiz:* ${appUrl}/growth`,
     "",
-    "_Senior Associate difficulty · Sent by Clock-It every weekday at noon_",
+    "_Senior Associate difficulty · Sent by ProfDev every weekday at noon_",
   ].join("\n");
 
   const res = await fetch(webhookUrl, {

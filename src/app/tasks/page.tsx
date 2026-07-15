@@ -44,16 +44,16 @@ function syncFromTeamSearches(): string[] {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  "todo": "bg-gray-100 text-gray-700 ring-1 ring-gray-200",
-  "in-progress": "bg-blue-100 text-blue-700 ring-1 ring-blue-200",
-  "in-review": "bg-violet-100 text-violet-700 ring-1 ring-violet-200",
-  "done": "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+  "todo": "tag-neutral",
+  "in-progress": "tag-progress",
+  "in-review": "tag-review",
+  "done": "tag-done",
 };
 
 const PRIORITY_STYLES: Record<TaskPriority, string> = {
-  high: "bg-red-100 text-red-700 ring-1 ring-red-200",
-  medium: "bg-amber-100 text-amber-700 ring-1 ring-amber-200",
-  low: "bg-gray-100 text-gray-500 ring-1 ring-gray-200",
+  high: "tag-blocked",
+  medium: "tag-review",
+  low: "tag-neutral",
 };
 
 type FilterStatus = TaskStatus | "all";
@@ -173,11 +173,12 @@ export default function TasksPage() {
       {/* Header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Meeting Tasks</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Tasks extracted from meeting transcripts</p>
+          <p className="eyebrow"><span className="eyebrow-dot" />tasks</p>
+          <h1 className="headline mt-1">Meeting Tasks</h1>
+          <p className="text-body-sm text-charcoal/60 mt-1">Tasks extracted from meeting transcripts</p>
         </div>
         {tasks.length > 0 && (
-          <button onClick={clearAll} className="px-3 py-1.5 text-xs font-medium text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors">
+          <button onClick={clearAll} className="rounded-button border border-charcoal/20 text-charcoal/50 text-[13px] font-medium px-4 py-2 hover:border-rose hover:text-charcoal transition-colors">
             Clear all
           </button>
         )}
@@ -186,10 +187,10 @@ export default function TasksPage() {
       {/* Stat pills */}
       {tasks.length > 0 && (
         <div className="flex flex-wrap gap-3">
-          <StatPill label="To Do" count={todoCount} color="gray" onClick={() => setFilterStatus(filterStatus === "todo" ? "all" : "todo")} active={filterStatus === "todo"} />
-          <StatPill label="In Progress" count={inProgressCount} color="blue" onClick={() => setFilterStatus(filterStatus === "in-progress" ? "all" : "in-progress")} active={filterStatus === "in-progress"} />
-          <StatPill label="Done" count={doneCount} color="emerald" onClick={() => setFilterStatus(filterStatus === "done" ? "all" : "done")} active={filterStatus === "done"} />
-          {highCount > 0 && <StatPill label="High Priority" count={highCount} color="red" onClick={() => setFilterPriority(filterPriority === "high" ? "all" : "high")} active={filterPriority === "high"} />}
+          <StatPill label="To Do" count={todoCount} color="neutral" onClick={() => setFilterStatus(filterStatus === "todo" ? "all" : "todo")} active={filterStatus === "todo"} />
+          <StatPill label="In Progress" count={inProgressCount} color="progress" onClick={() => setFilterStatus(filterStatus === "in-progress" ? "all" : "in-progress")} active={filterStatus === "in-progress"} />
+          <StatPill label="Done" count={doneCount} color="done" onClick={() => setFilterStatus(filterStatus === "done" ? "all" : "done")} active={filterStatus === "done"} />
+          {highCount > 0 && <StatPill label="High Priority" count={highCount} color="blocked" onClick={() => setFilterPriority(filterPriority === "high" ? "all" : "high")} active={filterPriority === "high"} />}
         </div>
       )}
 
@@ -197,23 +198,23 @@ export default function TasksPage() {
       {tasks.length > 0 && (
         <div className="flex flex-wrap items-center gap-3">
           <input type="text" placeholder="Search tasks..." value={search} onChange={(e) => setSearch(e.target.value)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm w-56 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+            className="input-field w-56" />
           <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            className="input-field text-charcoal/70">
             <option value="all">All statuses</option>
             <option value="todo">To Do</option>
             <option value="in-progress">In Progress</option>
             <option value="done">Done</option>
           </select>
           <select value={filterPriority} onChange={(e) => setFilterPriority(e.target.value as FilterPriority)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-300">
+            className="input-field text-charcoal/70">
             <option value="all">All priorities</option>
             <option value="high">High</option>
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
           <select value={filterSource} onChange={(e) => setFilterSource(e.target.value)}
-            className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-300 max-w-[200px] truncate">
+            className="input-field text-charcoal/70 max-w-[200px] truncate">
             <option value="all">All meetings</option>
             {allSources.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -223,7 +224,7 @@ export default function TasksPage() {
             <select
               value={filterAssignee}
               onChange={(e) => setFilterAssignee(e.target.value)}
-              className="border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="input-field text-charcoal/70"
             >
               <option value="all">All assignees</option>
               {teamNames.map((name) => (
@@ -235,19 +236,15 @@ export default function TasksPage() {
           {taskFilterNames.map((name) => (
             <span
               key={name}
-              className={`inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-xl border text-sm font-medium transition-all cursor-pointer ${
-                filterAssignee === name
-                  ? "bg-indigo-600 text-white border-indigo-600"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600"
-              }`}
+              className={`filter-pill cursor-pointer ${filterAssignee === name ? "active" : ""}`}
               onClick={() => setFilterAssignee(filterAssignee === name ? "all" : name)}
             >
               {name}
               <button
                 onClick={(e) => { e.stopPropagation(); removeFilterName(name); }}
                 title="Remove from filter"
-                className={`w-4 h-4 rounded-full flex items-center justify-center transition-colors ${
-                  filterAssignee === name ? "hover:bg-indigo-500 text-white/80 hover:text-white" : "text-gray-300 hover:text-red-500 hover:bg-red-50"
+                className={`w-4 h-4 rounded-pill flex items-center justify-center transition-colors ${
+                  filterAssignee === name ? "hover:bg-white/20 text-white/80 hover:text-white" : "text-charcoal/30 hover:text-charcoal hover:bg-charcoal/10"
                 }`}
               >
                 <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -259,7 +256,7 @@ export default function TasksPage() {
           {(filterStatus !== "all" || filterPriority !== "all" || filterSource !== "all" || filterAssignee !== "all" || search) && (
             <button
               onClick={() => { setFilterStatus("all"); setFilterPriority("all"); setFilterSource("all"); setFilterAssignee("all"); setSearch(""); }}
-              className="text-xs text-indigo-600 hover:underline"
+              className="text-[13px] text-teal-pine hover:underline"
             >
               Clear filters
             </button>
@@ -269,16 +266,15 @@ export default function TasksPage() {
 
       {loading && (
         <div className="space-y-3">
-          {[1,2,3].map((i) => <div key={i} className="h-16 bg-gray-100 rounded-2xl animate-pulse" />)}
+          {[1,2,3].map((i) => <div key={i} className="h-16 bg-mint rounded-card animate-pulse" />)}
         </div>
       )}
 
       {!loading && tasks.length === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
-          <div className="text-4xl mb-3">📝</div>
-          <p className="text-gray-500 font-medium">No meeting tasks yet</p>
-          <p className="text-gray-400 text-sm mt-1">
-            Go to <a href="/meetings" className="text-indigo-600 hover:underline">Meetings</a>, paste a transcript and summarise to extract tasks.
+        <div className="card-white p-16 text-center">
+          <p className="text-charcoal/60 font-medium">No meeting tasks yet</p>
+          <p className="text-charcoal/40 text-[14px] mt-1">
+            Go to <a href="/meetings" className="text-teal-pine hover:underline">Meetings</a>, paste a transcript and summarise to extract tasks.
           </p>
         </div>
       )}
@@ -288,13 +284,13 @@ export default function TasksPage() {
           {sources.map((source) => {
             const sourceTasks = filtered.filter((t) => t.source === source);
             return (
-              <div key={source} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                <div className="px-5 py-3.5 border-b border-gray-50 flex items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-500 uppercase tracking-wide">📅 {source}</span>
-                  <span className="text-xs text-gray-400">{sourceTasks.length} task{sourceTasks.length !== 1 ? "s" : ""}</span>
+              <div key={source} className="card-white !p-0 overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-mint flex items-center gap-2">
+                  <span className="eyebrow text-[11px]"><span className="eyebrow-dot" />{source}</span>
+                  <span className="text-[12px] text-charcoal/40">{sourceTasks.length} task{sourceTasks.length !== 1 ? "s" : ""}</span>
                 </div>
 
-                <ul className="divide-y divide-gray-50">
+                <ul className="divide-y divide-mint">
                   {sourceTasks.map((task) => (
                     <TaskRow
                       key={task.id}
@@ -314,8 +310,8 @@ export default function TasksPage() {
       )}
 
       {!loading && tasks.length > 0 && filtered.length === 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-10 text-center">
-          <p className="text-gray-400 text-sm">No tasks match your filters.</p>
+        <div className="card-white p-10 text-center">
+          <p className="text-charcoal/40 text-[14px]">No tasks match your filters.</p>
         </div>
       )}
     </div>
@@ -370,8 +366,8 @@ function TaskRow({
           {/* Checkbox */}
           <button
             onClick={() => onPatch({ status: task.status === "done" ? "todo" : "done" })}
-            className={`mt-0.5 w-5 h-5 rounded-full border-2 shrink-0 flex items-center justify-center transition-all ${
-              task.status === "done" ? "bg-emerald-500 border-emerald-500" : "border-gray-300 hover:border-indigo-400"
+            className={`mt-0.5 w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center transition-all ${
+              task.status === "done" ? "bg-teal-deep border-teal-deep" : "border-charcoal/25 hover:border-teal-deep"
             }`}
           >
             {task.status === "done" && (
@@ -393,44 +389,44 @@ function TaskRow({
                   if (e.key === "Enter") commitEdit();
                   if (e.key === "Escape") cancelEdit();
                 }}
-                className="w-full text-sm text-gray-800 border-b border-indigo-400 bg-transparent focus:outline-none pb-0.5"
+                className="w-full text-[14px] text-charcoal border-b border-teal-deep bg-transparent focus:outline-none pb-0.5"
               />
             ) : (
               <p
                 onClick={startEdit}
                 title="Click to edit"
-                className={`text-sm cursor-text ${task.status === "done" ? "line-through text-gray-400" : "text-gray-800 hover:text-indigo-700"}`}
+                className={`text-[14px] cursor-text ${task.status === "done" ? "line-through text-charcoal/40" : "text-charcoal hover:text-teal-pine"}`}
               >
                 {task.text}
               </p>
             )}
             <div className="flex flex-wrap items-center gap-2 mt-1.5">
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority]}`}>
+              <span className={PRIORITY_STYLES[task.priority]}>
                 {task.priority}
               </span>
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${STATUS_STYLES[task.status] ?? STATUS_STYLES["todo"]}`}>
+              <span className={STATUS_STYLES[task.status] ?? STATUS_STYLES["todo"]}>
                 {task.status === "in-progress" ? "In Progress" : task.status === "in-review" ? "In Review" : task.status === "todo" ? "To Do" : "Done"}
               </span>
               {loggedSeconds > 0 && (
-                <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full ring-1 ring-indigo-200">
-                  ⏱ {formatDurationShort(loggedSeconds)} logged
+                <span className="tag-progress">
+                  {formatDurationShort(loggedSeconds)} logged
                 </span>
               )}
               {task.assignee && (
-                <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full ring-1 ring-gray-100">
-                  👤 {task.assignee}
+                <span className="tag-neutral">
+                  {task.assignee}
                 </span>
               )}
               {task.checklist && task.checklist.length > 0 && (
-                <span className="text-[10px] text-gray-400">
+                <span className="text-[11px] text-charcoal/40">
                   {task.checklist.filter(c => c.done).length}/{task.checklist.length} subtasks
                 </span>
               )}
               {task.projectId && (() => {
                 const proj = projects.find(p => p.id === task.projectId);
                 return proj ? (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset" style={{ backgroundColor: proj.color + "22", color: proj.color }}>
-                    <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: proj.color }} />
+                  <span className="inline-flex items-center gap-1 rounded-tag px-2.5 py-1 text-[12px] font-medium" style={{ backgroundColor: proj.color + "22", color: proj.color }}>
+                    <span className="w-1.5 h-1.5 rounded-pill shrink-0" style={{ backgroundColor: proj.color }} />
                     {proj.name}
                   </span>
                 ) : null;
@@ -445,19 +441,16 @@ function TaskRow({
             <button
               onClick={onToggleExpand}
               title={expanded ? "Collapse" : "Details & comments"}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-tag text-[12px] font-medium transition-colors ${
                 expanded
-                  ? "bg-indigo-100 text-indigo-700"
-                  : "bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"
+                  ? "bg-teal-deep text-white"
+                  : "bg-mint text-charcoal/60 hover:bg-mint-mist hover:text-teal-pine"
               }`}
             >
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
               {expanded ? "Close" : "Comment"}
             </button>
 
-            <button onClick={onDelete} className="text-gray-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+            <button onClick={onDelete} className="text-charcoal/15 hover:text-[#b3492f] opacity-0 group-hover:opacity-100 transition-all">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -469,7 +462,7 @@ function TaskRow({
 
       {/* Detail panel */}
       {expanded && (
-        <li className="bg-gray-50 border-t border-gray-100 px-5 py-5">
+        <li className="bg-blush/50 border-t border-mint px-5 py-5">
           <TaskDetailPanel task={task} onPatch={onPatch} projects={projects} />
         </li>
       )}
@@ -566,11 +559,11 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
       {/* Status + Priority + Project row */}
       <div className="flex flex-wrap gap-3">
         <div>
-          <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Status</label>
+          <label className="block text-[11px] font-semibold text-charcoal/40 uppercase tracking-eyebrow mb-1.5">Status</label>
           <select
             value={task.status}
             onChange={(e) => onPatch({ status: e.target.value as TaskStatus })}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border-0 cursor-pointer ${STATUS_STYLES[task.status] ?? STATUS_STYLES["todo"]}`}
+            className={`border-0 cursor-pointer ${STATUS_STYLES[task.status] ?? STATUS_STYLES["todo"]}`}
           >
             <option value="todo">To Do</option>
             <option value="in-progress">In Progress</option>
@@ -579,11 +572,11 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Priority</label>
+          <label className="block text-[11px] font-semibold text-charcoal/40 uppercase tracking-eyebrow mb-1.5">Priority</label>
           <select
             value={task.priority}
             onChange={(e) => onPatch({ priority: e.target.value as TaskPriority })}
-            className={`text-xs font-semibold px-3 py-1.5 rounded-lg border-0 cursor-pointer ${PRIORITY_STYLES[task.priority]}`}
+            className={`border-0 cursor-pointer ${PRIORITY_STYLES[task.priority]}`}
           >
             <option value="high">High</option>
             <option value="medium">Medium</option>
@@ -592,16 +585,16 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
         </div>
         {projects.length > 0 && (
           <div>
-            <label className="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Project</label>
+            <label className="block text-[11px] font-semibold text-charcoal/40 uppercase tracking-eyebrow mb-1.5">Project</label>
             <div className="relative flex items-center gap-1.5">
               {task.projectId && (() => {
                 const proj = projects.find(p => p.id === task.projectId);
-                return proj ? <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: proj.color }} /> : null;
+                return proj ? <span className="w-2.5 h-2.5 rounded-pill shrink-0" style={{ backgroundColor: proj.color }} /> : null;
               })()}
               <select
                 value={task.projectId ?? ""}
                 onChange={(e) => onPatch({ projectId: e.target.value || null })}
-                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 bg-white cursor-pointer text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="input-field !py-1.5 text-[13px] font-medium"
               >
                 <option value="">No project</option>
                 {projects.map(p => (
@@ -616,29 +609,29 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Description */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Description</label>
+          <label className="block text-[11px] font-semibold text-charcoal/50 uppercase tracking-eyebrow mb-2">Description</label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             onBlur={saveDescription}
             placeholder="Add more context, acceptance criteria, or notes..."
             rows={5}
-            className="w-full border border-gray-200 bg-white rounded-xl px-3 py-2.5 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300"
+            className="input-field w-full resize-none placeholder:text-charcoal/25"
           />
         </div>
 
         {/* Checklist */}
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            Subtasks {checklist.length > 0 && <span className="normal-case font-normal text-gray-400 ml-1">{doneItems}/{checklist.length} done</span>}
+          <label className="block text-[11px] font-semibold text-charcoal/50 uppercase tracking-eyebrow mb-2">
+            Subtasks {checklist.length > 0 && <span className="normal-case font-normal text-charcoal/40 ml-1">{doneItems}/{checklist.length} done</span>}
           </label>
           <ul className="space-y-1.5 mb-2">
             {checklist.map((item) => (
-              <li key={item.id} className="flex items-center gap-2 group/cl">
+              <li key={item.id} className="check-item group/cl">
                 <button
                   onClick={() => toggleChecklist(item.id)}
-                  className={`w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-all ${
-                    item.done ? "bg-emerald-500 border-emerald-500" : "border-gray-300 hover:border-indigo-400"
+                  className={`w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-all mt-0.5 ${
+                    item.done ? "bg-teal-deep border-teal-deep" : "border-charcoal/25 hover:border-teal-deep"
                   }`}
                 >
                   {item.done && (
@@ -647,10 +640,10 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
                     </svg>
                   )}
                 </button>
-                <span className={`text-sm flex-1 ${item.done ? "line-through text-gray-400" : "text-gray-700"}`}>{item.text}</span>
+                <span className={`text-[14px] flex-1 ${item.done ? "line-through text-charcoal/40" : "text-charcoal"}`}>{item.text}</span>
                 <button
                   onClick={() => deleteChecklistItem(item.id)}
-                  className="opacity-0 group-hover/cl:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                  className="opacity-0 group-hover/cl:opacity-100 text-charcoal/25 hover:text-[#b3492f] transition-all"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -666,12 +659,12 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
               onChange={(e) => setNewItem(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") addChecklistItem(); }}
               placeholder="Add subtask..."
-              className="flex-1 border border-gray-200 bg-white rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300"
+              className="input-field flex-1 !py-1.5"
             />
             <button
               onClick={addChecklistItem}
               disabled={!newItem.trim()}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 transition-colors"
+              className="btn-primary-sm"
             >
               Add
             </button>
@@ -680,73 +673,55 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
       </div>
 
       {/* Timer section */}
-      <div className="bg-white border border-gray-100 rounded-xl p-4 flex items-center justify-between gap-4">
+      <div className="card-white flex items-center justify-between gap-4 !p-4">
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-0.5">Time Tracker</p>
+          <p className="eyebrow text-[11px] mb-1"><span className="eyebrow-dot" />Time Tracker</p>
           {isActive ? (
-            <p className="text-2xl font-bold text-indigo-700 tabular-nums">
+            <p className="text-[24px] font-semibold text-teal-deep tabular-nums">
               {formatDurationShort(elapsed)}
             </p>
           ) : loggedSeconds > 0 ? (
-            <p className="text-sm font-semibold text-gray-700">
-              {formatDurationShort(loggedSeconds)} <span className="text-gray-400 font-normal">logged</span>
+            <p className="text-[14px] font-semibold text-charcoal">
+              {formatDurationShort(loggedSeconds)} <span className="text-charcoal/40 font-normal">logged</span>
             </p>
           ) : (
-            <p className="text-sm text-gray-400">No time logged yet</p>
+            <p className="text-[14px] text-charcoal/40">No time logged yet</p>
           )}
         </div>
         <button
           onClick={() => isActive ? stopTimer(false) : startTimer(timerKey, task.text)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-            isActive
-              ? "bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-200"
-              : "bg-indigo-600 text-white hover:bg-indigo-700"
-          }`}
+          className={isActive ? "btn-ghost-sm" : "btn-primary-sm"}
         >
-          {isActive ? (
-            <>
-              <span className="w-3 h-3 rounded-sm bg-red-500 shrink-0" />
-              Stop Timer
-            </>
-          ) : (
-            <>
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              Start Timer
-            </>
-          )}
+          {isActive ? "Stop Timer" : "Start Timer"}
         </button>
       </div>
 
       {/* Comments section */}
       <div>
-        <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Comments {commentsLoaded && comments.length > 0 && <span className="normal-case font-normal text-gray-400 ml-1">{comments.length}</span>}
+        <label className="block text-[11px] font-semibold text-charcoal/50 uppercase tracking-eyebrow mb-3">
+          Comments {commentsLoaded && comments.length > 0 && <span className="normal-case font-normal text-charcoal/40 ml-1">{comments.length}</span>}
         </label>
 
         {!commentsLoaded && (
           <div className="space-y-2">
-            {[1, 2].map(i => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}
+            {[1, 2].map(i => <div key={i} className="h-12 bg-mint rounded-card animate-pulse" />)}
           </div>
         )}
 
         {commentsLoaded && comments.length > 0 && (
           <ul className="space-y-2 mb-3">
             {comments.map(c => (
-              <li key={c.id} className="bg-white border border-gray-100 rounded-xl px-4 py-3 flex items-start gap-3 group/cmt shadow-sm">
-                <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-                  <svg className="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
+              <li key={c.id} className="card-white !p-3 flex items-start gap-3 group/cmt">
+                <div className="w-7 h-7 rounded-pill bg-mint flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-[12px] font-semibold text-teal-pine">{c.body.trim().charAt(0).toUpperCase() || "?"}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">{c.body}</p>
-                  <p className="text-[11px] text-gray-400 mt-1">{fmtCommentDate(c.createdAt)}</p>
+                  <p className="text-[14px] text-charcoal leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                  <p className="text-[11px] text-charcoal/40 mt-1">{fmtCommentDate(c.createdAt)}</p>
                 </div>
                 <button
                   onClick={() => deleteComment(c.id)}
-                  className="opacity-0 group-hover/cmt:opacity-100 text-gray-300 hover:text-red-400 transition-all shrink-0 mt-0.5"
+                  className="opacity-0 group-hover/cmt:opacity-100 text-charcoal/25 hover:text-[#b3492f] transition-all shrink-0 mt-0.5"
                   title="Delete comment"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -759,7 +734,7 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
         )}
 
         {commentsLoaded && comments.length === 0 && (
-          <p className="text-xs text-gray-400 mb-3">No comments yet.</p>
+          <p className="text-[13px] text-charcoal/40 mb-3">No comments yet.</p>
         )}
 
         <div className="flex gap-2">
@@ -769,12 +744,12 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
             onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) addComment(); }}
             placeholder="Add a comment… (Ctrl+Enter to submit)"
             rows={2}
-            className="flex-1 border border-gray-200 bg-white rounded-xl px-3 py-2 text-sm text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300"
+            className="input-field flex-1 resize-none placeholder:text-charcoal/25"
           />
           <button
             onClick={addComment}
             disabled={!newComment.trim() || savingComment}
-            className="px-3 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 disabled:opacity-40 transition-colors self-end"
+            className="btn-primary-sm self-end"
           >
             Post
           </button>
@@ -788,13 +763,13 @@ function TaskDetailPanel({ task, onPatch, projects }: { task: MeetingTask; onPat
 
 function StatPill({ label, count, color, onClick, active }: { label: string; count: number; color: string; onClick: () => void; active: boolean }) {
   const colors: Record<string, string> = {
-    gray: active ? "bg-gray-700 text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200",
-    blue: active ? "bg-blue-600 text-white" : "bg-blue-50 text-blue-700 hover:bg-blue-100",
-    emerald: active ? "bg-emerald-600 text-white" : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
-    red: active ? "bg-red-600 text-white" : "bg-red-50 text-red-700 hover:bg-red-100",
+    neutral: active ? "bg-charcoal text-white" : "bg-charcoal/10 text-charcoal/70 hover:bg-charcoal/20",
+    progress: active ? "bg-navy text-white" : "bg-navy/10 text-navy hover:bg-navy/20",
+    done: active ? "bg-teal-deep text-white" : "bg-teal-sage/20 text-teal-pine hover:bg-teal-sage/30",
+    blocked: active ? "bg-[#b3492f] text-white" : "bg-[#e07a5f]/20 text-[#b3492f] hover:bg-[#e07a5f]/30",
   };
   return (
-    <button onClick={onClick} className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${colors[color] ?? colors.gray}`}>
+    <button onClick={onClick} className={`px-3.5 py-1.5 rounded-tag text-[13px] font-semibold transition-all ${colors[color] ?? colors.neutral}`}>
       {label} <span className="ml-1 opacity-75">{count}</span>
     </button>
   );

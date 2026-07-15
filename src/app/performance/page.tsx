@@ -33,25 +33,25 @@ const SECTION_ICONS: Record<string, string> = {
 };
 
 const SECTION_COLORS: Record<string, string> = {
-  "Time Management": "border-indigo-200 bg-indigo-50/60",
-  "Delivery & Efficiency": "border-emerald-200 bg-emerald-50/60",
-  "Delivery Quality": "border-emerald-200 bg-emerald-50/60",
-  "Skill Takeaways": "border-purple-200 bg-purple-50/60",
-  "Leadership & Collaboration": "border-violet-200 bg-violet-50/60",
-  "Communication & Influence": "border-blue-200 bg-blue-50/60",
-  "Professional Growth": "border-amber-200 bg-amber-50/60",
-  "Key Recommendations": "border-rose-200 bg-rose-50/60",
+  "Time Management": "border-mint-mist bg-mint/60",
+  "Delivery & Efficiency": "border-teal-sage/40 bg-teal-sage/10/60",
+  "Delivery Quality": "border-teal-sage/40 bg-teal-sage/10/60",
+  "Skill Takeaways": "border-navy/20 bg-navy/10/60",
+  "Leadership & Collaboration": "border-navy/20 bg-navy/10/60",
+  "Communication & Influence": "border-navy/20 bg-navy/10/60",
+  "Professional Growth": "border-rose/50 bg-blush/60",
+  "Key Recommendations": "border-rose/40 bg-blush/60",
 };
 
 const TITLE_COLORS: Record<string, string> = {
-  "Time Management": "text-indigo-700",
-  "Delivery & Efficiency": "text-emerald-700",
-  "Delivery Quality": "text-emerald-700",
-  "Skill Takeaways": "text-purple-700",
-  "Leadership & Collaboration": "text-violet-700",
-  "Communication & Influence": "text-blue-700",
-  "Professional Growth": "text-amber-700",
-  "Key Recommendations": "text-rose-700",
+  "Time Management": "text-teal-pine",
+  "Delivery & Efficiency": "text-teal-pine",
+  "Delivery Quality": "text-teal-pine",
+  "Skill Takeaways": "text-navy",
+  "Leadership & Collaboration": "text-navy",
+  "Communication & Influence": "text-navy",
+  "Professional Growth": "text-charcoal",
+  "Key Recommendations": "text-charcoal",
 };
 
 function InsightsRenderer({ text }: { text: string }) {
@@ -69,15 +69,15 @@ function InsightsRenderer({ text }: { text: string }) {
 
   // If no ## sections found, render plain
   if (sections.length === 0) {
-    return <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{text}</p>;
+    return <p className="text-sm text-charcoal/80 leading-relaxed whitespace-pre-line">{text}</p>;
   }
 
   return (
     <div className="space-y-4">
       {sections.map(({ title, body }) => {
         const icon = SECTION_ICONS[title] ?? "•";
-        const colorClass = SECTION_COLORS[title] ?? "border-gray-200 bg-gray-50";
-        const titleColor = TITLE_COLORS[title] ?? "text-gray-700";
+        const colorClass = SECTION_COLORS[title] ?? "border-mint-mist bg-paper";
+        const titleColor = TITLE_COLORS[title] ?? "text-charcoal/80";
 
         const isRecs = title.toLowerCase().includes("recommendation");
         const isSkillTakeaways = title.toLowerCase().includes("skill takeaway");
@@ -92,11 +92,11 @@ function InsightsRenderer({ text }: { text: string }) {
           : [];
 
         const SIGNAL_COLORS: Record<string, string> = {
-          strong: "bg-emerald-100 text-emerald-700",
-          developing: "bg-amber-100 text-amber-700",
-          active: "bg-emerald-100 text-emerald-700",
-          "needs attention": "bg-red-100 text-red-700",
-          "minimal activity": "bg-gray-100 text-gray-500",
+          strong: "bg-teal-sage/20 text-teal-pine",
+          developing: "bg-blush text-charcoal",
+          active: "bg-teal-sage/20 text-teal-pine",
+          "needs attention": "bg-[#e07a5f]/15 text-[#b3492f]",
+          "minimal activity": "bg-mint text-charcoal/50",
         };
 
         return (
@@ -109,8 +109,8 @@ function InsightsRenderer({ text }: { text: string }) {
             {isRecs && recItems.length > 0 ? (
               <ol className="space-y-1.5">
                 {recItems.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                    <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5 bg-rose-100 text-rose-700">
+                  <li key={i} className="flex items-start gap-2 text-sm text-charcoal/80">
+                    <span className="shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5 bg-blush text-charcoal">
                       {i + 1}
                     </span>
                     <span>{item.replace(/^\d+[\.\)]\s*/, "")}</span>
@@ -128,24 +128,24 @@ function InsightsRenderer({ text }: { text: string }) {
                   const signalMatch = rest.match(/^(Strong|Developing|Needs Attention|Active|Minimal activity)[.:]?\s*(.*)/i);
                   const signal = signalMatch ? signalMatch[1] : null;
                   const evidence = signalMatch ? signalMatch[2] : rest;
-                  const signalClass = signal ? (SIGNAL_COLORS[signal.toLowerCase()] ?? "bg-gray-100 text-gray-600") : "";
+                  const signalClass = signal ? (SIGNAL_COLORS[signal.toLowerCase()] ?? "bg-mint text-charcoal/70") : "";
                   return (
                     <li key={i} className="flex items-start gap-2.5">
                       <div className="min-w-[130px] shrink-0 flex items-center gap-1.5 pt-0.5">
-                        <span className="text-xs font-bold text-gray-700">{skill}</span>
+                        <span className="text-xs font-bold text-charcoal/80">{skill}</span>
                         {signal && (
                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${signalClass}`}>
                             {signal}
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-700 leading-relaxed">{evidence}</p>
+                      <p className="text-sm text-charcoal/80 leading-relaxed">{evidence}</p>
                     </li>
                   );
                 })}
               </ul>
             ) : (
-              <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{body}</p>
+              <p className="text-sm text-charcoal/80 leading-relaxed whitespace-pre-line">{body}</p>
             )}
           </div>
         );
@@ -257,30 +257,30 @@ interface PerformanceStats {
 // ─── Color maps ───────────────────────────────────────────────────────────────
 
 const CATEGORY_COLORS: Record<MilestoneCategory, string> = {
-  technical: "bg-indigo-100 text-indigo-700",
-  leadership: "bg-emerald-100 text-emerald-700",
-  delivery: "bg-amber-100 text-amber-700",
-  growth: "bg-violet-100 text-violet-700",
-  communication: "bg-blue-100 text-blue-700",
-  other: "bg-gray-100 text-gray-600",
+  technical: "bg-mint text-teal-pine",
+  leadership: "bg-teal-sage/20 text-teal-pine",
+  delivery: "bg-blush text-charcoal",
+  growth: "bg-navy/10 text-navy",
+  communication: "bg-navy/10 text-navy",
+  other: "bg-mint text-charcoal/70",
 };
 
 const PROFDEV_TYPE_COLORS: Record<ProfDevType, string> = {
-  course: "bg-blue-100 text-blue-700",
-  certification: "bg-emerald-100 text-emerald-700",
-  book: "bg-violet-100 text-violet-700",
-  workshop: "bg-amber-100 text-amber-700",
-  conference: "bg-indigo-100 text-indigo-700",
-  mentoring: "bg-rose-100 text-rose-700",
-  presentation: "bg-orange-100 text-orange-700",
-  shadowing: "bg-teal-100 text-teal-700",
-  other: "bg-gray-100 text-gray-600",
+  course: "bg-navy/10 text-navy",
+  certification: "bg-teal-sage/20 text-teal-pine",
+  book: "bg-navy/10 text-navy",
+  workshop: "bg-blush text-charcoal",
+  conference: "bg-mint text-teal-pine",
+  mentoring: "bg-blush text-charcoal",
+  presentation: "bg-blush text-charcoal",
+  shadowing: "bg-mint text-teal-pine",
+  other: "bg-mint text-charcoal/70",
 };
 
 const STATUS_COLORS: Record<MilestoneStatus, string> = {
-  pending: "bg-gray-100 text-gray-600",
-  "in-progress": "bg-amber-100 text-amber-700",
-  completed: "bg-emerald-100 text-emerald-700",
+  pending: "bg-mint text-charcoal/70",
+  "in-progress": "bg-blush text-charcoal",
+  completed: "bg-teal-sage/20 text-teal-pine",
 };
 
 // ─── KPI Card ─────────────────────────────────────────────────────────────────
@@ -294,26 +294,26 @@ interface KpiCardProps {
 }
 
 const COLOR_MAP = {
-  emerald: { bg: "bg-emerald-50", icon: "text-emerald-600", value: "text-emerald-700" },
-  indigo: { bg: "bg-indigo-50", icon: "text-indigo-600", value: "text-indigo-700" },
-  violet: { bg: "bg-violet-50", icon: "text-violet-600", value: "text-violet-700" },
-  amber: { bg: "bg-amber-50", icon: "text-amber-600", value: "text-amber-700" },
-  blue: { bg: "bg-blue-50", icon: "text-blue-600", value: "text-blue-700" },
-  rose: { bg: "bg-rose-50", icon: "text-rose-600", value: "text-rose-700" },
+  emerald: { bg: "bg-teal-sage/10", icon: "text-teal-pine", value: "text-teal-pine" },
+  indigo: { bg: "bg-mint", icon: "text-teal-forest", value: "text-teal-pine" },
+  violet: { bg: "bg-navy/10", icon: "text-navy", value: "text-navy" },
+  amber: { bg: "bg-blush", icon: "text-charcoal/70", value: "text-charcoal" },
+  blue: { bg: "bg-navy/10", icon: "text-navy", value: "text-navy" },
+  rose: { bg: "bg-blush", icon: "text-charcoal/80", value: "text-charcoal" },
 };
 
 function KpiCard({ title, value, subtitle, color, icon }: KpiCardProps) {
   const c = COLOR_MAP[color];
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-3">
+    <div className="bg-white rounded-2xl border border-mint shadow-sm p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-gray-500">{title}</p>
+        <p className="text-sm font-semibold text-charcoal/50">{title}</p>
         <div className={`w-8 h-8 rounded-xl ${c.bg} flex items-center justify-center`}>
           <span className={`w-4 h-4 ${c.icon}`}>{icon}</span>
         </div>
       </div>
       <p className={`text-2xl font-bold ${c.value}`}>{value}</p>
-      <p className="text-xs text-gray-400">{subtitle}</p>
+      <p className="text-xs text-charcoal/40">{subtitle}</p>
     </div>
   );
 }
@@ -346,16 +346,16 @@ interface GrowthStats {
 }
 
 function GrowthTrendIcon({ trend }: { trend: TopicGrowthStat["trend"] }) {
-  if (trend === "improving") return <span className="text-emerald-500 text-xs font-bold">↑</span>;
-  if (trend === "declining") return <span className="text-red-400 text-xs font-bold">↓</span>;
-  if (trend === "stable") return <span className="text-amber-400 text-xs font-bold">→</span>;
-  return <span className="text-gray-300 text-xs">—</span>;
+  if (trend === "improving") return <span className="text-teal-sage text-xs font-bold">↑</span>;
+  if (trend === "declining") return <span className="text-[#e07a5f] text-xs font-bold">↓</span>;
+  if (trend === "stable") return <span className="text-rose text-xs font-bold">→</span>;
+  return <span className="text-charcoal/30 text-xs">—</span>;
 }
 
 function GrowthScoreBadge({ score }: { score: number }) {
-  const cls = score >= 80 ? "bg-emerald-100 text-emerald-700"
-    : score >= 60 ? "bg-amber-100 text-amber-700"
-    : "bg-red-100 text-red-600";
+  const cls = score >= 80 ? "bg-teal-sage/20 text-teal-pine"
+    : score >= 60 ? "bg-blush text-charcoal"
+    : "bg-[#e07a5f]/15 text-[#b3492f]";
   return <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${cls}`}>{score}%</span>;
 }
 
@@ -377,7 +377,7 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-3 text-gray-400 text-sm">
+      <div className="bg-white rounded-2xl border border-mint shadow-sm p-6 flex items-center gap-3 text-charcoal/40 text-sm">
         <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -389,14 +389,14 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
 
   if (!growthStats || growthStats.totalAttempts === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
         <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-sm font-semibold text-gray-700">Professional Growth — Quiz Analytics</h2>
-          <span className="text-xs text-gray-400 px-2 py-0.5 bg-gray-100 rounded-full">No quiz data yet</span>
+          <h2 className="text-sm font-semibold text-charcoal/80">Professional Growth — Quiz Analytics</h2>
+          <span className="text-xs text-charcoal/40 px-2 py-0.5 bg-mint rounded-full">No quiz data yet</span>
         </div>
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-charcoal/40">
           Complete quizzes on the{" "}
-          <a href="/growth" className="text-indigo-500 hover:underline">Professional Growth page</a>{" "}
+          <a href="/growth" className="text-teal-deep hover:underline">Professional Growth page</a>{" "}
           to see analytics here.
         </p>
       </div>
@@ -407,31 +407,31 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
   const showTopics = expanded ? attempted : attempted.slice(0, 6);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+    <div className="bg-white rounded-2xl border border-mint shadow-sm p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-gray-700">Professional Growth — Quiz Analytics</h2>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-600">📈 Growth</span>
+          <h2 className="text-sm font-semibold text-charcoal/80">Professional Growth — Quiz Analytics</h2>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blush text-charcoal/70">📈 Growth</span>
         </div>
-        <a href="/growth" className="text-xs text-indigo-500 hover:underline">Open Growth page ↗</a>
+        <a href="/growth" className="text-xs text-teal-deep hover:underline">Open Growth page ↗</a>
       </div>
 
       {/* KPI row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: "Overall Avg Score", value: `${growthStats.overallAvgScore}%`, sub: `${growthStats.totalAttempts} quiz sessions`,
-            cls: growthStats.overallAvgScore >= 80 ? "text-emerald-600" : growthStats.overallAvgScore >= 60 ? "text-amber-600" : "text-red-600" },
+            cls: growthStats.overallAvgScore >= 80 ? "text-teal-pine" : growthStats.overallAvgScore >= 60 ? "text-charcoal/70" : "text-[#b3492f]" },
           { label: "Topic Coverage", value: `${growthStats.topicsAttempted} / ${growthStats.topicsTotal}`,
-            sub: `${growthStats.quizCompletionRate}% topics attempted`, cls: "text-indigo-600" },
+            sub: `${growthStats.quizCompletionRate}% topics attempted`, cls: "text-teal-forest" },
           { label: "Strongest Topic", value: growthStats.strongestTopic ?? "—",
-            sub: `${growthStats.topicStats.find(t => t.label === growthStats.strongestTopic)?.avgScore ?? 0}% avg`, cls: "text-emerald-600" },
+            sub: `${growthStats.topicStats.find(t => t.label === growthStats.strongestTopic)?.avgScore ?? 0}% avg`, cls: "text-teal-pine" },
           { label: "Needs Attention", value: growthStats.weakestTopic ?? "—",
-            sub: `${growthStats.topicStats.find(t => t.label === growthStats.weakestTopic)?.avgScore ?? 0}% avg`, cls: "text-red-600" },
+            sub: `${growthStats.topicStats.find(t => t.label === growthStats.weakestTopic)?.avgScore ?? 0}% avg`, cls: "text-[#b3492f]" },
         ].map(({ label, value, sub, cls }) => (
-          <div key={label} className="bg-gray-50 rounded-xl p-4">
-            <p className="text-xs text-gray-400 mb-1">{label}</p>
+          <div key={label} className="bg-paper rounded-xl p-4">
+            <p className="text-xs text-charcoal/40 mb-1">{label}</p>
             <p className={`text-sm font-bold truncate ${cls}`}>{value}</p>
-            <p className="text-[10px] text-gray-400 mt-0.5 truncate">{sub}</p>
+            <p className="text-[10px] text-charcoal/40 mt-0.5 truncate">{sub}</p>
           </div>
         ))}
       </div>
@@ -439,10 +439,10 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
       {/* Per-topic table */}
       {attempted.length > 0 && (
         <div>
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Per-Topic Breakdown</p>
-          <div className="border border-gray-100 rounded-xl overflow-hidden">
+          <p className="text-xs font-semibold text-charcoal/40 uppercase tracking-wide mb-2">Per-Topic Breakdown</p>
+          <div className="border border-mint rounded-xl overflow-hidden">
             <table className="w-full text-xs">
-              <thead className="bg-gray-50 text-gray-500">
+              <thead className="bg-paper text-charcoal/50">
                 <tr>
                   <th className="text-left px-3 py-2 font-semibold">Topic</th>
                   <th className="text-center px-3 py-2 font-semibold">Sessions</th>
@@ -453,18 +453,18 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
                   <th className="text-right px-3 py-2 font-semibold">Last Active</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-paper">
                 {showTopics.map((t) => (
-                  <tr key={t.topicId} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-3 py-2 font-medium text-gray-700">{t.label}</td>
-                    <td className="px-3 py-2 text-center text-gray-500">{t.attemptCount}</td>
+                  <tr key={t.topicId} className="hover:bg-paper/50 transition-colors">
+                    <td className="px-3 py-2 font-medium text-charcoal/80">{t.label}</td>
+                    <td className="px-3 py-2 text-center text-charcoal/50">{t.attemptCount}</td>
                     <td className="px-3 py-2 text-center"><GrowthScoreBadge score={t.avgScore} /></td>
-                    <td className="px-3 py-2 text-center text-gray-500">{t.bestScore}%</td>
+                    <td className="px-3 py-2 text-center text-charcoal/50">{t.bestScore}%</td>
                     <td className="px-3 py-2 text-center">
-                      {t.latestScore !== null ? <GrowthScoreBadge score={t.latestScore} /> : <span className="text-gray-300">—</span>}
+                      {t.latestScore !== null ? <GrowthScoreBadge score={t.latestScore} /> : <span className="text-charcoal/30">—</span>}
                     </td>
                     <td className="px-3 py-2 text-center"><GrowthTrendIcon trend={t.trend} /></td>
-                    <td className="px-3 py-2 text-right text-gray-400">{t.lastAttempt ?? "—"}</td>
+                    <td className="px-3 py-2 text-right text-charcoal/40">{t.lastAttempt ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -473,7 +473,7 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
           {attempted.length > 6 && (
             <button
               onClick={() => setExpanded((v) => !v)}
-              className="mt-2 text-xs text-indigo-500 hover:underline w-full text-center"
+              className="mt-2 text-xs text-teal-deep hover:underline w-full text-center"
             >
               {expanded ? "Show less" : `Show all ${attempted.length} topics`}
             </button>
@@ -483,8 +483,8 @@ function GrowthSummaryPanel({ startDate, endDate }: { startDate: string; endDate
 
       {/* Topics not yet attempted */}
       {growthStats.topicsAttempted < growthStats.topicsTotal && (
-        <div className="text-xs text-gray-400">
-          <span className="font-medium text-gray-600">{growthStats.topicsTotal - growthStats.topicsAttempted} topics</span> not yet attempted —{" "}
+        <div className="text-xs text-charcoal/40">
+          <span className="font-medium text-charcoal/70">{growthStats.topicsTotal - growthStats.topicsAttempted} topics</span> not yet attempted —{" "}
           {growthStats.topicStats.filter(t => t.attemptCount === 0).map(t => t.label).slice(0, 5).join(", ")}
           {growthStats.topicsTotal - growthStats.topicsAttempted > 5 ? ` and ${growthStats.topicsTotal - growthStats.topicsAttempted - 5} more` : ""}
         </div>
@@ -527,7 +527,7 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex items-center gap-3 text-gray-400 text-sm">
+      <div className="bg-white rounded-2xl border border-mint shadow-sm p-6 flex items-center gap-3 text-charcoal/40 text-sm">
         <svg className="animate-spin w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24">
           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -545,26 +545,26 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
   const maxMins = Math.max(...projects.map((p) => p.totalMinutes), 1);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+    <div className="bg-white rounded-2xl border border-mint shadow-sm p-6 space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h2 className="text-sm font-semibold text-gray-700">Projects — Performance Summary</h2>
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">📁 Projects</span>
+          <h2 className="text-sm font-semibold text-charcoal/80">Projects — Performance Summary</h2>
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-mint text-teal-forest">📁 Projects</span>
         </div>
-        <a href="/projects" className="text-xs text-indigo-500 hover:underline">Open Projects ↗</a>
+        <a href="/projects" className="text-xs text-teal-deep hover:underline">Open Projects ↗</a>
       </div>
 
       {/* Totals KPI row */}
       {totals && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Total Time Logged", value: fmtMinsLocal(totals.totalMinutes), cls: "text-indigo-600" },
-            { label: "Total Tasks", value: String(totals.taskCount), cls: "text-gray-700" },
-            { label: "Tasks Done", value: String(totals.tasksDone), cls: "text-emerald-600" },
-            { label: "Overall Completion", value: `${totals.completionRate}%`, cls: totals.completionRate >= 70 ? "text-emerald-600" : totals.completionRate >= 40 ? "text-amber-600" : "text-red-500" },
+            { label: "Total Time Logged", value: fmtMinsLocal(totals.totalMinutes), cls: "text-teal-forest" },
+            { label: "Total Tasks", value: String(totals.taskCount), cls: "text-charcoal/80" },
+            { label: "Tasks Done", value: String(totals.tasksDone), cls: "text-teal-pine" },
+            { label: "Overall Completion", value: `${totals.completionRate}%`, cls: totals.completionRate >= 70 ? "text-teal-pine" : totals.completionRate >= 40 ? "text-charcoal/70" : "text-[#e07a5f]" },
           ].map(({ label, value, cls }) => (
-            <div key={label} className="bg-gray-50 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">{label}</p>
+            <div key={label} className="bg-paper rounded-xl p-4">
+              <p className="text-xs text-charcoal/40 mb-1">{label}</p>
               <p className={`text-sm font-bold ${cls}`}>{value}</p>
             </div>
           ))}
@@ -578,18 +578,18 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color }} />
-                <span className="text-sm font-medium text-gray-700">{p.name}</span>
+                <span className="text-sm font-medium text-charcoal/80">{p.name}</span>
               </div>
-              <div className="flex items-center gap-3 text-xs text-gray-500">
-                <span className="font-semibold text-indigo-600">{fmtMinsLocal(p.totalMinutes)}</span>
-                <span className="text-emerald-600 font-medium">{p.tasksDone} done</span>
-                {p.tasksInReview > 0 && <span className="text-violet-600 font-medium">{p.tasksInReview} review</span>}
-                {p.tasksInProgress > 0 && <span className="text-blue-600 font-medium">{p.tasksInProgress} active</span>}
-                <span className={`font-semibold ${p.completionRate >= 70 ? "text-emerald-600" : p.completionRate >= 40 ? "text-amber-600" : "text-gray-400"}`}>{p.completionRate}%</span>
+              <div className="flex items-center gap-3 text-xs text-charcoal/50">
+                <span className="font-semibold text-teal-forest">{fmtMinsLocal(p.totalMinutes)}</span>
+                <span className="text-teal-pine font-medium">{p.tasksDone} done</span>
+                {p.tasksInReview > 0 && <span className="text-navy font-medium">{p.tasksInReview} review</span>}
+                {p.tasksInProgress > 0 && <span className="text-navy font-medium">{p.tasksInProgress} active</span>}
+                <span className={`font-semibold ${p.completionRate >= 70 ? "text-teal-pine" : p.completionRate >= 40 ? "text-charcoal/70" : "text-charcoal/40"}`}>{p.completionRate}%</span>
               </div>
             </div>
             {/* Time bar */}
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-mint rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{ width: `${(p.totalMinutes / maxMins) * 100}%`, backgroundColor: p.color }}
@@ -598,21 +598,21 @@ function ProjectsSummaryPanel({ startDate, endDate }: { startDate: string; endDa
             {/* Task mini-bars */}
             {p.taskCount > 0 && (
               <div className="flex h-1 rounded-full overflow-hidden gap-px">
-                {p.tasksDone > 0 && <div className="bg-emerald-400" style={{ flex: p.tasksDone }} />}
-                {p.tasksInProgress > 0 && <div className="bg-blue-400" style={{ flex: p.tasksInProgress }} />}
-                {p.tasksInReview > 0 && <div className="bg-violet-400" style={{ flex: p.tasksInReview }} />}
-                {p.tasksTodo > 0 && <div className="bg-gray-200" style={{ flex: p.tasksTodo }} />}
+                {p.tasksDone > 0 && <div className="bg-teal-sage" style={{ flex: p.tasksDone }} />}
+                {p.tasksInProgress > 0 && <div className="bg-navy/40" style={{ flex: p.tasksInProgress }} />}
+                {p.tasksInReview > 0 && <div className="bg-rose" style={{ flex: p.tasksInReview }} />}
+                {p.tasksTodo > 0 && <div className="bg-mint-mist" style={{ flex: p.tasksTodo }} />}
               </div>
             )}
           </div>
         ))}
       </div>
 
-      <div className="flex items-center gap-4 text-[10px] text-gray-400">
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400 inline-block" /> Done</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" /> In Progress</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-violet-400 inline-block" /> In Review</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" /> To Do</span>
+      <div className="flex items-center gap-4 text-[10px] text-charcoal/40">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-teal-sage inline-block" /> Done</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-navy/40 inline-block" /> In Progress</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose inline-block" /> In Review</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-mint-mist inline-block" /> To Do</span>
       </div>
     </div>
   );
@@ -993,21 +993,22 @@ export default function PerformancePage() {
       {/* ── Header ─────────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Performance</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="eyebrow"><span className="eyebrow-dot" />Performance</p>
+          <h1 className="headline mt-1">Performance</h1>
+          <p className="text-sm text-charcoal/50 mt-1">
             Track your delivery, growth, and professional milestones
           </p>
         </div>
       </div>
 
       {/* ── View Mode Toggle ────────────────────────────────────────────────── */}
-      <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit">
+      <div className="flex gap-1 bg-mint rounded-nav p-1 w-fit">
         {(["overall", "project"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === mode ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
+            className={`px-5 py-2 rounded-nav text-sm font-medium transition-colors ${
+              viewMode === mode ? "bg-white text-charcoal" : "text-charcoal/50 hover:text-charcoal/80"
             }`}
           >
             {mode === "overall" ? "Overall" : "By Project"}
@@ -1023,8 +1024,8 @@ export default function PerformancePage() {
             onClick={() => setRangeLabel(preset)}
             className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
               rangeLabel === preset
-                ? "bg-indigo-600 text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+                ? "bg-teal-forest text-white"
+                : "bg-white border border-mint-mist text-charcoal/70 hover:bg-paper"
             }`}
           >
             {preset}
@@ -1045,7 +1046,7 @@ export default function PerformancePage() {
               <select
                 value={selectedProjectId}
                 onChange={(e) => { setSelectedProjectId(e.target.value); setProjectPerfStats(null); setProjectInsights(""); setProjectTimeByDate([]); setProjectInsightsError(null); }}
-                className="text-sm border border-gray-200 rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white min-w-[200px]"
+                className="text-sm border border-mint-mist rounded-xl px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-mint-mist bg-white min-w-[200px]"
               >
                 <option value="">Select a project…</option>
                 {perfProjects.map((p) => (
@@ -1056,7 +1057,7 @@ export default function PerformancePage() {
             <button
               onClick={generateProjectInsights}
               disabled={!selectedProjectId || projectInsightsLoading}
-              className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-2"
+              className="px-5 py-2.5 bg-teal-forest text-white rounded-button text-sm font-semibold hover:bg-teal-pine disabled:opacity-50 flex items-center gap-2"
             >
               {projectInsightsLoading ? (
                 <>
@@ -1076,12 +1077,12 @@ export default function PerformancePage() {
               )}
             </button>
             {selectedProjectId && startDate && endDate && (
-              <span className="text-sm text-gray-400">{startDate} → {endDate}</span>
+              <span className="text-sm text-charcoal/40">{startDate} → {endDate}</span>
             )}
           </div>
 
           {projectInsightsError && (
-            <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">{projectInsightsError}</div>
+            <div className="rounded-xl bg-[#e07a5f]/10 border border-[#e07a5f]/15 px-4 py-3 text-sm text-[#b3492f]">{projectInsightsError}</div>
           )}
 
           {projectPerfStats && (
@@ -1105,23 +1106,23 @@ export default function PerformancePage() {
               </div>
 
               {/* Task status breakdown */}
-              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                <h3 className="text-sm font-semibold text-gray-700 mb-4">Task Status — {projectName}</h3>
+              <div className="bg-white rounded-2xl border border-mint shadow-sm p-5">
+                <h3 className="text-sm font-semibold text-charcoal/80 mb-4">Task Status — {projectName}</h3>
                 <div className="space-y-3">
                   {[
-                    { label: "To Do", count: Number(projectPerfStats.tasksTodo), color: "bg-gray-300", textColor: "text-gray-500" },
-                    { label: "In Progress", count: Number(projectPerfStats.tasksInProgress), color: "bg-blue-400", textColor: "text-blue-600" },
-                    { label: "In Review", count: Number(projectPerfStats.tasksInReview ?? 0), color: "bg-violet-400", textColor: "text-violet-600" },
-                    { label: "Done", count: Number(projectPerfStats.tasksDone), color: "bg-emerald-400", textColor: "text-emerald-600" },
+                    { label: "To Do", count: Number(projectPerfStats.tasksTodo), color: "bg-charcoal/30", textColor: "text-charcoal/50" },
+                    { label: "In Progress", count: Number(projectPerfStats.tasksInProgress), color: "bg-navy/40", textColor: "text-navy" },
+                    { label: "In Review", count: Number(projectPerfStats.tasksInReview ?? 0), color: "bg-rose", textColor: "text-navy" },
+                    { label: "Done", count: Number(projectPerfStats.tasksDone), color: "bg-teal-sage", textColor: "text-teal-pine" },
                   ].map(({ label, count, color, textColor }) => {
                     const total = Number(projectPerfStats.taskCount);
                     return (
                       <div key={label}>
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs text-gray-500">{label}</span>
-                          <span className={`text-xs font-semibold ${textColor}`}>{count} <span className="font-normal text-gray-400">/ {total}</span></span>
+                          <span className="text-xs text-charcoal/50">{label}</span>
+                          <span className={`text-xs font-semibold ${textColor}`}>{count} <span className="font-normal text-charcoal/40">/ {total}</span></span>
                         </div>
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-2 bg-mint rounded-full overflow-hidden">
                           <div className={`h-full rounded-full ${color} transition-all`}
                             style={{ width: total > 0 ? `${(count / total) * 100}%` : "0%" }} />
                         </div>
@@ -1132,18 +1133,18 @@ export default function PerformancePage() {
                 {/* Stacked bar total */}
                 {Number(projectPerfStats.taskCount) > 0 && (
                   <div className="mt-4 flex h-3 rounded-full overflow-hidden gap-px">
-                    {Number(projectPerfStats.tasksDone) > 0 && <div className="bg-emerald-400" style={{ flex: Number(projectPerfStats.tasksDone) }} title="Done" />}
-                    {Number(projectPerfStats.tasksInReview ?? 0) > 0 && <div className="bg-violet-400" style={{ flex: Number(projectPerfStats.tasksInReview ?? 0) }} title="In Review" />}
-                    {Number(projectPerfStats.tasksInProgress) > 0 && <div className="bg-blue-400" style={{ flex: Number(projectPerfStats.tasksInProgress) }} title="In Progress" />}
-                    {Number(projectPerfStats.tasksTodo) > 0 && <div className="bg-gray-200" style={{ flex: Number(projectPerfStats.tasksTodo) }} title="To Do" />}
+                    {Number(projectPerfStats.tasksDone) > 0 && <div className="bg-teal-sage" style={{ flex: Number(projectPerfStats.tasksDone) }} title="Done" />}
+                    {Number(projectPerfStats.tasksInReview ?? 0) > 0 && <div className="bg-rose" style={{ flex: Number(projectPerfStats.tasksInReview ?? 0) }} title="In Review" />}
+                    {Number(projectPerfStats.tasksInProgress) > 0 && <div className="bg-navy/40" style={{ flex: Number(projectPerfStats.tasksInProgress) }} title="In Progress" />}
+                    {Number(projectPerfStats.tasksTodo) > 0 && <div className="bg-mint-mist" style={{ flex: Number(projectPerfStats.tasksTodo) }} title="To Do" />}
                   </div>
                 )}
               </div>
 
               {/* Time by date chart */}
               {projectTimeByDate.length > 0 && (
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-4">Time Logged by Date — {projectName}</h3>
+                <div className="bg-white rounded-2xl border border-mint shadow-sm p-5">
+                  <h3 className="text-sm font-semibold text-charcoal/80 mb-4">Time Logged by Date — {projectName}</h3>
                   <div className="flex items-end gap-1.5 h-36 overflow-x-auto">
                     {projectTimeByDate.map(({ date, minutes }) => {
                       const maxM = Math.max(...projectTimeByDate.map((d) => d.minutes), 1);
@@ -1152,10 +1153,10 @@ export default function PerformancePage() {
                       const label = h > 0 ? (m > 0 ? `${h}h${m}m` : `${h}h`) : `${m}m`;
                       return (
                         <div key={date} className="flex flex-col items-center gap-1 min-w-[32px] flex-1">
-                          <span className="text-[9px] text-gray-400">{label}</span>
+                          <span className="text-[9px] text-charcoal/40">{label}</span>
                           <div className="w-full rounded-sm"
-                            style={{ height: `${(minutes / maxM) * 108}px`, backgroundColor: "#6366f1", opacity: 0.8 }} />
-                          <span className="text-[8px] text-gray-400 truncate w-full text-center">{date.slice(5)}</span>
+                            style={{ height: `${(minutes / maxM) * 108}px`, backgroundColor: "#1c5d5f", opacity: 0.8 }} />
+                          <span className="text-[8px] text-charcoal/40 truncate w-full text-center">{date.slice(5)}</span>
                         </div>
                       );
                     })}
@@ -1167,15 +1168,15 @@ export default function PerformancePage() {
 
           {/* Project AI insights */}
           {(projectInsights || projectInsightsLoading) && (
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
               <div className="flex items-center gap-2 mb-4">
-                <h2 className="text-sm font-semibold text-gray-700">Project Insights — {projectName || "..."}</h2>
+                <h2 className="text-sm font-semibold text-charcoal/80">Project Insights — {projectName || "..."}</h2>
                 {projectInsights && (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600">✨ AI</span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-mint text-teal-forest">✨ AI</span>
                 )}
               </div>
               {projectInsightsLoading && (
-                <div className="flex items-center gap-3 py-8 justify-center text-gray-400">
+                <div className="flex items-center gap-3 py-8 justify-center text-charcoal/40">
                   <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -1188,9 +1189,9 @@ export default function PerformancePage() {
           )}
 
           {!selectedProjectId && (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-charcoal/40">
               <p className="text-4xl mb-3">📁</p>
-              <p className="text-sm">Select a project above, then click <span className="font-semibold text-indigo-500">Analyse Project</span> to see performance metrics.</p>
+              <p className="text-sm">Select a project above, then click <span className="font-semibold text-teal-deep">Analyse Project</span> to see performance metrics.</p>
             </div>
           )}
         </div>
@@ -1203,7 +1204,7 @@ export default function PerformancePage() {
         <button
           onClick={generateInsights}
           disabled={insightsLoading}
-          className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          className="px-5 py-2.5 bg-teal-forest text-white rounded-button text-sm font-semibold hover:bg-teal-pine disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
         >
           {insightsLoading ? (
             <>
@@ -1229,9 +1230,9 @@ export default function PerformancePage() {
           disabled={!insights || slackStatus === "sending"}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
             slackStatus === "sent"
-              ? "bg-emerald-100 text-emerald-700"
+              ? "bg-teal-sage/20 text-teal-pine"
               : slackStatus === "error"
-              ? "bg-red-100 text-red-700"
+              ? "bg-[#e07a5f]/15 text-[#b3492f]"
               : "bg-[#4A154B] text-white hover:bg-[#3d1040]"
           }`}
         >
@@ -1252,16 +1253,16 @@ export default function PerformancePage() {
           {slackStatus === "sent" ? "Sent!" : slackStatus === "sending" ? "Sending…" : slackStatus === "error" ? "Error" : "Send to Slack"}
         </button>
 
-        <span className="text-sm text-gray-400">
+        <span className="text-sm text-charcoal/40">
           {startDate && endDate ? `${startDate} → ${endDate}` : "Select a range"}
         </span>
 
         {/* Automated schedule badges */}
         <div className="ml-auto flex items-center gap-2 flex-wrap justify-end">
           {[
-            { label: "Weekly", desc: "Fri 4 PM", color: "bg-indigo-50 text-indigo-600 border-indigo-100" },
-            { label: "Monthly", desc: "Last Fri 4 PM", color: "bg-violet-50 text-violet-600 border-violet-100" },
-            { label: "Quarterly", desc: "3rd Fri 4 PM", color: "bg-amber-50 text-amber-600 border-amber-100" },
+            { label: "Weekly", desc: "Fri 4 PM", color: "bg-mint text-teal-forest border-mint" },
+            { label: "Monthly", desc: "Last Fri 4 PM", color: "bg-navy/10 text-navy border-navy/10" },
+            { label: "Quarterly", desc: "3rd Fri 4 PM", color: "bg-blush text-charcoal/70 border-blush" },
           ].map(({ label, desc, color }) => (
             <span key={label} className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold border rounded-full ${color}`}>
               <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1277,10 +1278,10 @@ export default function PerformancePage() {
       {/* Slack feedback */}
       {(slackError || lastSlackSentAt) && (
         <div className="flex items-center gap-3 text-xs">
-          {slackError && <p className="text-red-500">{slackError}</p>}
+          {slackError && <p className="text-[#e07a5f]">{slackError}</p>}
           {lastSlackSentAt && !slackError && (
-            <p className="text-gray-400">
-              Last sent to Slack: <span className="font-medium text-gray-600">{format(new Date(lastSlackSentAt), "HH:mm, MMM d")}</span>
+            <p className="text-charcoal/40">
+              Last sent to Slack: <span className="font-medium text-charcoal/70">{format(new Date(lastSlackSentAt), "HH:mm, MMM d")}</span>
             </p>
           )}
         </div>
@@ -1335,25 +1336,25 @@ export default function PerformancePage() {
       )}
 
       {/* ── AI Insights Panel ─────────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
         <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-gray-700">
+            <h2 className="text-sm font-semibold text-charcoal/80">
               Performance Insights
               {rangeLabel ? ` — ${rangeLabel}` : ""}
             </h2>
             {insights && aiStatus === "gemini" && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-600 border border-indigo-100">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-mint text-teal-forest border border-mint">
                 ✨ Gemini AI
               </span>
             )}
             {insights && aiStatus === "fallback" && (
               <span
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 cursor-help"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blush text-charcoal border border-rose/50 cursor-help"
                 title={aiError ?? "Gemini unavailable — showing structured summary. Try again in a moment."}
               >
                 ⚡ Smart Summary
-                <span className="text-[10px] text-amber-500 ml-0.5">(Gemini unavailable — retry for full AI)</span>
+                <span className="text-[10px] text-rose ml-0.5">(Gemini unavailable — retry for full AI)</span>
               </span>
             )}
           </div>
@@ -1368,7 +1369,7 @@ export default function PerformancePage() {
                     type="text"
                     value={labelDraft}
                     onChange={(e) => setLabelDraft(e.target.value)}
-                    className="border border-gray-200 rounded-lg px-2.5 py-1 text-xs w-48 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="border border-mint-mist rounded-lg px-2.5 py-1 text-xs w-48 focus:outline-none focus:ring-2 focus:ring-mint-mist"
                     placeholder="Label e.g. Q1 2026 Review"
                     onKeyDown={async (e) => {
                       if (e.key === "Enter") {
@@ -1394,16 +1395,16 @@ export default function PerformancePage() {
                       await loadHistory();
                       setEditingLabel(false);
                     }}
-                    className="px-2.5 py-1 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700"
+                    className="px-2.5 py-1 bg-teal-forest text-white rounded-button text-xs font-semibold hover:bg-teal-pine"
                   >
                     Save
                   </button>
-                  <button onClick={() => setEditingLabel(false)} className="text-gray-400 hover:text-gray-600 text-xs">Cancel</button>
+                  <button onClick={() => setEditingLabel(false)} className="text-charcoal/40 hover:text-charcoal/70 text-xs">Cancel</button>
                 </div>
               ) : (
                 <button
                   onClick={() => { setEditingLabel(true); setTimeout(() => labelInputRef.current?.focus(), 50); }}
-                  className="flex items-center gap-1 px-2.5 py-1 text-xs text-gray-500 border border-gray-200 rounded-lg hover:bg-gray-50"
+                  className="flex items-center gap-1 px-2.5 py-1 text-xs text-charcoal/50 border border-mint-mist rounded-lg hover:bg-paper"
                 >
                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -1419,7 +1420,7 @@ export default function PerformancePage() {
               <button
                 onClick={() => setShowHistory((v) => !v)}
                 className={`flex items-center gap-1.5 px-2.5 py-1 text-xs border rounded-lg transition-colors ${
-                  showHistory ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "text-gray-500 border-gray-200 hover:bg-gray-50"
+                  showHistory ? "bg-mint text-teal-pine border-mint-mist" : "text-charcoal/50 border-mint-mist hover:bg-paper"
                 }`}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1434,13 +1435,13 @@ export default function PerformancePage() {
 
         {/* History panel */}
         {showHistory && history.length > 0 && (
-          <div className="mb-5 border border-gray-100 rounded-xl overflow-hidden">
-            <p className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-gray-400 bg-gray-50 border-b border-gray-100">
+          <div className="mb-5 border border-mint rounded-xl overflow-hidden">
+            <p className="px-4 py-2 text-[10px] font-semibold uppercase tracking-widest text-charcoal/40 bg-paper border-b border-mint">
               Previous generations (last {history.length})
             </p>
-            <ul className="divide-y divide-gray-50">
+            <ul className="divide-y divide-paper">
               {history.map((h) => (
-                <li key={h.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 group">
+                <li key={h.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-paper group">
                   <button
                     onClick={() => {
                       setInsights(h.insights);
@@ -1451,8 +1452,8 @@ export default function PerformancePage() {
                     }}
                     className="flex-1 text-left"
                   >
-                    <p className="text-sm font-medium text-gray-700 group-hover:text-indigo-600">{h.dateLabel}</p>
-                    <p className="text-xs text-gray-400">{h.rangeLabel} · {format(new Date(h.savedAt), "MMM d, yyyy HH:mm")}</p>
+                    <p className="text-sm font-medium text-charcoal/80 group-hover:text-teal-forest">{h.dateLabel}</p>
+                    <p className="text-xs text-charcoal/40">{h.rangeLabel} · {format(new Date(h.savedAt), "MMM d, yyyy HH:mm")}</p>
                   </button>
                   <button
                     onClick={async () => {
@@ -1463,7 +1464,7 @@ export default function PerformancePage() {
                       });
                       await loadHistory();
                     }}
-                    className="text-gray-300 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 ml-2"
+                    className="text-charcoal/30 hover:text-[#e07a5f] transition-colors opacity-0 group-hover:opacity-100 ml-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -1477,13 +1478,13 @@ export default function PerformancePage() {
         )}
 
         {insightsError && (
-          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl bg-[#e07a5f]/10 border border-[#e07a5f]/15 px-4 py-3 text-sm text-[#b3492f]">
             {insightsError}
           </div>
         )}
 
         {insightsLoading && (
-          <div className="flex items-center gap-3 py-8 justify-center text-gray-400">
+          <div className="flex items-center gap-3 py-8 justify-center text-charcoal/40">
             <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -1493,8 +1494,8 @@ export default function PerformancePage() {
         )}
 
         {!insightsLoading && !insights && !insightsError && (
-          <div className="py-10 text-center text-gray-400 text-sm">
-            Click <span className="font-semibold text-indigo-500">Generate Insights</span> to get a personalised performance summary for this period.
+          <div className="py-10 text-center text-charcoal/40 text-sm">
+            Click <span className="font-semibold text-teal-deep">Generate Insights</span> to get a personalised performance summary for this period.
           </div>
         )}
 
@@ -1510,12 +1511,12 @@ export default function PerformancePage() {
       {/* ── Bottom Grid: Milestones + ProfDev ────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* ── Milestones ─────────────────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-700">Milestones</h2>
+            <h2 className="text-sm font-semibold text-charcoal/80">Milestones</h2>
             <button
               onClick={() => setShowMilestoneForm((v) => !v)}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition-colors"
+              className="px-3 py-1.5 bg-teal-forest text-white rounded-button text-xs font-semibold hover:bg-teal-pine transition-colors"
             >
               {showMilestoneForm ? "Cancel" : "+ Add"}
             </button>
@@ -1524,7 +1525,7 @@ export default function PerformancePage() {
           {showMilestoneForm && (
             <form
               onSubmit={submitMilestone}
-              className="mb-5 p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3"
+              className="mb-5 p-4 bg-paper rounded-xl border border-mint space-y-3"
             >
               <input
                 type="text"
@@ -1532,13 +1533,13 @@ export default function PerformancePage() {
                 value={msTitle}
                 onChange={(e) => setMsTitle(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
               />
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={msCategory}
                   onChange={(e) => setMsCategory(e.target.value as MilestoneCategory)}
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
                 >
                   <option value="technical">Technical</option>
                   <option value="leadership">Leadership</option>
@@ -1550,7 +1551,7 @@ export default function PerformancePage() {
                 <select
                   value={msStatus}
                   onChange={(e) => setMsStatus(e.target.value as MilestoneStatus)}
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
                 >
                   <option value="pending">Pending</option>
                   <option value="in-progress">In Progress</option>
@@ -1561,7 +1562,7 @@ export default function PerformancePage() {
               <select
                 value={msProjectId}
                 onChange={(e) => setMsProjectId(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 text-gray-700"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist text-charcoal/80"
               >
                 <option value="">No project (standalone)</option>
                 {perfProjects.map((p) => (
@@ -1573,19 +1574,19 @@ export default function PerformancePage() {
                 value={msTargetDate}
                 onChange={(e) => setMsTargetDate(e.target.value)}
                 placeholder="Target date"
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
               />
               <textarea
                 placeholder="Description (optional)"
                 value={msDescription}
                 onChange={(e) => setMsDescription(e.target.value)}
                 rows={2}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist resize-none"
               />
               <button
                 type="submit"
                 disabled={msSaving}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60"
+                className="px-4 py-2 bg-teal-forest text-white rounded-button text-sm font-semibold hover:bg-teal-pine disabled:opacity-60"
               >
                 {msSaving ? "Saving…" : "Save Milestone"}
               </button>
@@ -1593,7 +1594,7 @@ export default function PerformancePage() {
           )}
 
           {milestones.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-6">
+            <p className="text-sm text-charcoal/40 text-center py-6">
               No milestones yet. Add one to start tracking your goals.
             </p>
           )}
@@ -1601,7 +1602,7 @@ export default function PerformancePage() {
           {/* In-Progress */}
           {inProgressMilestones.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">In Progress</p>
+              <p className="text-xs font-semibold text-charcoal/70 uppercase tracking-wide mb-2">In Progress</p>
               <div className="space-y-2">
                 {inProgressMilestones.map((m) => (
                   <MilestoneItem
@@ -1618,7 +1619,7 @@ export default function PerformancePage() {
           {/* Pending */}
           {pendingMilestones.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Pending</p>
+              <p className="text-xs font-semibold text-charcoal/40 uppercase tracking-wide mb-2">Pending</p>
               <div className="space-y-2">
                 {pendingMilestones.map((m) => (
                   <MilestoneItem
@@ -1635,7 +1636,7 @@ export default function PerformancePage() {
           {/* Completed */}
           {completedMilestones.length > 0 && (
             <details className="group">
-              <summary className="text-xs font-semibold text-emerald-600 uppercase tracking-wide cursor-pointer select-none flex items-center gap-1 mb-2">
+              <summary className="text-xs font-semibold text-teal-pine uppercase tracking-wide cursor-pointer select-none flex items-center gap-1 mb-2">
                 <svg
                   fill="none"
                   stroke="currentColor"
@@ -1662,12 +1663,12 @@ export default function PerformancePage() {
         </div>
 
         {/* ── Professional Development ────────────────────────────────────── */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+        <div className="bg-white rounded-2xl border border-mint shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-700">Professional Development</h2>
+            <h2 className="text-sm font-semibold text-charcoal/80">Professional Development</h2>
             <button
               onClick={() => setShowProfDevForm((v) => !v)}
-              className="px-3 py-1.5 bg-indigo-600 text-white rounded-xl text-xs font-semibold hover:bg-indigo-700 transition-colors"
+              className="px-3 py-1.5 bg-teal-forest text-white rounded-button text-xs font-semibold hover:bg-teal-pine transition-colors"
             >
               {showProfDevForm ? "Cancel" : "+ Add"}
             </button>
@@ -1676,7 +1677,7 @@ export default function PerformancePage() {
           {showProfDevForm && (
             <form
               onSubmit={submitProfDev}
-              className="mb-5 p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3"
+              className="mb-5 p-4 bg-paper rounded-xl border border-mint space-y-3"
             >
               <input
                 type="text"
@@ -1684,13 +1685,13 @@ export default function PerformancePage() {
                 value={pdTitle}
                 onChange={(e) => setPdTitle(e.target.value)}
                 required
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
               />
               <div className="grid grid-cols-2 gap-2">
                 <select
                   value={pdType}
                   onChange={(e) => setPdType(e.target.value as ProfDevType)}
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
                 >
                   <option value="course">Course</option>
                   <option value="certification">Certification</option>
@@ -1707,7 +1708,7 @@ export default function PerformancePage() {
                   placeholder="Provider (e.g. Coursera)"
                   value={pdProvider}
                   onChange={(e) => setPdProvider(e.target.value)}
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2">
@@ -1716,7 +1717,7 @@ export default function PerformancePage() {
                   value={pdCompletedDate}
                   onChange={(e) => setPdCompletedDate(e.target.value)}
                   required
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
                 />
                 <input
                   type="number"
@@ -1725,7 +1726,7 @@ export default function PerformancePage() {
                   onChange={(e) => setPdDurationHours(e.target.value)}
                   min={0}
                   step={0.5}
-                  className="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
                 />
               </div>
               <input
@@ -1733,19 +1734,19 @@ export default function PerformancePage() {
                 placeholder="Skills (comma-separated, e.g. TypeScript, Leadership)"
                 value={pdSkills}
                 onChange={(e) => setPdSkills(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist"
               />
               <textarea
                 placeholder="Notes (optional)"
                 value={pdNotes}
                 onChange={(e) => setPdNotes(e.target.value)}
                 rows={2}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                className="w-full border border-mint-mist rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-mint-mist resize-none"
               />
               <button
                 type="submit"
                 disabled={pdSaving}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 disabled:opacity-60"
+                className="px-4 py-2 bg-teal-forest text-white rounded-button text-sm font-semibold hover:bg-teal-pine disabled:opacity-60"
               >
                 {pdSaving ? "Saving…" : "Save Entry"}
               </button>
@@ -1753,7 +1754,7 @@ export default function PerformancePage() {
           )}
 
           {profdev.length === 0 && (
-            <p className="text-sm text-gray-400 text-center py-6">
+            <p className="text-sm text-charcoal/40 text-center py-6">
               No professional development entries yet. Add a course, book, or certification.
             </p>
           )}
@@ -1765,7 +1766,7 @@ export default function PerformancePage() {
           </div>
 
           {profdev.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-100 text-xs text-gray-400">
+            <div className="mt-4 pt-4 border-t border-mint text-xs text-charcoal/40">
               {profdev.length} {profdev.length === 1 ? "activity" : "activities"} ·{" "}
               {totalPdHours}h total learning
             </div>
@@ -1800,8 +1801,8 @@ function MilestoneItem({
     <div
       className={`flex items-start gap-3 p-3 rounded-xl border ${
         isCompleted
-          ? "bg-gray-50 border-gray-100 opacity-70"
-          : "bg-white border-gray-100"
+          ? "bg-paper border-mint opacity-70"
+          : "bg-white border-mint"
       }`}
     >
       <div className="flex-1 min-w-0">
@@ -1834,22 +1835,22 @@ function MilestoneItem({
         </div>
         <p
           className={`text-sm font-medium ${
-            isCompleted ? "text-gray-400 line-through" : "text-gray-800"
+            isCompleted ? "text-charcoal/40 line-through" : "text-charcoal"
           }`}
         >
           {m.title}
         </p>
         {m.description && (
-          <p className="text-xs text-gray-400 mt-0.5 truncate">{m.description}</p>
+          <p className="text-xs text-charcoal/40 mt-0.5 truncate">{m.description}</p>
         )}
         <div className="flex flex-wrap gap-x-3 mt-1">
           {m.targetDate && (
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-charcoal/40">
               Target: {m.targetDate}
             </p>
           )}
           {m.completedAt && (
-            <p className="text-xs text-emerald-600">
+            <p className="text-xs text-teal-pine">
               Completed: {new Date(m.completedAt).toLocaleDateString()}
             </p>
           )}
@@ -1859,14 +1860,14 @@ function MilestoneItem({
         <button
           onClick={() => onCycle(m)}
           title={NEXT_STATUS_LABEL[m.status]}
-          className="px-2 py-1 rounded-lg text-xs font-medium border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors"
+          className="px-2 py-1 rounded-lg text-xs font-medium border border-mint-mist text-charcoal/70 hover:bg-paper transition-colors"
         >
           {NEXT_STATUS_LABEL[m.status]}
         </button>
         <button
           onClick={() => onDelete(m.id)}
           title="Delete"
-          className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors"
+          className="p-1.5 rounded-lg text-charcoal/30 hover:text-[#e07a5f] hover:bg-[#e07a5f]/10 transition-colors"
         >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} className="w-3.5 h-3.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -1887,7 +1888,7 @@ function ProfDevItem({
   onDelete: (id: string) => void;
 }) {
   return (
-    <div className="flex items-start gap-3 p-3 rounded-xl border border-gray-100 bg-white">
+    <div className="flex items-start gap-3 p-3 rounded-xl border border-mint bg-white">
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-1.5 mb-1">
           <span
@@ -1898,14 +1899,14 @@ function ProfDevItem({
             {e.type}
           </span>
           {e.provider && (
-            <span className="text-xs text-gray-400">{e.provider}</span>
+            <span className="text-xs text-charcoal/40">{e.provider}</span>
           )}
         </div>
-        <p className="text-sm font-medium text-gray-800">{e.title}</p>
+        <p className="text-sm font-medium text-charcoal">{e.title}</p>
         <div className="flex flex-wrap gap-x-3 mt-0.5">
-          <p className="text-xs text-gray-400">{e.completedDate}</p>
+          <p className="text-xs text-charcoal/40">{e.completedDate}</p>
           {e.durationHours !== undefined && (
-            <p className="text-xs text-gray-400">{e.durationHours}h</p>
+            <p className="text-xs text-charcoal/40">{e.durationHours}h</p>
           )}
         </div>
         {e.skills && e.skills.length > 0 && (
@@ -1913,7 +1914,7 @@ function ProfDevItem({
             {e.skills.map((skill) => (
               <span
                 key={skill}
-                className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-600"
+                className="inline-flex items-center px-1.5 py-0.5 rounded-md text-xs font-medium bg-mint text-charcoal/70"
               >
                 {skill}
               </span>
@@ -1924,7 +1925,7 @@ function ProfDevItem({
       <button
         onClick={() => onDelete(e.id)}
         title="Delete"
-        className="p-1.5 rounded-lg text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors shrink-0"
+        className="p-1.5 rounded-lg text-charcoal/30 hover:text-[#e07a5f] hover:bg-[#e07a5f]/10 transition-colors shrink-0"
       >
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} className="w-3.5 h-3.5">
           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />

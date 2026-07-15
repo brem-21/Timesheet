@@ -88,7 +88,7 @@ export function generateCSVByRange(tickets: Ticket[], userName: string, startDat
   ]);
 
   const meta = [
-    `# Clock-It Export`,
+    `# ProfDev Export`,
     `# User: ${userName}`,
     `# Period: ${startDate} to ${endDate}`,
     `# Generated: ${format(new Date(), "yyyy-MM-dd HH:mm:ss")}`,
@@ -115,7 +115,7 @@ export function generateCSV(tickets: Ticket[], userName: string, month: string, 
   ]);
 
   const meta = [
-    `# Clock-It Export`,
+    `# ProfDev Export`,
     `# User: ${userName}`,
     `# Period: ${month}/${year}`,
     `# Generated: ${format(new Date(), "yyyy-MM-dd HH:mm:ss")}`,

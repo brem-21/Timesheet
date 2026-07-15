@@ -93,16 +93,17 @@ export default function DashboardPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="px-6 py-4 flex items-center justify-between">
+      <header className="bg-white border-b border-mint sticky top-0 z-10">
+        <div className="px-8 py-5 flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+            <p className="eyebrow mb-1"><span className="eyebrow-dot" />Work</p>
+            <h1 className="headline">Dashboard</h1>
             {currentUser && (
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-[13px] text-charcoal/50 mt-0.5">
                 Welcome back,{" "}
-                <span className="font-medium text-gray-700">{currentUser.displayName}</span>
+                <span className="font-medium text-charcoal/80">{currentUser.displayName}</span>
               </p>
             )}
           </div>
@@ -113,7 +114,7 @@ export default function DashboardPage() {
             <button
               onClick={handleExport}
               disabled={exportLoading || tickets.length === 0}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary-sm"
             >
               {exportLoading ? (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -132,21 +133,21 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div className="px-6 py-6 space-y-6 max-w-screen-xl mx-auto">
+      <div className="px-8 py-8 space-y-8 max-w-screen-xl mx-auto">
         {/* Error state */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="card-blush flex items-start gap-3">
+            <svg className="w-5 h-5 text-[#b3492f] shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             <div>
-              <p className="text-sm font-medium text-red-800">Error loading data</p>
-              <p className="text-xs text-red-600 mt-0.5">{error}</p>
+              <p className="text-[14px] font-medium text-charcoal">Error loading data</p>
+              <p className="text-[13px] text-charcoal/60 mt-0.5">{error}</p>
             </div>
             <button
               onClick={() => { setError(""); fetchTickets(); }}
-              className="ml-auto text-red-500 hover:text-red-700 shrink-0"
+              className="ml-auto text-charcoal/40 hover:text-charcoal shrink-0"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -160,11 +161,11 @@ export default function DashboardPage() {
           <div className="space-y-4 animate-pulse">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded-xl" />
+                <div key={i} className="h-24 bg-mint rounded-card" />
               ))}
             </div>
-            <div className="h-48 bg-gray-200 rounded-xl" />
-            <div className="h-64 bg-gray-200 rounded-xl" />
+            <div className="h-48 bg-mint rounded-card" />
+            <div className="h-64 bg-mint rounded-card" />
           </div>
         )}
 
@@ -179,9 +180,7 @@ export default function DashboardPage() {
             {/* Standup summary */}
             {standupSummary && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                  Standup Summary
-                </h2>
+                <p className="eyebrow mb-3"><span className="eyebrow-dot" />Standup Summary</p>
                 <StandupSummaryCard summary={standupSummary} />
               </div>
             )}
@@ -189,10 +188,11 @@ export default function DashboardPage() {
             {/* Tickets */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                <p className="eyebrow">
+                  <span className="eyebrow-dot" />
                   Tickets — {new Date(parseInt(year), parseInt(month) - 1).toLocaleString("default", { month: "long", year: "numeric" })}
-                </h2>
-                <span className="text-xs text-gray-400">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</span>
+                </p>
+                <span className="text-[13px] text-charcoal/40">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</span>
               </div>
               <TicketTable tickets={tickets} />
             </div>

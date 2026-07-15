@@ -32,7 +32,7 @@ async function runMiddayReminder() {
       `👉 *Take today's assessment:* ${appUrl}/growth`,
       `_Select any topic → Daily Assessment tab_`,
       "",
-      `_Midday assessment reminder — Clock-It_`,
+      `_Midday assessment reminder — ProfDev_`,
     ].join("\n");
 
     const res = await fetch(webhookUrl, {

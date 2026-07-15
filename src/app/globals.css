@@ -1,29 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:ital,wght@0,400;0,500;1,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --sidebar-width: 240px;
+  --sidebar-width: 260px;
 }
 
 @layer base {
   html {
-    font-family: Inter, system-ui, sans-serif;
+    font-family: Inter, "DM Sans", "Manrope", ui-sans-serif, system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-gray-50 text-gray-900;
+    @apply bg-paper text-charcoal;
   }
 
   * {
     @apply box-border;
   }
 
-  /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -34,11 +33,11 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-full;
+    @apply bg-mint-mist rounded-pill;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
+    @apply bg-teal-sage;
   }
 }
 
@@ -50,12 +49,165 @@
     overflow: hidden;
   }
 
-  .sidebar-link {
-    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all;
-    @apply text-[#a0a0b8] hover:text-white hover:bg-[#2a2a3e];
+  /* ── Headlines — the serif is the signature move ───────────── */
+
+  .headline {
+    @apply font-display font-normal text-heading-sm text-charcoal;
   }
 
-  .sidebar-link.active {
-    @apply text-white bg-[#3b3b5c];
+  .headline-lg {
+    @apply font-display font-normal text-heading text-charcoal;
+  }
+
+  /* ── Eyebrows — mono, uppercase, wide tracking, dot prefix ─── */
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 font-mono text-[13px] font-semibold uppercase tracking-eyebrow text-teal-pine;
+  }
+
+  .eyebrow-dot {
+    @apply w-1.5 h-1.5 rounded-pill bg-teal-sage shrink-0;
+  }
+
+  /* ── Buttons ────────────────────────────────────────────────── */
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-button bg-teal-deep text-white text-[14px] font-medium px-6 py-3 transition-colors;
+  }
+  .btn-primary:hover {
+    @apply bg-teal-forest;
+  }
+  .btn-primary:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  .btn-primary-sm {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-button bg-teal-deep text-white text-[13px] font-medium px-4 py-2 transition-colors;
+  }
+  .btn-primary-sm:hover {
+    @apply bg-teal-forest;
+  }
+  .btn-primary-sm:disabled {
+    @apply opacity-40 cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-button bg-navy text-white text-[14px] font-medium px-6 py-3 transition-colors;
+  }
+  .btn-secondary:hover {
+    @apply opacity-90;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-button border border-teal-pine text-teal-pine text-[14px] font-medium px-6 py-3 bg-transparent transition-colors;
+  }
+  .btn-ghost:hover {
+    @apply bg-teal-pine text-white;
+  }
+
+  .btn-ghost-sm {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-button border border-teal-pine text-teal-pine text-[13px] font-medium px-3.5 py-1.5 bg-transparent transition-colors;
+  }
+  .btn-ghost-sm:hover {
+    @apply bg-teal-pine text-white;
+  }
+
+  /* ── Nav pills ──────────────────────────────────────────────── */
+
+  .nav-pill {
+    @apply block rounded-nav px-4 py-2.5 text-[14px] font-normal text-charcoal transition-colors;
+  }
+  .nav-pill:hover {
+    @apply bg-mint text-teal-pine;
+  }
+  .nav-pill.active {
+    @apply bg-teal-deep text-white font-medium;
+  }
+
+  .nav-section-label {
+    @apply font-mono text-[11px] font-semibold uppercase tracking-eyebrow text-charcoal/50 mb-2 mt-6 first:mt-0 px-4;
+  }
+
+  /* ── Cards / panels — flat color layering, no shadows ──────── */
+
+  .card-mint {
+    @apply bg-mint rounded-card p-6;
+  }
+
+  .card-blush {
+    @apply bg-blush rounded-card p-6;
+  }
+
+  .card-white {
+    @apply bg-white border border-mint rounded-card p-6;
+  }
+
+  /* ── Filter pills ───────────────────────────────────────────── */
+
+  .filter-pill {
+    @apply inline-flex items-center gap-1.5 rounded-tag bg-mint text-charcoal text-[13px] font-medium px-3.5 py-1.5 transition-colors;
+  }
+  .filter-pill.active {
+    @apply bg-teal-deep text-white;
+  }
+
+  /* ── Status / priority tags — flat tint, no shadow ─────────── */
+
+  .tag-done {
+    @apply inline-flex items-center gap-1.5 rounded-tag bg-teal-sage/20 text-teal-pine text-[12px] font-medium px-2.5 py-1;
+  }
+  .tag-progress {
+    @apply inline-flex items-center gap-1.5 rounded-tag bg-navy/10 text-navy text-[12px] font-medium px-2.5 py-1;
+  }
+  .tag-review {
+    @apply inline-flex items-center gap-1.5 rounded-tag bg-rose/30 text-charcoal text-[12px] font-medium px-2.5 py-1;
+  }
+  .tag-blocked {
+    @apply inline-flex items-center gap-1.5 rounded-tag bg-[#e07a5f]/20 text-[#b3492f] text-[12px] font-medium px-2.5 py-1;
+  }
+  .tag-neutral {
+    @apply inline-flex items-center gap-1.5 rounded-tag bg-charcoal/10 text-charcoal/70 text-[12px] font-medium px-2.5 py-1;
+  }
+
+  /* ── Checklist ──────────────────────────────────────────────── */
+
+  .check-item {
+    @apply flex items-start gap-3 text-[16px] text-charcoal;
+  }
+  .check-mark {
+    @apply text-teal-pine font-bold shrink-0;
+  }
+
+  /* ── Inputs ─────────────────────────────────────────────────── */
+
+  .input-field {
+    @apply rounded-card border border-mint-mist bg-white text-charcoal text-[14px] px-4 py-2.5 focus:outline-none focus:border-teal-deep transition-colors;
+  }
+
+  /* ── Tables — flat, mint hairlines, no shadow ───────────────── */
+
+  .table-clean {
+    @apply w-full border-collapse;
+  }
+  .table-clean thead th {
+    @apply text-left font-mono text-[11px] font-semibold uppercase tracking-eyebrow text-charcoal/50 border-b border-mint-mist py-3 px-3;
+  }
+  .table-clean tbody td {
+    @apply border-b border-mint py-3 px-3 text-[14px] text-charcoal;
+  }
+  .table-clean tbody tr:hover {
+    @apply bg-mint/50;
+  }
+
+  /* ── Stat banner strip ──────────────────────────────────────── */
+
+  .stat-banner {
+    @apply w-full border border-mint bg-white flex flex-wrap items-center gap-6 px-8 py-6;
+  }
+  .stat-banner .stat-value {
+    @apply font-mono text-[14px] font-semibold uppercase tracking-eyebrow text-charcoal;
+  }
+  .stat-banner .stat-label {
+    @apply font-mono text-[14px] font-normal uppercase tracking-eyebrow text-charcoal/60;
   }
 }

@@ -320,7 +320,7 @@ export function summaryToSlack(summary: TranscriptSummary): string {
 
   return [
     `*Meeting Summary — ${summary.userName} — ${summary.date}*`,
-    `_Summarised by Clock-It (${summary.method === "gemini" ? "Gemini AI" : "extractive"})_`,
+    `_Summarised by ProfDev (${summary.method === "gemini" ? "Gemini AI" : "extractive"})_`,
     "",
     ...(summary.about ? [`📋 *About this meeting:*\n${summary.about}`, ""] : []),
     `💬 *My Contributions:*\n${bullet(summary.contributions)}`,

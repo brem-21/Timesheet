@@ -84,23 +84,26 @@ export default function TimeLogStackedChart({ startDate, endDate }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+    <div className="card-white">
       {/* Header + legend */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">Time Logged Breakdown</h3>
-          <p className="text-xs text-gray-400 mt-0.5">{byDay ? "Daily" : "Weekly"} · {fmt(totalAll)} total</p>
+          <h3 className="eyebrow">
+            <span className="eyebrow-dot" />
+            Time Logged Breakdown
+          </h3>
+          <p className="text-[12px] text-charcoal/40 mt-0.5">{byDay ? "Daily" : "Weekly"} · {fmt(totalAll)} total</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-indigo-500 shrink-0" />
-            <span className="text-xs text-gray-600 font-medium">Jira</span>
-            <span className="text-xs text-gray-400">({fmt(totalJira)})</span>
+            <span className="w-3 h-3 rounded-tag bg-teal-deep shrink-0" />
+            <span className="text-[12px] text-charcoal/70 font-medium">Jira</span>
+            <span className="text-[12px] text-charcoal/40">({fmt(totalJira)})</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-sm bg-amber-400 shrink-0" />
-            <span className="text-xs text-gray-600 font-medium">Meeting tasks</span>
-            <span className="text-xs text-gray-400">({fmt(totalMeeting)})</span>
+            <span className="w-3 h-3 rounded-tag bg-rose shrink-0" />
+            <span className="text-[12px] text-charcoal/70 font-medium">Meeting tasks</span>
+            <span className="text-[12px] text-charcoal/40">({fmt(totalMeeting)})</span>
           </div>
         </div>
       </div>
@@ -121,45 +124,45 @@ export default function TimeLogStackedChart({ startDate, endDate }: Props) {
             >
               {/* Tooltip */}
               {!isEmpty && (
-                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-start bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap z-20 shadow-lg gap-0.5">
-                  <span className="font-semibold text-gray-200 mb-1">{b.label}</span>
+                <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:flex flex-col items-start bg-charcoal text-white text-[12px] rounded-card px-3 py-2 whitespace-nowrap z-20 gap-0.5">
+                  <span className="font-semibold text-white/80 mb-1">{b.label}</span>
                   {b.jiraSeconds > 0 && (
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-sm bg-indigo-400 shrink-0" />
+                      <span className="w-2 h-2 rounded-tag bg-teal-sage shrink-0" />
                       Jira: {fmt(b.jiraSeconds)}
                     </span>
                   )}
                   {b.meetingSeconds > 0 && (
                     <span className="flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-sm bg-amber-400 shrink-0" />
+                      <span className="w-2 h-2 rounded-tag bg-rose shrink-0" />
                       Meetings: {fmt(b.meetingSeconds)}
                     </span>
                   )}
-                  <span className="text-gray-400 text-[10px] mt-0.5">Total: {fmt(total)}</span>
+                  <span className="text-white/50 text-[10px] mt-0.5">Total: {fmt(total)}</span>
                 </div>
               )}
 
               {/* Bar column */}
               <div
-                className="w-full flex flex-col-reverse rounded-t-md overflow-hidden transition-all duration-300"
+                className="w-full flex flex-col-reverse rounded-t-card overflow-hidden transition-all duration-300"
                 style={{ height: `${Math.max(isEmpty ? 2 : (totalPct / 100) * 152, isEmpty ? 2 : 4)}px` }}
               >
                 {b.jiraSeconds > 0 && (
                   <div
-                    className="w-full bg-indigo-500 shrink-0"
+                    className="w-full bg-teal-deep shrink-0"
                     style={{ height: `${jiraPct}%` }}
                   />
                 )}
                 {b.meetingSeconds > 0 && (
                   <div
-                    className="w-full bg-amber-400 shrink-0"
+                    className="w-full bg-rose shrink-0"
                     style={{ height: `${meetingPct}%` }}
                   />
                 )}
-                {isEmpty && <div className="w-full bg-gray-100 h-full rounded-t-md" />}
+                {isEmpty && <div className="w-full bg-mint h-full rounded-t-card" />}
               </div>
 
-              <span className="text-[9px] text-gray-400 text-center leading-tight w-full text-center truncate px-0.5">
+              <span className="text-[10px] text-charcoal/40 text-center leading-tight w-full truncate px-0.5">
                 {b.label}
               </span>
             </div>
@@ -168,7 +171,7 @@ export default function TimeLogStackedChart({ startDate, endDate }: Props) {
       </div>
 
       {/* Y-axis hint */}
-      <div className="flex justify-between mt-2 text-[10px] text-gray-300">
+      <div className="flex justify-between mt-2 text-[10px] text-charcoal/30 font-mono">
         <span>0</span>
         <span>{fmt(maxSeconds)}</span>
       </div>

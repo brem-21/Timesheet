@@ -213,22 +213,23 @@ export default function MeetingsPage() {
     <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Meeting Transcript</h1>
-        <p className="text-sm text-gray-500 mt-0.5">Paste a transcript, get a summary focused on you, send to Slack.</p>
+        <p className="eyebrow"><span className="eyebrow-dot" />meetings</p>
+        <h1 className="headline mt-1">Meeting Transcript</h1>
+        <p className="text-sm text-charcoal/50 mt-1">Paste a transcript, get a summary focused on you, send to Slack.</p>
       </div>
 
       {/* ── Previous summaries ───────────────────────────────────────────────── */}
       {history.length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-3">
+        <div className="card-white space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <h2 className="text-sm font-semibold text-gray-700">Previous Summaries</h2>
+            <h2 className="text-sm font-semibold text-charcoal/80">Previous Summaries</h2>
             {history.length > 1 && (
               <input
                 type="text"
                 placeholder="Filter by name or date..."
                 value={historyFilter}
                 onChange={(e) => setHistoryFilter(e.target.value)}
-                className="border border-gray-200 rounded-xl px-3 py-1.5 text-xs w-52 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="input-field !py-1.5 text-xs w-52"
               />
             )}
           </div>
@@ -240,22 +241,22 @@ export default function MeetingsPage() {
                   key={saved.id}
                   className={`group relative rounded-xl border p-3.5 cursor-pointer transition-all ${
                     isActive
-                      ? "border-indigo-300 bg-indigo-50 ring-1 ring-indigo-200"
-                      : "border-gray-100 hover:border-indigo-200 hover:bg-gray-50"
+                      ? "border-teal-deep/40 bg-mint ring-1 ring-teal-sage/30"
+                      : "border-mint hover:border-teal-sage/50 hover:bg-mint/40"
                   }`}
                   onClick={() => loadFromHistory(saved)}
                 >
-                  <p className="text-xs font-semibold text-gray-800 truncate pr-5">
+                  <p className="text-xs font-semibold text-charcoal truncate pr-5">
                     {saved.summary.meetingLabel || "Untitled Meeting"}
                   </p>
-                  <p className="text-[11px] text-gray-400 mt-0.5">{saved.summary.date}</p>
-                  <p className="text-[11px] text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">
+                  <p className="text-[11px] text-charcoal/40 mt-0.5">{saved.summary.date}</p>
+                  <p className="text-[11px] text-charcoal/50 mt-1.5 line-clamp-2 leading-relaxed">
                     {saved.summary.about?.slice(0, 100) ?? "No summary available"}…
                   </p>
                   <span className={`mt-2 inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
                     saved.summary.method === "gemini"
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-gray-100 text-gray-500"
+                      ? "bg-rose/25 text-charcoal"
+                      : "bg-mint text-charcoal/50"
                   }`}>
                     {saved.summary.method === "gemini" ? "✨ Gemini" : "⚡ Extractive"}
                   </span>
@@ -263,7 +264,7 @@ export default function MeetingsPage() {
                   {/* Delete button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); deleteHistoryEntry(saved.id); }}
-                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 text-charcoal/25 hover:text-[#b3492f] transition-all"
                     title="Remove"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -274,7 +275,7 @@ export default function MeetingsPage() {
               );
             })}
             {filteredHistory.length === 0 && (
-              <p className="text-xs text-gray-400 col-span-3">No summaries match "{historyFilter}".</p>
+              <p className="text-xs text-charcoal/40 col-span-3">No summaries match "{historyFilter}".</p>
             )}
           </div>
         </div>
@@ -297,14 +298,14 @@ export default function MeetingsPage() {
             <button
               onClick={handleSummarize}
               disabled={loading}
-              className="px-4 py-2 bg-white text-[#6264A7] rounded-xl text-sm font-semibold hover:bg-white/90 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-white text-[#6264A7] rounded-button text-sm font-semibold hover:bg-white/90 transition-colors disabled:opacity-50"
             >
               Summarise
             </button>
             <button
               onClick={handleExtractTasks}
               disabled={taskStatus === "loading"}
-              className="px-4 py-2 bg-white/20 text-white rounded-xl text-sm font-semibold hover:bg-white/30 transition-colors disabled:opacity-50"
+              className="px-4 py-2 bg-white/20 text-white rounded-button text-sm font-semibold hover:bg-white/30 transition-colors disabled:opacity-50"
             >
               Extract Tasks
             </button>
@@ -313,10 +314,10 @@ export default function MeetingsPage() {
       )}
 
       {/* Input card */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+      <div className="card-white space-y-4">
         <div className="flex flex-wrap gap-4">
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-semibold text-charcoal/50 uppercase tracking-wide mb-1.5">
               Your name (as it appears in the transcript)
             </label>
             <input
@@ -324,11 +325,11 @@ export default function MeetingsPage() {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="e.g. Brempong Dankwah"
-              className="w-64 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="input-field w-64"
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+            <label className="block text-xs font-semibold text-charcoal/50 uppercase tracking-wide mb-1.5">
               Meeting label / date
             </label>
             <input
@@ -336,13 +337,13 @@ export default function MeetingsPage() {
               value={meetingLabel}
               onChange={(e) => setMeetingLabel(e.target.value)}
               placeholder="e.g. Sprint Planning – Apr 1"
-              className="w-64 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="input-field w-64"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+          <label className="block text-xs font-semibold text-charcoal/50 uppercase tracking-wide mb-1.5">
             Paste transcript
           </label>
           <textarea
@@ -350,9 +351,9 @@ export default function MeetingsPage() {
             onChange={(e) => setTranscript(e.target.value)}
             placeholder={`Paste your meeting transcript here.\n\nSupports formats like:\n  Brempong Dankwah: Let me walk through the changes...\n  Richard Dadzie: That looks good, can you also...\n\nOr paste a .vtt file content directly.`}
             rows={12}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 font-mono resize-y focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300 placeholder:font-sans"
+            className="input-field w-full font-mono resize-y placeholder:text-charcoal/25 placeholder:font-sans"
           />
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-charcoal/40 mt-1">
             {transcript.length > 0 ? `${transcript.length.toLocaleString()} characters` : "Supports plain text and .vtt format"}
           </p>
         </div>
@@ -361,7 +362,7 @@ export default function MeetingsPage() {
           <button
             onClick={handleSummarize}
             disabled={loading || !transcript.trim() || !userName.trim()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            className="btn-primary disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -385,7 +386,7 @@ export default function MeetingsPage() {
           {transcript.trim() && (
             <button
               onClick={() => { setTranscript(""); setSummary(null); setError(""); setMeetingLabel(""); }}
-              className="px-4 py-2.5 text-sm text-gray-500 hover:text-red-500 transition-colors"
+              className="px-4 py-2.5 text-sm text-charcoal/50 hover:text-[#b3492f] transition-colors"
             >
               Clear
             </button>
@@ -393,11 +394,11 @@ export default function MeetingsPage() {
         </div>
 
         {transcript.trim() && (
-          <div className="flex items-center gap-3 pt-1 border-t border-gray-50">
+          <div className="flex items-center gap-3 pt-1 border-t border-mint">
             <button
               onClick={handleExtractTasks}
               disabled={taskStatus === "loading" || !transcript.trim()}
-              className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl text-sm font-semibold hover:bg-amber-600 transition-colors disabled:opacity-40"
+              className="btn-secondary disabled:opacity-40"
             >
               {taskStatus === "loading" ? (
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -414,38 +415,38 @@ export default function MeetingsPage() {
             </button>
 
             {taskStatus === "done" && (
-              <span className="text-sm text-emerald-600 font-medium flex items-center gap-1.5">
+              <span className="text-sm text-teal-pine font-medium flex items-center gap-1.5">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
                 {taskCount} task{taskCount !== 1 ? "s" : ""} saved →{" "}
-                <a href="/tasks" className="text-indigo-600 hover:underline">View Tasks</a>
+                <a href="/tasks" className="text-teal-pine hover:underline">View Tasks</a>
               </span>
             )}
             {taskStatus === "error" && (
-              <span className="text-sm text-red-500">Failed to extract tasks. Try again.</span>
+              <span className="text-sm text-[#b3492f]">Failed to extract tasks. Try again.</span>
             )}
           </div>
         )}
 
         {/* Extracted task review */}
         {extractedTasks.length > 0 && (
-          <div className="border-t border-gray-100 pt-4 space-y-2">
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="border-t border-mint pt-4 space-y-2">
+            <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide">
               Extracted Tasks — remove any you don&apos;t want
             </p>
             <ul className="space-y-1.5">
               {extractedTasks.map((t) => (
                 <li key={t.id} className="flex items-start gap-2 group">
                   <span className={`mt-0.5 shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${
-                    t.priority === "high" ? "bg-red-100 text-red-700" :
-                    t.priority === "low"  ? "bg-gray-100 text-gray-500" :
-                    "bg-amber-100 text-amber-700"
+                    t.priority === "high" ? "bg-[#e07a5f]/20 text-[#b3492f]" :
+                    t.priority === "low"  ? "bg-mint text-charcoal/50" :
+                    "bg-rose/25 text-charcoal"
                   }`}>{t.priority}</span>
-                  <span className="text-sm text-gray-700 flex-1">{t.text}</span>
+                  <span className="text-sm text-charcoal/80 flex-1">{t.text}</span>
                   <button
                     onClick={() => removeExtractedTask(t.id)}
-                    className="shrink-0 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all mt-0.5"
+                    className="shrink-0 text-charcoal/25 hover:text-[#b3492f] opacity-0 group-hover:opacity-100 transition-all mt-0.5"
                     title="Remove this task"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -459,14 +460,14 @@ export default function MeetingsPage() {
         )}
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
+          <p className="text-sm text-[#b3492f] bg-[#e07a5f]/15 rounded-lg px-3 py-2">{error}</p>
         )}
       </div>
 
       {/* Summary output */}
       {summary && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between flex-wrap gap-3">
+        <div className="bg-white rounded-2xl border border-mint shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-mint flex items-center justify-between flex-wrap gap-3">
             <div className="flex-1 min-w-0">
               {/* Editable label row */}
               {savedSummaryId && editingMeetingLabel ? (
@@ -475,7 +476,7 @@ export default function MeetingsPage() {
                     type="text"
                     value={meetingLabelDraft}
                     onChange={(e) => setMeetingLabelDraft(e.target.value)}
-                    className="border border-indigo-300 rounded-lg px-2.5 py-1 text-sm font-medium text-indigo-700 w-64 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    className="border border-teal-deep/40 rounded-lg px-2.5 py-1 text-sm font-medium text-teal-pine w-64 focus:outline-none focus:ring-2 focus:ring-teal-sage/40"
                     placeholder="Meeting label e.g. Sprint Review — Mar 28"
                     onKeyDown={async (e) => {
                       if (e.key === "Enter") {
@@ -508,28 +509,28 @@ export default function MeetingsPage() {
                       setEditingMeetingLabel(false);
                       setLabelSaving(false);
                     }}
-                    className="px-2.5 py-1 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 disabled:opacity-60"
+                    className="px-2.5 py-1 bg-teal-deep text-white rounded-lg text-xs font-semibold hover:bg-teal-forest disabled:opacity-60"
                   >
                     {labelSaving ? "Saving…" : "Save"}
                   </button>
-                  <button onClick={() => setEditingMeetingLabel(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+                  <button onClick={() => setEditingMeetingLabel(false)} className="text-xs text-charcoal/40 hover:text-charcoal">Cancel</button>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <h2 className="text-sm font-semibold text-gray-800">
+                  <h2 className="text-sm font-semibold text-charcoal">
                     {summary.meetingLabel ? (
                       <>
-                        <span className="text-gray-500 font-normal">Summary · </span>
-                        <span className="text-indigo-600">{summary.meetingLabel}</span>
+                        <span className="text-charcoal/50 font-normal">Summary · </span>
+                        <span className="text-teal-pine">{summary.meetingLabel}</span>
                       </>
                     ) : (
-                      <>Summary for <span className="text-indigo-600">{summary.userName}</span></>
+                      <>Summary for <span className="text-teal-pine">{summary.userName}</span></>
                     )}
                   </h2>
                   {savedSummaryId && (
                     <button
                       onClick={() => setEditingMeetingLabel(true)}
-                      className="flex items-center gap-1 px-2 py-0.5 text-[10px] text-gray-400 border border-gray-200 rounded-md hover:bg-gray-50 hover:text-gray-600"
+                      className="flex items-center gap-1 px-2 py-0.5 text-[10px] text-charcoal/40 border border-mint-mist rounded-md hover:bg-mint/40 hover:text-charcoal"
                     >
                       <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -540,14 +541,14 @@ export default function MeetingsPage() {
                   )}
                 </div>
               )}
-              <p className="text-xs text-gray-400 mt-0.5">
-                <span className="font-medium text-gray-500">{summary.date}</span>
+              <p className="text-xs text-charcoal/40 mt-0.5">
+                <span className="font-medium text-charcoal/50">{summary.date}</span>
                 {" · "}
-                <span className={`font-medium ${summary.method === "gemini" ? "text-amber-500" : "text-gray-400"}`}>
+                <span className={`font-medium ${summary.method === "gemini" ? "text-charcoal/70" : "text-charcoal/40"}`}>
                   {summary.method === "gemini" ? "✨ Gemini AI Summary" : "⚡ Extractive Summary"}
                 </span>
                 {summary.reportsTo && (
-                  <span className="ml-2 text-gray-500">· Reports to <span className="font-medium text-gray-700">{summary.reportsTo}</span></span>
+                  <span className="ml-2 text-charcoal/50">· Reports to <span className="font-medium text-charcoal/80">{summary.reportsTo}</span></span>
                 )}
               </p>
             </div>
@@ -556,11 +557,11 @@ export default function MeetingsPage() {
               <button
                 onClick={handleSendToSlack}
                 disabled={slackStatus === "sending"}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                className={`flex items-center gap-2 px-4 py-2 rounded-button text-sm font-semibold transition-all ${
                   slackStatus === "sent"
-                    ? "bg-emerald-100 text-emerald-700"
+                    ? "bg-teal-sage/20 text-teal-pine"
                     : slackStatus === "error"
-                    ? "bg-red-100 text-red-700"
+                    ? "bg-[#e07a5f]/20 text-[#b3492f]"
                     : "bg-[#4A154B] text-white hover:bg-[#3d1040]"
                 } disabled:opacity-50`}
               >
@@ -583,7 +584,7 @@ export default function MeetingsPage() {
 
               <button
                 onClick={() => setShowRaw((v) => !v)}
-                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                className="px-4 py-2 border border-mint-mist text-charcoal/70 rounded-button text-sm font-medium hover:bg-mint/40 transition-colors"
               >
                 {showRaw ? "Hide Raw" : "View Raw"}
               </button>
@@ -591,15 +592,15 @@ export default function MeetingsPage() {
           </div>
 
           {slackError && (
-            <div className="mx-6 mt-4 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{slackError}</div>
+            <div className="mx-6 mt-4 text-sm text-[#b3492f] bg-[#e07a5f]/15 rounded-lg px-3 py-2">{slackError}</div>
           )}
 
           {!showRaw && (
             <div className="p-6 space-y-5">
               {summary.about && (
-                <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">📋 Meeting Summary</h3>
-                  <p className="text-sm text-gray-700 leading-7 whitespace-pre-line">{summary.about}</p>
+                <div className="bg-mint/40 border border-mint rounded-xl p-4">
+                  <h3 className="text-xs font-semibold text-charcoal/50 uppercase tracking-wider mb-3">📋 Meeting Summary</h3>
+                  <p className="text-sm text-charcoal/80 leading-7 whitespace-pre-line">{summary.about}</p>
                 </div>
               )}
 
@@ -611,7 +612,7 @@ export default function MeetingsPage() {
               )}
 
               {autoTaskCount > 0 && (
-                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-teal-pine bg-teal-sage/15 border border-teal-sage/30 rounded-xl px-4 py-3">
                   <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
@@ -625,7 +626,7 @@ export default function MeetingsPage() {
 
           {showRaw && (
             <div className="p-6">
-              <pre className="text-xs text-gray-600 font-mono bg-gray-50 rounded-xl p-4 overflow-auto max-h-96 whitespace-pre-wrap leading-relaxed">
+              <pre className="text-xs text-charcoal/70 font-mono bg-mint/40 rounded-xl p-4 overflow-auto max-h-96 whitespace-pre-wrap leading-relaxed">
                 {summary.rawText || transcript}
               </pre>
             </div>
@@ -648,16 +649,16 @@ function SummarySection({
   color: "indigo" | "emerald" | "blue" | "amber";
 }) {
   const colors = {
-    indigo: "bg-indigo-50 border-indigo-100",
-    emerald: "bg-emerald-50 border-emerald-100",
-    blue: "bg-blue-50 border-blue-100",
-    amber: "bg-amber-50 border-amber-100",
+    indigo: "bg-mint border-teal-sage/30",
+    emerald: "bg-teal-sage/15 border-teal-sage/30",
+    blue: "bg-navy/10 border-navy/20",
+    amber: "bg-rose/15 border-rose/30",
   };
   const textColors = {
-    indigo: "text-indigo-800",
-    emerald: "text-emerald-800",
-    blue: "text-blue-800",
-    amber: "text-amber-800",
+    indigo: "text-teal-pine",
+    emerald: "text-teal-pine",
+    blue: "text-navy",
+    amber: "text-charcoal",
   };
 
   return (

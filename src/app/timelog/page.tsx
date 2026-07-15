@@ -201,12 +201,13 @@ export default function TimeLogPage() {
   const hasFilters = dateRange !== "all" || search || filterName;
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+    <div className="p-8 lg:p-12 max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Time Log</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <p className="eyebrow mb-1"><span className="eyebrow-dot" />Work</p>
+          <h1 className="headline">Time Log</h1>
+          <p className="text-[13px] text-charcoal/50 mt-1">
             {filtered.length} session{filtered.length !== 1 ? "s" : ""}
             {dateRange !== "all" && ` · ${RANGE_LABELS[dateRange]}`}
             {" · "}{formatDuration(totalSeconds)} total
@@ -217,7 +218,7 @@ export default function TimeLogPage() {
             <button
               onClick={exportCSV}
               disabled={filtered.length === 0}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="btn-ghost-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -229,7 +230,7 @@ export default function TimeLogPage() {
               onClick={() => {
                 if (confirm("Clear all time log sessions? This cannot be undone.")) clearAllSessions();
               }}
-              className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+              className="rounded-button border border-[#b3492f] text-[#b3492f] text-[13px] font-medium px-3.5 py-1.5 hover:bg-[#b3492f] hover:text-white transition-colors"
             >
               Clear all
             </button>
@@ -238,17 +239,17 @@ export default function TimeLogPage() {
       </div>
 
       {/* Assignee + Reports To */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-4">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Export metadata</p>
+      <div className="card-white space-y-4">
+        <p className="font-mono text-[11px] font-semibold text-charcoal/50 uppercase tracking-eyebrow">Export metadata</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Assignee dropdown */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-gray-600">Assignee</label>
+            <label className="text-[13px] font-medium text-charcoal/70">Assignee</label>
             {teamNames.length > 0 ? (
               <select
                 value={assignee}
                 onChange={(e) => saveAssignee(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 bg-white"
+                className="input-field w-full"
               >
                 <option value="">— select person —</option>
                 {teamNames.map((n) => (
@@ -261,20 +262,20 @@ export default function TimeLogPage() {
                 placeholder="e.g. Brempong Appiah"
                 value={assignee}
                 onChange={(e) => saveAssignee(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="input-field w-full"
               />
             )}
           </div>
 
           {/* Reports To */}
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-gray-600">Reports To</label>
+            <label className="text-[13px] font-medium text-charcoal/70">Reports To</label>
             <input
               type="text"
               placeholder="e.g. Jane Smith"
               value={reportsTo}
               onChange={(e) => saveReportsTo(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              className="input-field w-full"
             />
           </div>
         </div>
@@ -289,11 +290,7 @@ export default function TimeLogPage() {
               <button
                 key={r}
                 onClick={() => setDateRange(r)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                  dateRange === r
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                }`}
+                className={`filter-pill ${dateRange === r ? "active" : ""}`}
               >
                 {RANGE_LABELS[r]}
               </button>
@@ -304,7 +301,7 @@ export default function TimeLogPage() {
             placeholder="Search ticket or task..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border border-gray-200 rounded-xl px-3 py-1.5 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            className="input-field w-52"
           />
 
           {/* Name filter dropdown */}
@@ -312,11 +309,7 @@ export default function TimeLogPage() {
             <div className="relative">
               <button
                 onClick={() => setNameDropdownOpen((o) => !o)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors ${
-                  filterName
-                    ? "bg-indigo-600 text-white border-indigo-600"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                }`}
+                className={filterName ? "filter-pill active" : "filter-pill"}
               >
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -328,10 +321,10 @@ export default function TimeLogPage() {
                 </svg>
               </button>
               {nameDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-mint rounded-card z-20 py-1 overflow-hidden">
                   <button
                     onClick={() => { setFilterName(""); setNameDropdownOpen(false); }}
-                    className="w-full text-left px-3 py-2 text-xs text-gray-400 hover:bg-gray-50"
+                    className="w-full text-left px-3 py-2 text-[13px] text-charcoal/40 hover:bg-mint"
                   >
                     — all people —
                   </button>
@@ -339,12 +332,12 @@ export default function TimeLogPage() {
                     <button
                       key={n.accountId}
                       onClick={() => { setFilterName(n.displayName); setNameDropdownOpen(false); }}
-                      className={`w-full text-left px-3 py-2 text-sm hover:bg-indigo-50 flex items-center gap-2 ${
-                        filterName === n.displayName ? "text-indigo-700 font-semibold bg-indigo-50" : "text-gray-700"
+                      className={`w-full text-left px-3 py-2 text-[14px] hover:bg-mint flex items-center gap-2 ${
+                        filterName === n.displayName ? "text-teal-pine font-semibold bg-mint" : "text-charcoal/70"
                       }`}
                     >
                       {n.avatarUrl && (
-                        <img src={n.avatarUrl} alt="" className="w-5 h-5 rounded-full" />
+                        <img src={n.avatarUrl} alt="" className="w-5 h-5 rounded-pill" />
                       )}
                       {n.displayName}
                     </button>
@@ -355,7 +348,7 @@ export default function TimeLogPage() {
           )}
 
           {hasFilters && (
-            <button onClick={() => { setDateRange("all"); setSearch(""); setFilterName(""); }} className="text-xs text-indigo-600 hover:underline">
+            <button onClick={() => { setDateRange("all"); setSearch(""); setFilterName(""); }} className="text-[13px] text-teal-pine hover:underline">
               Clear
             </button>
           )}
@@ -364,20 +357,20 @@ export default function TimeLogPage() {
 
       {/* Active timer card */}
       {activeTimer && (
-        <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5 flex items-center justify-between gap-4">
+        <div className="card-mint flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="w-3 h-3 rounded-full bg-red-500 animate-ping" />
+            <span className="w-3 h-3 rounded-pill bg-[#b3492f] animate-pulse" />
             <div>
-              <p className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">Currently tracking</p>
-              <p className="text-sm font-bold text-gray-800">{activeTimer.ticketKey}</p>
-              <p className="text-xs text-gray-500 line-clamp-1">{activeTimer.ticketSummary}</p>
+              <p className="font-mono text-[11px] font-semibold text-teal-pine uppercase tracking-eyebrow">Currently tracking</p>
+              <p className="text-[14px] font-semibold text-charcoal">{activeTimer.ticketKey}</p>
+              <p className="text-[13px] text-charcoal/50 line-clamp-1">{activeTimer.ticketSummary}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-indigo-700 tabular-nums">{formatDuration(elapsed)}</span>
+            <span className="text-[24px] font-semibold text-teal-deep tabular-nums">{formatDuration(elapsed)}</span>
             <button
               onClick={() => stopTimer(false)}
-              className="px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl text-sm font-semibold transition-colors"
+              className="rounded-button bg-[#b3492f] text-white px-3.5 py-1.5 text-[14px] font-medium hover:opacity-90 transition-opacity"
             >
               Stop
             </button>
@@ -387,21 +380,21 @@ export default function TimeLogPage() {
 
       {/* Summary by ticket */}
       {Object.keys(grouped).length > 0 && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50">
-            <h2 className="text-sm font-semibold text-gray-700">Summary by Ticket</h2>
+        <div className="card-white !p-0 overflow-hidden">
+          <div className="px-6 py-4 border-b border-mint">
+            <p className="font-medium text-[14px] text-charcoal">Summary by Ticket</p>
           </div>
-          <table className="min-w-full divide-y divide-gray-50">
-            <thead className="bg-gray-50">
+          <table className="table-clean">
+            <thead>
               <tr>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Ticket</th>
-                <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Summary</th>
-                {projects.length > 0 && <th className="px-5 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Project</th>}
-                <th className="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Sessions</th>
-                <th className="px-5 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Time</th>
+                <th>Ticket</th>
+                <th>Summary</th>
+                {projects.length > 0 && <th>Project</th>}
+                <th className="text-right">Sessions</th>
+                <th className="text-right">Total Time</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {Object.entries(grouped)
                 .sort((a, b) => b[1].reduce((s, x) => s + x.duration, 0) - a[1].reduce((s, x) => s + x.duration, 0))
                 .map(([key, ticketSessions]) => {
@@ -412,40 +405,38 @@ export default function TimeLogPage() {
                   const projIds = Object.keys(projIdSet);
                   const sharedProj = projIds.length === 1 ? projects.find(p => p.id === projIds[0]) : null;
                   return (
-                    <tr key={key} className="hover:bg-gray-50">
-                      <td className="px-5 py-3 font-mono text-xs font-semibold text-indigo-600">{key}</td>
-                      <td className="px-5 py-3 text-sm text-gray-700 max-w-xs truncate">{ticketSessions[0].ticketSummary}</td>
+                    <tr key={key}>
+                      <td className="font-mono text-[13px] font-semibold text-teal-deep">{key}</td>
+                      <td className="max-w-xs truncate">{ticketSessions[0].ticketSummary}</td>
                       {projects.length > 0 && (
-                        <td className="px-5 py-3 text-sm text-gray-500">
+                        <td>
                           {sharedProj ? (
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: sharedProj.color }}>
-                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: sharedProj.color }} />
+                            <span className="inline-flex items-center gap-1.5 text-[13px] font-medium" style={{ color: sharedProj.color }}>
+                              <span className="w-2 h-2 rounded-pill shrink-0" style={{ backgroundColor: sharedProj.color }} />
                               {sharedProj.name}
                             </span>
                           ) : projIds.length > 1 ? (
-                            <span className="text-xs text-gray-400">Mixed</span>
+                            <span className="text-[13px] text-charcoal/40">Mixed</span>
                           ) : (
-                            <span className="text-xs text-gray-300">—</span>
+                            <span className="text-[13px] text-charcoal/30">—</span>
                           )}
                         </td>
                       )}
-                      <td className="px-5 py-3 text-right text-sm text-gray-500">{ticketSessions.length}</td>
-                      <td className="px-5 py-3 text-right">
-                        <span className="inline-flex items-center bg-indigo-50 text-indigo-700 text-xs font-bold px-2 py-1 rounded-md">
-                          {formatDuration(total)}
-                        </span>
+                      <td className="text-right text-charcoal/50">{ticketSessions.length}</td>
+                      <td className="text-right">
+                        <span className="tag-done">{formatDuration(total)}</span>
                       </td>
                     </tr>
                   );
                 })}
             </tbody>
             <tfoot>
-              <tr className="bg-gray-50 border-t border-gray-200">
-                <td colSpan={3} className="px-5 py-3 text-xs font-semibold text-gray-600">
+              <tr>
+                <td colSpan={3} className="font-semibold text-charcoal/70">
                   {filtered.length} session{filtered.length !== 1 ? "s" : ""} across {Object.keys(grouped).length} ticket{Object.keys(grouped).length !== 1 ? "s" : ""}
                 </td>
-                <td className="px-5 py-3 text-right">
-                  <span className="inline-flex items-center bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded-md">
+                <td className="text-right">
+                  <span className="inline-flex items-center rounded-tag bg-teal-deep text-white text-[12px] font-semibold px-2.5 py-1">
                     {formatDuration(totalSeconds)}
                   </span>
                 </td>
@@ -457,34 +448,34 @@ export default function TimeLogPage() {
 
       {/* All sessions */}
       {sessions.length > 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-50">
-            <h2 className="text-sm font-semibold text-gray-700">Sessions</h2>
+        <div className="card-white !p-0 overflow-hidden">
+          <div className="px-6 py-4 border-b border-mint">
+            <p className="font-medium text-[14px] text-charcoal">Sessions</p>
           </div>
           {filtered.length === 0 ? (
-            <p className="px-6 py-8 text-sm text-gray-400 text-center">No sessions for this period.</p>
+            <p className="px-6 py-8 text-[14px] text-charcoal/40 text-center">No sessions for this period.</p>
           ) : (
-            <ul className="divide-y divide-gray-50">
+            <ul className="divide-y divide-mint">
               {filtered.map((s) => {
                 const linkedProj = projects.find(p => p.id === s.projectId);
                 const isLinking = linkingId === s.id;
                 return (
-                  <li key={s.id} className="px-5 py-3 hover:bg-gray-50 group">
+                  <li key={s.id} className="px-5 py-3 hover:bg-mint/40 group">
                     <div className="flex items-center gap-4">
-                      <span className={`w-2 h-2 rounded-full shrink-0 ${linkedProj ? "" : "bg-emerald-500"}`} style={linkedProj ? { backgroundColor: linkedProj.color } : {}} />
-                      <span className="font-mono text-xs font-semibold text-indigo-600 w-24 shrink-0 truncate">{s.ticketKey}</span>
-                      <span className="text-sm text-gray-700 flex-1 truncate">{s.ticketSummary}</span>
-                      <div className="text-xs text-gray-400 shrink-0 hidden sm:block">
+                      <span className="w-2 h-2 rounded-pill shrink-0" style={{ backgroundColor: linkedProj ? linkedProj.color : "#65b8a2" }} />
+                      <span className="font-mono text-[13px] font-semibold text-teal-deep w-24 shrink-0 truncate">{s.ticketKey}</span>
+                      <span className="text-[14px] text-charcoal flex-1 truncate">{s.ticketSummary}</span>
+                      <div className="text-[12px] text-charcoal/40 shrink-0 hidden sm:block">
                         <span>{formatTs(s.startTime)}</span>
                         <span className="mx-1">→</span>
                         <span>{format(new Date(s.endTime), "HH:mm")}</span>
                       </div>
-                      <span className="inline-flex items-center bg-gray-100 text-gray-700 text-xs font-bold px-2 py-1 rounded-md shrink-0 w-20 justify-center tabular-nums">
+                      <span className="tag-neutral w-20 justify-center tabular-nums">
                         {formatDurationShort(s.duration)}
                       </span>
                       <button
                         onClick={() => deleteSession(s.id)}
-                        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition-all shrink-0"
+                        className="opacity-0 group-hover:opacity-100 text-charcoal/20 hover:text-[#b3492f] transition-all shrink-0"
                         title="Delete session"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -496,16 +487,16 @@ export default function TimeLogPage() {
                     {projects.length > 0 && (
                       <div className="flex items-center gap-2 mt-1.5 pl-6">
                         {isLinking ? (
-                          <span className="text-[11px] text-gray-400">Saving…</span>
+                          <span className="text-[11px] text-charcoal/40">Saving…</span>
                         ) : (
                           <>
                             {linkedProj && (
-                              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: linkedProj.color }} />
+                              <span className="w-2 h-2 rounded-pill shrink-0" style={{ backgroundColor: linkedProj.color }} />
                             )}
                             <select
                               value={s.projectId ?? ""}
                               onChange={(e) => linkSessionToProject(s.id, e.target.value || null)}
-                              className="text-[11px] border border-gray-200 rounded-md px-2 py-0.5 bg-white text-gray-500 cursor-pointer focus:outline-none focus:ring-1 focus:ring-indigo-300"
+                              className="text-[11px] border border-mint-mist rounded-card px-2 py-0.5 bg-white text-charcoal/60 cursor-pointer focus:outline-none focus:border-teal-deep"
                             >
                               <option value="">{linkedProj ? "Remove from project" : "Log to project…"}</option>
                               {projects.map(p => (
@@ -528,10 +519,9 @@ export default function TimeLogPage() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-16 text-center">
-          <div className="text-4xl mb-3">⏱</div>
-          <p className="text-gray-500 font-medium">No time logged yet</p>
-          <p className="text-gray-400 text-sm mt-1">
+        <div className="card-white p-16 text-center">
+          <p className="text-charcoal/60 font-medium">No time logged yet</p>
+          <p className="text-charcoal/40 text-[13px] mt-1">
             Start a timer from any ticket in the Dashboard or Overview to record time here.
           </p>
         </div>

@@ -163,34 +163,35 @@ export default function ExportPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="px-6 py-4">
-          <h1 className="text-lg font-bold text-gray-900">Export</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Download ticket data as CSV</p>
+    <div className="min-h-screen bg-paper">
+      <header className="bg-white border-b border-mint sticky top-0 z-10">
+        <div className="px-6 py-5">
+          <p className="eyebrow"><span className="eyebrow-dot" />Export</p>
+          <h1 className="headline mt-1">Export data</h1>
+          <p className="text-[14px] text-charcoal/60 mt-1">Download ticket and project data as CSV</p>
         </div>
       </header>
 
-      <div className="px-6 py-6 max-w-2xl mx-auto space-y-6">
+      <div className="px-6 py-8 max-w-2xl mx-auto space-y-6">
         {/* Project Export card */}
         {projects.length > 0 && (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
+          <div className="card-white space-y-5">
             <div>
-              <h2 className="text-sm font-semibold text-gray-700 mb-1">Project Export</h2>
-              <p className="text-xs text-gray-400">Download all tasks and time logs for a project as CSV.</p>
+              <h2 className="text-[16px] font-medium text-charcoal mb-1">Project Export</h2>
+              <p className="text-[13px] text-charcoal/50">Download all tasks and time logs for a project as CSV.</p>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">Select Project</label>
+              <label className="block text-[13px] font-medium text-charcoal/70 mb-2">Select Project</label>
               <div className="flex items-center gap-3">
                 {selectedProjectId && (() => {
                   const proj = projects.find(p => p.id === selectedProjectId);
-                  return proj ? <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: proj.color }} /> : null;
+                  return proj ? <span className="w-3 h-3 rounded-pill shrink-0" style={{ backgroundColor: proj.color }} /> : null;
                 })()}
                 <select
                   value={selectedProjectId}
                   onChange={(e) => setSelectedProjectId(e.target.value)}
-                  className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  className="input-field flex-1"
                 >
                   <option value="">Choose a project…</option>
                   {projects.map(p => (
@@ -203,31 +204,31 @@ export default function ExportPage() {
             {selectedProjectId && (() => {
               const proj = projects.find(p => p.id === selectedProjectId);
               return proj ? (
-                <div className="bg-gray-50 rounded-lg px-4 py-3 text-xs border border-gray-100 space-y-1">
+                <div className="card-mint !p-4 text-[13px] space-y-1">
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Project</span>
-                    <span className="font-medium text-gray-700 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: proj.color }} />
+                    <span className="text-charcoal/50">Project</span>
+                    <span className="font-medium text-charcoal flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-pill" style={{ backgroundColor: proj.color }} />
                       {proj.name}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Contents</span>
-                    <span className="font-medium text-gray-700">Tasks + Time Logs</span>
+                    <span className="text-charcoal/50">Contents</span>
+                    <span className="font-medium text-charcoal">Tasks + Time Logs</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-400">Format</span>
-                    <span className="font-medium text-gray-700">CSV (UTF-8)</span>
+                    <span className="text-charcoal/50">Format</span>
+                    <span className="font-medium text-charcoal">CSV (UTF-8)</span>
                   </div>
                 </div>
               ) : null;
             })()}
 
             {projectExportError && (
-              <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-700">{projectExportError}</div>
+              <div className="bg-[#e07a5f]/10 border border-[#e07a5f]/40 rounded-card px-3 py-2 text-[13px] text-[#b3492f]">{projectExportError}</div>
             )}
             {projectExportMsg && (
-              <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-xs text-emerald-700 flex items-center gap-2">
+              <div className="bg-teal-sage/10 border border-teal-sage/40 rounded-card px-3 py-2 text-[13px] text-teal-pine flex items-center gap-2">
                 <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
@@ -238,7 +239,7 @@ export default function ExportPage() {
             <button
               onClick={handleProjectExport}
               disabled={projectExportLoading || !selectedProjectId}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary w-full"
             >
               {projectExportLoading ? (
                 <>
@@ -249,56 +250,50 @@ export default function ExportPage() {
                   Generating CSV…
                 </>
               ) : (
-                <>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  Download Project CSV
-                </>
+                "Download Project CSV"
               )}
             </button>
           </div>
         )}
 
         {/* Jira Export card */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-6">
+        <div className="card-white space-y-6">
           <div>
-            <h2 className="text-sm font-semibold text-gray-700 mb-1">Export Configuration</h2>
-            <p className="text-xs text-gray-400">
+            <h2 className="text-[16px] font-medium text-charcoal mb-1">Export Configuration</h2>
+            <p className="text-[13px] text-charcoal/50">
               Select a user and time period, then download the CSV file.
             </p>
           </div>
 
           {/* User selection */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">User</label>
+            <label className="block text-[13px] font-medium text-charcoal/70 mb-2">User</label>
             <UserSearch onSelect={handleUserSelect} selectedUser={selectedUser} />
             {!selectedUser?.accountId && currentUser && (
-              <p className="text-xs text-gray-400 mt-1.5">
-                Defaults to your account: <span className="font-medium text-gray-600">{currentUser.displayName}</span>
+              <p className="text-[13px] text-charcoal/50 mt-1.5">
+                Defaults to your account: <span className="font-medium text-charcoal/70">{currentUser.displayName}</span>
               </p>
             )}
           </div>
 
           {/* Month picker */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">Period</label>
+            <label className="block text-[13px] font-medium text-charcoal/70 mb-2">Period</label>
             <MonthPicker month={month} year={year} onChange={(m, y) => { setMonth(m); setYear(y); }} />
           </div>
 
           {/* Preview */}
-          <div className="bg-gray-50 rounded-lg px-4 py-3 text-sm text-gray-600 border border-gray-100">
-            <p className="font-medium text-gray-700 mb-1">Export preview</p>
-            <div className="space-y-1 text-xs">
+          <div className="card-mint !p-4 text-[14px] text-charcoal/70">
+            <p className="font-medium text-charcoal mb-1.5">Export preview</p>
+            <div className="space-y-1 text-[13px]">
               <div className="flex justify-between">
-                <span className="text-gray-400">User</span>
+                <span className="text-charcoal/50">User</span>
                 <span className="font-medium">
                   {targetUser?.displayName ?? "—"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Period</span>
+                <span className="text-charcoal/50">Period</span>
                 <span className="font-medium">
                   {new Date(parseInt(year), parseInt(month) - 1).toLocaleString("default", {
                     month: "long",
@@ -307,7 +302,7 @@ export default function ExportPage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-400">Format</span>
+                <span className="text-charcoal/50">Format</span>
                 <span className="font-medium">CSV (UTF-8)</span>
               </div>
             </div>
@@ -315,12 +310,12 @@ export default function ExportPage() {
 
           {/* Error / Success */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2 text-xs text-red-700">
+            <div className="bg-[#e07a5f]/10 border border-[#e07a5f]/40 rounded-card px-3 py-2 text-[13px] text-[#b3492f]">
               {error}
             </div>
           )}
           {successMsg && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2 text-xs text-emerald-700 flex items-center gap-2">
+            <div className="bg-teal-sage/10 border border-teal-sage/40 rounded-card px-3 py-2 text-[13px] text-teal-pine flex items-center gap-2">
               <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
@@ -328,10 +323,10 @@ export default function ExportPage() {
             </div>
           )}
           {slackStatus !== "idle" && (
-            <div className={`rounded-lg px-3 py-2 text-xs flex items-center gap-2 ${
-              slackStatus === "sent"   ? "bg-emerald-50 border border-emerald-200 text-emerald-700"
-            : slackStatus === "error" ? "bg-red-50 border border-red-200 text-red-700"
-            : "bg-indigo-50 border border-indigo-200 text-indigo-700"}`}
+            <div className={`rounded-card px-3 py-2 text-[13px] flex items-center gap-2 ${
+              slackStatus === "sent"   ? "bg-teal-sage/10 border border-teal-sage/40 text-teal-pine"
+            : slackStatus === "error" ? "bg-[#e07a5f]/10 border border-[#e07a5f]/40 text-[#b3492f]"
+            : "bg-mint border border-mint-mist text-navy"}`}
             >
               {slackStatus === "sending" ? (
                 <svg className="w-4 h-4 animate-spin shrink-0" fill="none" viewBox="0 0 24 24">
@@ -357,7 +352,7 @@ export default function ExportPage() {
           <button
             onClick={handleExport}
             disabled={exportLoading || !targetUser?.accountId}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full"
           >
             {exportLoading ? (
               <>
@@ -368,13 +363,7 @@ export default function ExportPage() {
                 Generating CSV...
               </>
             ) : (
-              <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download CSV
-              </>
+              "Download CSV"
             )}
           </button>
         </div>

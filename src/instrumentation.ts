@@ -9,74 +9,74 @@ export async function register() {
     cron.schedule(
       "0 8 * * 1-5",
       async () => {
-        console.log("[Clock-It] Sending 8:00 AM morning daily update to Slack...");
+        console.log("[ProfDev] Sending 8:00 AM morning daily update to Slack...");
         try {
           const res = await fetch(`${appUrl}/api/morning-update/send`, { method: "POST" });
           const data = await res.json();
           if (data.ok) {
-            console.log(`[Clock-It] Morning update sent for ${data.dateKey}.`);
+            console.log(`[ProfDev] Morning update sent for ${data.dateKey}.`);
           } else {
-            console.error("[Clock-It] Morning update failed:", data.error);
+            console.error("[ProfDev] Morning update failed:", data.error);
           }
         } catch (err) {
-          console.error("[Clock-It] Morning update error:", err);
+          console.error("[ProfDev] Morning update error:", err);
         }
       },
       { timezone: "Africa/Accra" }
     );
 
-    console.log("[Clock-It] ✅ 8:00 AM weekday morning update scheduled (Africa/Accra)");
+    console.log("[ProfDev] ✅ 8:00 AM weekday morning update scheduled (Africa/Accra)");
 
     // ── 12:00 PM weekday midday Slack reminder ───────────────────────────────
     cron.schedule(
       "0 12 * * 1-5",
       async () => {
-        console.log("[Clock-It] Sending 12:00 PM midday check-in to Slack...");
+        console.log("[ProfDev] Sending 12:00 PM midday check-in to Slack...");
         try {
           const res = await fetch(`${appUrl}/api/reminder/midday`, { method: "POST" });
           const data = await res.json();
           if (data.ok) {
-            console.log(`[Clock-It] Midday reminder sent — ${data.inProgress} in-progress, ${data.todo} to-do, ${data.done} done.`);
+            console.log(`[ProfDev] Midday reminder sent — ${data.inProgress} in-progress, ${data.todo} to-do, ${data.done} done.`);
           } else {
-            console.error("[Clock-It] Midday reminder failed:", data.error);
+            console.error("[ProfDev] Midday reminder failed:", data.error);
           }
         } catch (err) {
-          console.error("[Clock-It] Midday reminder error:", err);
+          console.error("[ProfDev] Midday reminder error:", err);
         }
       },
       { timezone: "Africa/Accra" }
     );
 
-    console.log("[Clock-It] ✅ 12:00 PM weekday midday Slack reminder scheduled (Africa/Accra)");
+    console.log("[ProfDev] ✅ 12:00 PM weekday midday Slack reminder scheduled (Africa/Accra)");
 
     // ── 3:00 PM weekday Slack reminder ──────────────────────────────────────
     cron.schedule(
       "0 15 * * 1-5",
       async () => {
-        console.log("[Clock-It] Sending 3:00 PM daily check-in to Slack...");
+        console.log("[ProfDev] Sending 3:00 PM daily check-in to Slack...");
         try {
           const res = await fetch(`${appUrl}/api/reminder`, { method: "POST" });
           const data = await res.json();
           if (data.ok) {
-            console.log(`[Clock-It] Reminder sent — ${data.jiraTickets} Jira tickets, ${data.meetingTasks} meeting tasks.`);
+            console.log(`[ProfDev] Reminder sent — ${data.jiraTickets} Jira tickets, ${data.meetingTasks} meeting tasks.`);
           } else {
-            console.error("[Clock-It] Reminder failed:", data.error);
+            console.error("[ProfDev] Reminder failed:", data.error);
           }
         } catch (err) {
-          console.error("[Clock-It] Reminder error:", err);
+          console.error("[ProfDev] Reminder error:", err);
         }
       },
       { timezone: "Africa/Accra" }
     );
 
-    console.log("[Clock-It] ✅ 3:00 PM weekday Slack reminder scheduled (Africa/Accra)");
+    console.log("[ProfDev] ✅ 3:00 PM weekday Slack reminder scheduled (Africa/Accra)");
 
     // ── Kafka event consumer ─────────────────────────────────────────────────
     try {
       const { startEventConsumer } = await import("./lib/eventConsumer");
       await startEventConsumer();
     } catch (err) {
-      console.error("[Clock-It] Kafka consumer failed to start (Kafka may not be running):", err);
+      console.error("[ProfDev] Kafka consumer failed to start (Kafka may not be running):", err);
     }
   }
 }

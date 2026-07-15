@@ -76,16 +76,16 @@ const PROJECT_COLORS = [
 ];
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; badge: string; ring: string; dot: string }> = {
-  "todo":        { label: "To Do",       badge: "bg-gray-100 text-gray-700",    ring: "border-gray-300",           dot: "bg-gray-400" },
-  "in-progress": { label: "In Progress", badge: "bg-blue-100 text-blue-700",    ring: "border-blue-400",           dot: "bg-blue-400" },
-  "in-review":   { label: "In Review",   badge: "bg-violet-100 text-violet-700",ring: "border-violet-400 bg-violet-50", dot: "bg-violet-400" },
-  "done":        { label: "Done",        badge: "bg-emerald-100 text-emerald-700", ring: "bg-emerald-500 border-emerald-500 text-white", dot: "bg-emerald-500" },
+  "todo":        { label: "To Do",       badge: "bg-mint text-charcoal/80",    ring: "border-charcoal/25",           dot: "bg-charcoal/40" },
+  "in-progress": { label: "In Progress", badge: "bg-navy/10 text-navy",    ring: "border-navy",           dot: "bg-navy" },
+  "in-review":   { label: "In Review",   badge: "bg-rose/30 text-charcoal",ring: "border-rose bg-rose/20", dot: "bg-rose" },
+  "done":        { label: "Done",        badge: "bg-teal-sage/20 text-teal-pine", ring: "bg-teal-deep border-teal-deep text-white", dot: "bg-teal-deep" },
 };
 
 const PRIORITY_STYLES = {
-  high:   "bg-red-100 text-red-700",
-  medium: "bg-amber-100 text-amber-700",
-  low:    "bg-gray-100 text-gray-500",
+  high:   "bg-[#e07a5f]/20 text-[#b3492f]",
+  medium: "bg-rose/25 text-charcoal",
+  low:    "bg-mint text-charcoal/50",
 };
 
 const TASK_STATUS_ORDER: TaskStatus[] = ["todo", "in-progress", "in-review", "done"];
@@ -158,21 +158,21 @@ function fmtDate(ts: number) {
 
 function NoProjectState({ onCreate }: { onCreate: () => void }) {
   return (
-    <div className="flex-1 flex items-center justify-center bg-gray-50 p-8">
+    <div className="flex-1 flex items-center justify-center bg-mint/40 p-8">
       <div className="text-center max-w-sm">
-        <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+        <div className="w-16 h-16 rounded-2xl bg-mint flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-teal-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round"
               d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
         </div>
-        <h2 className="text-lg font-bold text-gray-800 mb-2">No project selected</h2>
-        <p className="text-sm text-gray-500 leading-relaxed mb-6">
+        <h2 className="font-display text-[24px] text-charcoal mb-2">No project selected</h2>
+        <p className="text-sm text-charcoal/50 leading-relaxed mb-6">
           Select a project from the sidebar, or create a new one to get started.
         </p>
         <button
           onClick={onCreate}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-sm"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-teal-deep text-white text-sm font-medium rounded-button hover:bg-teal-forest active:scale-95 transition-all"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -649,8 +649,8 @@ export default function ProjectsPage() {
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">New Project</h2>
-            <button onClick={() => setShowCreateProject(false)} className="text-gray-400 hover:text-gray-600">
+            <h2 className="font-display text-[22px] text-charcoal">New Project</h2>
+            <button onClick={() => setShowCreateProject(false)} className="text-charcoal/40 hover:text-charcoal">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -659,55 +659,55 @@ export default function ProjectsPage() {
 
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Project Name *</label>
+              <label className="block text-xs font-semibold text-charcoal/50 mb-1 uppercase tracking-wide">Project Name *</label>
               <input
                 autoFocus
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
                 placeholder="e.g. Coupa Integration"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full px-3 py-2 text-sm border border-mint-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-sage/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase tracking-wide">Description</label>
+              <label className="block text-xs font-semibold text-charcoal/50 mb-1 uppercase tracking-wide">Description</label>
               <input
                 value={newDescription}
                 onChange={(e) => setNewDescription(e.target.value)}
                 placeholder="Optional short description"
-                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                className="w-full px-3 py-2 text-sm border border-mint-mist rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-sage/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Color</label>
+              <label className="block text-xs font-semibold text-charcoal/50 mb-2 uppercase tracking-wide">Color</label>
               <div className="flex gap-2 flex-wrap">
                 {PROJECT_COLORS.map((c) => (
                   <button
                     key={c}
                     onClick={() => setNewColor(c)}
                     style={{ backgroundColor: c }}
-                    className={`w-7 h-7 rounded-full border-2 transition-all ${newColor === c ? "border-gray-800 scale-110" : "border-transparent hover:scale-105"}`}
+                    className={`w-7 h-7 rounded-full border-2 transition-all ${newColor === c ? "border-charcoal scale-110" : "border-transparent hover:scale-105"}`}
                   />
                 ))}
               </div>
             </div>
           </div>
 
-          {createError && <p className="text-xs text-red-500">{createError}</p>}
+          {createError && <p className="text-xs text-[#b3492f]">{createError}</p>}
 
           <div className="flex gap-3">
             <button
               onClick={() => { setShowCreateProject(false); setCreateError(null); }}
-              className="flex-1 py-2 text-sm text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50"
+              className="flex-1 py-2.5 text-sm text-charcoal/70 border border-mint-mist rounded-button hover:bg-mint/40"
             >
               Cancel
             </button>
             <button
               onClick={handleCreateProject}
               disabled={creating || !newName.trim()}
-              className="flex-1 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 py-2.5 text-sm font-medium text-white bg-teal-deep rounded-button hover:bg-teal-forest disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {creating ? "Creating…" : "Create Project"}
             </button>
@@ -718,27 +718,27 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-full bg-mint/40 overflow-hidden">
       {showCreateProject && <CreateProjectModal />}
 
       {/* ── Project Header ─────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shrink-0">
+      <div className="bg-white border-b border-mint-mist px-6 py-4 shrink-0">
         {editingProject ? (
           <div className="space-y-2">
             <input value={editingProject.name} onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
-              className="text-base font-bold border border-gray-200 rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-indigo-400" />
+              className="text-base font-bold border border-mint-mist rounded px-2 py-1 w-full focus:outline-none focus:ring-1 focus:ring-teal-sage/50" />
             <input value={editingProject.description ?? ""} onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
-              placeholder="Description" className="text-sm border border-gray-200 rounded px-2 py-1 w-full focus:outline-none" />
+              placeholder="Description" className="text-sm border border-mint-mist rounded px-2 py-1 w-full focus:outline-none" />
             <div className="flex gap-1 flex-wrap">
               {PROJECT_COLORS.map((c) => (
                 <button key={c} onClick={() => setEditingProject({ ...editingProject, color: c })}
                   style={{ backgroundColor: c }}
-                  className={`w-5 h-5 rounded-full border-2 ${editingProject.color === c ? "border-gray-800" : "border-transparent"}`} />
+                  className={`w-5 h-5 rounded-full border-2 ${editingProject.color === c ? "border-charcoal" : "border-transparent"}`} />
               ))}
             </div>
             <div className="flex gap-2">
-              <button onClick={handleUpdateProject} className="text-xs bg-indigo-500 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-600">Save</button>
-              <button onClick={() => setEditingProject(null)} className="text-xs border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button onClick={handleUpdateProject} className="text-xs bg-teal-deep text-white px-3.5 py-1.5 rounded-button hover:bg-teal-forest">Save</button>
+              <button onClick={() => setEditingProject(null)} className="text-xs border border-mint-mist px-3.5 py-1.5 rounded-button hover:bg-mint/40">Cancel</button>
             </div>
           </div>
         ) : (
@@ -746,14 +746,14 @@ export default function ProjectsPage() {
             <div className="flex items-center gap-3">
               <div className="w-5 h-5 rounded-full shrink-0" style={{ backgroundColor: activeProject.color }} />
               <div>
-                <h1 className="text-lg font-bold text-gray-900">{activeProject.name}</h1>
-                {activeProject.description && <p className="text-sm text-gray-500 mt-0.5">{activeProject.description}</p>}
+                <h1 className="font-display text-[22px] leading-tight text-charcoal">{activeProject.name}</h1>
+                {activeProject.description && <p className="text-sm text-charcoal/50 mt-0.5">{activeProject.description}</p>}
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
               <button
                 onClick={() => setShowCreateProject(true)}
-                className="text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 rounded-lg px-3 py-1.5 flex items-center gap-1"
+                className="text-xs text-teal-pine hover:text-teal-deep border border-teal-sage/40 rounded-button px-3.5 py-1.5 flex items-center gap-1"
               >
                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -761,41 +761,41 @@ export default function ProjectsPage() {
                 New
               </button>
               {project && (
-                <button onClick={() => setEditingProject(project)} className="text-xs text-gray-400 hover:text-indigo-500 border border-gray-200 rounded-lg px-3 py-1.5">Edit</button>
+                <button onClick={() => setEditingProject(project)} className="text-xs text-charcoal/40 hover:text-teal-deep border border-mint-mist rounded-button px-3 py-1.5">Edit</button>
               )}
-              <button onClick={handleDeleteProject} className="text-xs text-red-400 hover:text-red-600 border border-red-100 rounded-lg px-3 py-1.5">Delete</button>
+              <button onClick={handleDeleteProject} className="text-xs text-charcoal/25 hover:text-[#b3492f] border border-[#e07a5f]/30 rounded-button px-3 py-1.5">Delete</button>
             </div>
           </div>
         )}
 
         {/* Stats bar */}
         {stats && (
-          <div className="flex gap-5 mt-4 pt-3 border-t border-gray-50 flex-wrap">
+          <div className="flex gap-5 mt-4 pt-3 border-t border-mint flex-wrap">
             <div>
-              <p className="text-base font-bold text-indigo-600">{fmtMins(stats.totalMinutes)}</p>
-              <p className="text-[10px] text-gray-400 uppercase">Time Logged</p>
+              <p className="text-base font-bold text-teal-pine">{fmtMins(stats.totalMinutes)}</p>
+              <p className="text-[10px] text-charcoal/40 uppercase">Time Logged</p>
             </div>
             <div>
-              <p className="text-base font-bold text-gray-600">{stats.taskCount}</p>
-              <p className="text-[10px] text-gray-400 uppercase">Total Tasks</p>
+              <p className="text-base font-bold text-charcoal/70">{stats.taskCount}</p>
+              <p className="text-[10px] text-charcoal/40 uppercase">Total Tasks</p>
             </div>
             <div>
-              <p className="text-base font-bold text-amber-600">{stats.inProgressCount}</p>
-              <p className="text-[10px] text-gray-400 uppercase">In Progress</p>
+              <p className="text-base font-bold text-charcoal">{stats.inProgressCount}</p>
+              <p className="text-[10px] text-charcoal/40 uppercase">In Progress</p>
             </div>
             <div>
-              <p className="text-base font-bold text-violet-600">{stats.inReviewCount}</p>
-              <p className="text-[10px] text-gray-400 uppercase">In Review</p>
+              <p className="text-base font-bold text-charcoal">{stats.inReviewCount}</p>
+              <p className="text-[10px] text-charcoal/40 uppercase">In Review</p>
             </div>
             <div>
-              <p className="text-base font-bold text-emerald-600">{stats.doneCount}</p>
-              <p className="text-[10px] text-gray-400 uppercase">Done</p>
+              <p className="text-base font-bold text-teal-pine">{stats.doneCount}</p>
+              <p className="text-[10px] text-charcoal/40 uppercase">Done</p>
             </div>
             <div>
-              <p className="text-base font-bold text-gray-600">
+              <p className="text-base font-bold text-charcoal/70">
                 {stats.taskCount > 0 ? Math.round((stats.doneCount / stats.taskCount) * 100) : 0}%
               </p>
-              <p className="text-[10px] text-gray-400 uppercase">Complete</p>
+              <p className="text-[10px] text-charcoal/40 uppercase">Complete</p>
             </div>
           </div>
         )}
@@ -804,8 +804,8 @@ export default function ProjectsPage() {
         <div className="flex gap-1 mt-4 overflow-x-auto">
           {(["overview", "tasks", "timelogs", "milestones", "meetings", "notes", "export"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
-              className={`px-4 py-1.5 text-sm rounded-lg transition-colors whitespace-nowrap ${
-                activeTab === t ? "bg-indigo-100 text-indigo-700 font-medium" : "text-gray-500 hover:text-gray-700"
+              className={`px-4 py-1.5 text-sm rounded-nav transition-colors whitespace-nowrap ${
+                activeTab === t ? "bg-teal-deep text-white font-medium" : "text-charcoal/50 hover:bg-mint hover:text-teal-pine"
               }`}>
               {t === "timelogs" ? "Time Log" : t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
@@ -816,7 +816,7 @@ export default function ProjectsPage() {
       {/* ── Tab Content ────────────────────────────────────────────────────── */}
       <div className="flex-1 overflow-y-auto p-6">
         {loading && (
-          <div className="flex items-center justify-center py-16 text-gray-400 text-sm gap-3">
+          <div className="flex items-center justify-center py-16 text-charcoal/40 text-sm gap-3">
             <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -831,38 +831,38 @@ export default function ProjectsPage() {
             {activeTab === "overview" && (
               <div className="max-w-3xl space-y-6">
                 {/* Project info */}
-                <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+                <div className="bg-white rounded-xl border border-mint p-5 shadow-sm">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: activeProject.color + "20" }}>
                       <span className="w-4 h-4 rounded-full block" style={{ backgroundColor: activeProject.color }} />
                     </div>
                     <div>
-                      <h2 className="font-bold text-gray-900">{activeProject.name}</h2>
+                      <h2 className="font-bold text-charcoal">{activeProject.name}</h2>
                       {activeProject.description
-                        ? <p className="text-sm text-gray-500 mt-0.5">{activeProject.description}</p>
-                        : <p className="text-sm text-gray-300 mt-0.5 italic">No description</p>}
+                        ? <p className="text-sm text-charcoal/50 mt-0.5">{activeProject.description}</p>
+                        : <p className="text-sm text-charcoal/25 mt-0.5 italic">No description</p>}
                     </div>
                   </div>
-                  {project && <p className="text-xs text-gray-400">Created {fmtDate(project.createdAt)}</p>}
+                  {project && <p className="text-xs text-charcoal/40">Created {fmtDate(project.createdAt)}</p>}
                 </div>
 
                 {/* Task status breakdown */}
                 {stats && stats.taskCount > 0 && (
-                  <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-4">Task Distribution</h3>
+                  <div className="bg-white rounded-xl border border-mint p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-charcoal/80 mb-4">Task Distribution</h3>
                     <div className="space-y-3">
                       {[
-                        { label: "To Do",       count: stats.todoCount,        color: "bg-gray-300",    textColor: "text-gray-600" },
-                        { label: "In Progress", count: stats.inProgressCount,  color: "bg-blue-400",    textColor: "text-blue-600" },
-                        { label: "In Review",   count: stats.inReviewCount,    color: "bg-violet-400",  textColor: "text-violet-600" },
-                        { label: "Done",        count: stats.doneCount,        color: "bg-emerald-400", textColor: "text-emerald-600" },
+                        { label: "To Do",       count: stats.todoCount,        color: "bg-charcoal/30",    textColor: "text-charcoal/70" },
+                        { label: "In Progress", count: stats.inProgressCount,  color: "bg-navy",    textColor: "text-navy" },
+                        { label: "In Review",   count: stats.inReviewCount,    color: "bg-rose",  textColor: "text-charcoal" },
+                        { label: "Done",        count: stats.doneCount,        color: "bg-teal-sage", textColor: "text-teal-pine" },
                       ].map(({ label, count, color, textColor }) => (
                         <div key={label}>
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-gray-500">{label}</span>
+                            <span className="text-xs text-charcoal/50">{label}</span>
                             <span className={`text-xs font-semibold ${textColor}`}>{count} / {stats.taskCount}</span>
                           </div>
-                          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-2 bg-mint rounded-full overflow-hidden">
                             <div className={`h-full rounded-full ${color} transition-all`}
                               style={{ width: `${(count / stats.taskCount) * 100}%` }} />
                           </div>
@@ -870,12 +870,12 @@ export default function ProjectsPage() {
                       ))}
                     </div>
                     {/* Completion progress */}
-                    <div className="mt-4 pt-4 border-t border-gray-50 flex items-center gap-3">
-                      <div className="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full transition-all"
+                    <div className="mt-4 pt-4 border-t border-mint flex items-center gap-3">
+                      <div className="flex-1 h-3 bg-mint rounded-full overflow-hidden">
+                        <div className="h-full bg-teal-sage rounded-full transition-all"
                           style={{ width: `${(stats.doneCount / stats.taskCount) * 100}%` }} />
                       </div>
-                      <span className="text-sm font-bold text-gray-700 shrink-0">
+                      <span className="text-sm font-bold text-charcoal/80 shrink-0">
                         {Math.round((stats.doneCount / stats.taskCount) * 100)}% complete
                       </span>
                     </div>
@@ -884,18 +884,18 @@ export default function ProjectsPage() {
 
                 {/* Time logged by date */}
                 {timeByDateSorted.length > 0 && (
-                  <div className="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
+                  <div className="bg-white rounded-xl border border-mint p-5 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-sm font-semibold text-gray-700">Time Logged by Date</h3>
-                      <span className="text-xs text-gray-400">{fmtMins(stats?.totalMinutes ?? 0)} total</span>
+                      <h3 className="text-sm font-semibold text-charcoal/80">Time Logged by Date</h3>
+                      <span className="text-xs text-charcoal/40">{fmtMins(stats?.totalMinutes ?? 0)} total</span>
                     </div>
                     <div className="flex items-end gap-1.5 h-32">
                       {timeByDateSorted.map(([date, mins]) => (
                         <div key={date} className="flex-1 flex flex-col items-center gap-1 min-w-0">
-                          <span className="text-[9px] text-gray-400 font-medium">{fmtMins(mins)}</span>
+                          <span className="text-[9px] text-charcoal/40 font-medium">{fmtMins(mins)}</span>
                           <div className="w-full rounded-sm transition-all"
                             style={{ height: `${(mins / maxMins) * 96}px`, backgroundColor: activeProject.color, opacity: 0.8 }} />
-                          <span className="text-[8px] text-gray-400 truncate w-full text-center">{date.slice(5)}</span>
+                          <span className="text-[8px] text-charcoal/40 truncate w-full text-center">{date.slice(5)}</span>
                         </div>
                       ))}
                     </div>
@@ -903,7 +903,7 @@ export default function ProjectsPage() {
                 )}
 
                 {stats && stats.taskCount === 0 && timeLogs.length === 0 && (
-                  <div className="text-center py-16 text-gray-400">
+                  <div className="text-center py-16 text-charcoal/40">
                     <p className="text-3xl mb-3">📊</p>
                     <p className="text-sm">No data yet. Add tasks or log time to see your project overview.</p>
                   </div>
@@ -916,36 +916,36 @@ export default function ProjectsPage() {
               <div className="max-w-3xl space-y-4">
                 {/* Add task */}
                 {showNewTask ? (
-                  <div className="bg-white rounded-xl border border-indigo-100 p-4 space-y-3 shadow-sm">
+                  <div className="bg-white rounded-xl border border-teal-sage/30 p-4 space-y-3 shadow-sm">
                     <input value={taskText} onChange={(e) => setTaskText(e.target.value)}
                       placeholder="Task name" autoFocus
                       onKeyDown={(e) => e.key === "Enter" && handleCreateTask()}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                      className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-sage/40" />
                     <textarea value={taskDesc} onChange={(e) => setTaskDesc(e.target.value)}
                       placeholder="Description (optional)" rows={2}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none resize-none" />
+                      className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none resize-none" />
                     <div className="flex items-center gap-3">
                       <select value={taskPriority} onChange={(e) => setTaskPriority(e.target.value as "high" | "medium" | "low")}
-                        className="text-xs border border-gray-200 rounded-lg px-2 py-1.5">
+                        className="text-xs border border-mint-mist rounded-lg px-2 py-1.5">
                         <option value="high">High priority</option>
                         <option value="medium">Medium priority</option>
                         <option value="low">Low priority</option>
                       </select>
                       <div className="flex gap-2 ml-auto">
-                        <button onClick={handleCreateTask} className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600">Add Task</button>
-                        <button onClick={() => { setShowNewTask(false); setTaskText(""); }} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                        <button onClick={handleCreateTask} className="text-sm bg-teal-deep text-white px-4 py-1.5 rounded-button hover:bg-teal-forest">Add Task</button>
+                        <button onClick={() => { setShowNewTask(false); setTaskText(""); }} className="text-sm text-charcoal/50 hover:text-charcoal">Cancel</button>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <button onClick={() => setShowNewTask(true)}
-                    className="w-full text-sm text-indigo-500 border-2 border-dashed border-indigo-200 rounded-xl py-3 hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
+                    className="w-full text-sm text-teal-pine border-2 border-dashed border-teal-sage/40 rounded-xl py-3 hover:border-teal-deep hover:bg-mint transition-colors">
                     + Add Task
                   </button>
                 )}
 
                 {tasks.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-charcoal/40">
                     <p className="text-3xl mb-2">✅</p>
                     <p className="text-sm">No tasks yet for this project.</p>
                   </div>
@@ -959,14 +959,14 @@ export default function ProjectsPage() {
                         <div key={status}>
                           <div className="flex items-center gap-2 mb-2 px-1">
                             <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{cfg.label} ({filtered.length})</p>
+                            <p className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide">{cfg.label} ({filtered.length})</p>
                           </div>
                           <div className="space-y-2">
                             {filtered.map((task) => {
                               const isExpanded = expandedTaskId === task.id;
                               const doneItems = task.checklist.filter((c) => c.done).length;
                               return (
-                                <div key={task.id} className={`bg-white rounded-xl border shadow-sm transition-all ${task.status === "done" ? "opacity-70 border-gray-100" : "border-gray-100"}`}>
+                                <div key={task.id} className={`bg-white rounded-xl border shadow-sm transition-all ${task.status === "done" ? "opacity-70 border-mint" : "border-mint"}`}>
                                   <div className="flex items-start gap-3 p-4">
                                     {/* Status cycle button */}
                                     <button
@@ -980,22 +980,22 @@ export default function ProjectsPage() {
                                         </svg>
                                       )}
                                       {task.status === "in-review" && (
-                                        <span className="w-1.5 h-1.5 rounded-full bg-violet-400 block" />
+                                        <span className="w-1.5 h-1.5 rounded-full bg-rose block" />
                                       )}
                                     </button>
 
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-start gap-2 flex-wrap">
-                                        <p className={`text-sm font-medium ${task.status === "done" ? "line-through text-gray-400" : "text-gray-800"}`}>
+                                        <p className={`text-sm font-medium ${task.status === "done" ? "line-through text-charcoal/40" : "text-charcoal"}`}>
                                           {task.text}
                                         </p>
                                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${PRIORITY_STYLES[task.priority]}`}>
                                           {task.priority}
                                         </span>
                                       </div>
-                                      {task.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{task.description}</p>}
+                                      {task.description && <p className="text-xs text-charcoal/50 mt-0.5 line-clamp-2">{task.description}</p>}
                                       {task.checklist.length > 0 && (
-                                        <p className="text-xs text-gray-400 mt-1">{doneItems}/{task.checklist.length} checklist items</p>
+                                        <p className="text-xs text-charcoal/40 mt-1">{doneItems}/{task.checklist.length} checklist items</p>
                                       )}
                                     </div>
 
@@ -1003,7 +1003,7 @@ export default function ProjectsPage() {
                                       <button
                                         onClick={() => { setExpandedTaskId(isExpanded ? null : task.id); setNewTaskComment(""); }}
                                         className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                                          isExpanded ? "bg-indigo-100 text-indigo-700" : "bg-gray-100 text-gray-500 hover:bg-indigo-50 hover:text-indigo-600"
+                                          isExpanded ? "bg-mint text-teal-pine" : "bg-mint text-charcoal/50 hover:bg-mint hover:text-teal-deep"
                                         }`}
                                       >
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1011,7 +1011,7 @@ export default function ProjectsPage() {
                                         </svg>
                                         {isExpanded ? "Close" : "Comment"}
                                       </button>
-                                      <button onClick={() => handleDeleteTask(task.id)} className="text-gray-300 hover:text-red-400 text-sm p-1">✕</button>
+                                      <button onClick={() => handleDeleteTask(task.id)} className="text-charcoal/25 hover:text-[#b3492f] text-sm p-1">✕</button>
                                     </div>
                                   </div>
 
@@ -1019,19 +1019,19 @@ export default function ProjectsPage() {
                                     const comments = taskCommentsMap[task.id] ?? [];
                                     const commentsLoading = taskCommentsLoading[task.id] ?? false;
                                     return (
-                                    <div className="border-t border-gray-50 px-4 pb-4 pt-3 space-y-4">
-                                      {task.description && <p className="text-sm text-gray-600 leading-relaxed">{task.description}</p>}
+                                    <div className="border-t border-mint px-4 pb-4 pt-3 space-y-4">
+                                      {task.description && <p className="text-sm text-charcoal/70 leading-relaxed">{task.description}</p>}
                                       {task.checklist.length > 0 && (
                                         <div>
-                                          <p className="text-xs font-semibold text-gray-400 uppercase mb-2">Checklist</p>
+                                          <p className="text-xs font-semibold text-charcoal/40 uppercase mb-2">Checklist</p>
                                           <div className="space-y-1.5">
                                             {task.checklist.map((item) => (
                                               <button key={item.id} onClick={() => handleToggleChecklist(task, item.id)}
                                                 className="flex items-center gap-2 w-full text-left">
-                                                <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${item.done ? "bg-emerald-500 border-emerald-500" : "border-gray-300"}`}>
+                                                <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${item.done ? "bg-teal-deep border-teal-deep" : "border-charcoal/25"}`}>
                                                   {item.done && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                                                 </span>
-                                                <span className={`text-xs ${item.done ? "line-through text-gray-400" : "text-gray-700"}`}>{item.text}</span>
+                                                <span className={`text-xs ${item.done ? "line-through text-charcoal/40" : "text-charcoal/80"}`}>{item.text}</span>
                                               </button>
                                             ))}
                                           </div>
@@ -1041,7 +1041,7 @@ export default function ProjectsPage() {
                                       <div className="flex gap-2 flex-wrap">
                                         {TASK_STATUS_ORDER.map((s) => (
                                           <button key={s} onClick={() => handleUpdateTaskStatus(task.id, s)}
-                                            className={`text-xs px-2.5 py-1 rounded-lg ${task.status === s ? STATUS_CONFIG[s].badge + " font-semibold" : "border border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
+                                            className={`text-xs px-2.5 py-1 rounded-tag ${task.status === s ? STATUS_CONFIG[s].badge + " font-semibold" : "border border-mint-mist text-charcoal/50 hover:bg-mint/40"}`}>
                                             {STATUS_CONFIG[s].label}
                                           </button>
                                         ))}
@@ -1049,28 +1049,28 @@ export default function ProjectsPage() {
 
                                       {/* Comments */}
                                       <div>
-                                        <p className="text-xs font-semibold text-gray-400 uppercase mb-2">
+                                        <p className="text-xs font-semibold text-charcoal/40 uppercase mb-2">
                                           Comments {comments.length > 0 && <span className="normal-case font-normal ml-1">{comments.length}</span>}
                                         </p>
-                                        {commentsLoading && <div className="h-8 bg-gray-100 rounded-lg animate-pulse" />}
+                                        {commentsLoading && <div className="h-8 bg-mint rounded-lg animate-pulse" />}
                                         {!commentsLoading && comments.length > 0 && (
                                           <ul className="space-y-2 mb-2">
                                             {comments.map(c => (
-                                              <li key={c.id} className="bg-gray-50 rounded-lg px-3 py-2.5 flex items-start gap-2.5 group/cmt">
-                                                <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-                                                  <svg className="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                              <li key={c.id} className="bg-mint/40 rounded-lg px-3 py-2.5 flex items-start gap-2.5 group/cmt">
+                                                <div className="w-6 h-6 rounded-full bg-mint flex items-center justify-center shrink-0 mt-0.5">
+                                                  <svg className="w-3 h-3 text-teal-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                                   </svg>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                  <p className="text-xs text-gray-800 leading-relaxed whitespace-pre-wrap">{c.body}</p>
-                                                  <p className="text-[10px] text-gray-400 mt-0.5">
+                                                  <p className="text-xs text-charcoal leading-relaxed whitespace-pre-wrap">{c.body}</p>
+                                                  <p className="text-[10px] text-charcoal/40 mt-0.5">
                                                     {new Date(c.createdAt).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
                                                   </p>
                                                 </div>
                                                 <button
                                                   onClick={() => handleDeleteTaskComment(task.id, c.id)}
-                                                  className="opacity-0 group-hover/cmt:opacity-100 text-gray-300 hover:text-red-400 transition-all shrink-0"
+                                                  className="opacity-0 group-hover/cmt:opacity-100 text-charcoal/25 hover:text-[#b3492f] transition-all shrink-0"
                                                 >
                                                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1081,7 +1081,7 @@ export default function ProjectsPage() {
                                           </ul>
                                         )}
                                         {!commentsLoading && comments.length === 0 && (
-                                          <p className="text-xs text-gray-400 mb-2">No comments yet.</p>
+                                          <p className="text-xs text-charcoal/40 mb-2">No comments yet.</p>
                                         )}
                                         <div className="flex gap-2">
                                           <textarea
@@ -1090,12 +1090,12 @@ export default function ProjectsPage() {
                                             onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleAddTaskComment(task.id); }}
                                             placeholder="Add a comment… (Ctrl+Enter to post)"
                                             rows={2}
-                                            className="flex-1 border border-gray-200 bg-white rounded-lg px-3 py-2 text-xs text-gray-700 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-300 placeholder:text-gray-300"
+                                            className="flex-1 border border-mint-mist bg-white rounded-lg px-3 py-2 text-xs text-charcoal/80 resize-none focus:outline-none focus:ring-2 focus:ring-teal-sage/40 placeholder:text-charcoal/25"
                                           />
                                           <button
                                             onClick={() => handleAddTaskComment(task.id)}
                                             disabled={!newTaskComment.trim()}
-                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-medium hover:bg-indigo-700 disabled:opacity-40 transition-colors self-end"
+                                            className="px-3 py-1.5 bg-teal-deep text-white rounded-button text-xs font-medium hover:bg-teal-forest disabled:opacity-40 transition-colors self-end"
                                           >
                                             Post
                                           </button>
@@ -1120,57 +1120,57 @@ export default function ProjectsPage() {
             {activeTab === "timelogs" && (
               <div className="max-w-3xl space-y-4">
                 {showNewLog ? (
-                  <div className="bg-white rounded-xl border border-indigo-100 p-4 space-y-3 shadow-sm">
+                  <div className="bg-white rounded-xl border border-teal-sage/30 p-4 space-y-3 shadow-sm">
                     <input value={logDesc} onChange={(e) => setLogDesc(e.target.value)}
                       placeholder="What did you work on?" autoFocus
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300" />
+                      className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-sage/40" />
                     <div className="flex gap-3 flex-wrap">
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500">Hours</label>
+                        <label className="text-xs text-charcoal/50">Hours</label>
                         <input type="number" min="0" max="24" value={logHours} onChange={(e) => setLogHours(e.target.value)}
-                          className="w-16 text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-indigo-300" />
+                          className="w-16 text-sm border border-mint-mist rounded-lg px-2 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-teal-sage/40" />
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500">Minutes</label>
+                        <label className="text-xs text-charcoal/50">Minutes</label>
                         <select value={logMins} onChange={(e) => setLogMins(e.target.value)}
-                          className="w-20 text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none">
+                          className="w-20 text-sm border border-mint-mist rounded-lg px-2 py-1.5 focus:outline-none">
                           {[0, 15, 30, 45].map((m) => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </div>
                       <div className="flex items-center gap-2">
-                        <label className="text-xs text-gray-500">Date</label>
+                        <label className="text-xs text-charcoal/50">Date</label>
                         <input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)}
-                          className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none" />
+                          className="text-sm border border-mint-mist rounded-lg px-2 py-1.5 focus:outline-none" />
                       </div>
                     </div>
                     {tasks.length > 0 && (
                       <select value={logTaskId} onChange={(e) => setLogTaskId(e.target.value)}
-                        className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none">
+                        className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none">
                         <option value="">No linked task</option>
                         {tasks.map((t) => <option key={t.id} value={t.id}>{t.text.slice(0, 60)}</option>)}
                       </select>
                     )}
                     <div className="flex gap-2">
-                      <button onClick={handleCreateLog} className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600">Log Time</button>
-                      <button onClick={() => setShowNewLog(false)} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
+                      <button onClick={handleCreateLog} className="text-sm bg-teal-deep text-white px-4 py-1.5 rounded-button hover:bg-teal-forest">Log Time</button>
+                      <button onClick={() => setShowNewLog(false)} className="text-sm text-charcoal/50 hover:text-charcoal">Cancel</button>
                     </div>
                   </div>
                 ) : (
                   <button onClick={() => setShowNewLog(true)}
-                    className="w-full text-sm text-indigo-500 border-2 border-dashed border-indigo-200 rounded-xl py-3 hover:border-indigo-400 hover:bg-indigo-50 transition-colors">
+                    className="w-full text-sm text-teal-pine border-2 border-dashed border-teal-sage/40 rounded-xl py-3 hover:border-teal-deep hover:bg-mint transition-colors">
                     + Log Time
                   </button>
                 )}
 
                 {timeLogs.length > 0 && stats && (
-                  <div className="bg-indigo-50 rounded-xl p-4 flex gap-6">
-                    <div><p className="text-lg font-bold text-indigo-700">{fmtMins(stats.totalMinutes)}</p><p className="text-xs text-indigo-400">Total logged</p></div>
-                    <div><p className="text-lg font-bold text-indigo-700">{timeLogs.length}</p><p className="text-xs text-indigo-400">Log entries</p></div>
+                  <div className="bg-mint rounded-xl p-4 flex gap-6">
+                    <div><p className="text-lg font-bold text-teal-pine">{fmtMins(stats.totalMinutes)}</p><p className="text-xs text-teal-sage">Total logged</p></div>
+                    <div><p className="text-lg font-bold text-teal-pine">{timeLogs.length}</p><p className="text-xs text-teal-sage">Log entries</p></div>
                   </div>
                 )}
 
                 {timeLogs.length === 0 ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-charcoal/40">
                     <p className="text-3xl mb-2">⏱️</p>
                     <p className="text-sm">No time logged yet for this project.</p>
                   </div>
@@ -1179,19 +1179,19 @@ export default function ProjectsPage() {
                     {timeLogs.map((log) => {
                       const linkedTask = tasks.find((t) => t.id === log.taskId);
                       return (
-                        <div key={log.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-start gap-3 shadow-sm">
+                        <div key={log.id} className="bg-white rounded-xl border border-mint p-4 flex items-start gap-3 shadow-sm">
                           <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-sm font-bold"
                             style={{ backgroundColor: activeProject.color + "20", color: activeProject.color }}>
                             {fmtMins(log.durationMin)}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-800">{log.description}</p>
+                            <p className="text-sm font-medium text-charcoal">{log.description}</p>
                             <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                              <span className="text-xs text-gray-400">{log.loggedDate}</span>
-                              {linkedTask && <span className="text-xs text-indigo-500 truncate">→ {linkedTask.text.slice(0, 40)}</span>}
+                              <span className="text-xs text-charcoal/40">{log.loggedDate}</span>
+                              {linkedTask && <span className="text-xs text-teal-pine truncate">→ {linkedTask.text.slice(0, 40)}</span>}
                             </div>
                           </div>
-                          <button onClick={() => handleDeleteLog(log.id, log.durationMin)} className="text-gray-300 hover:text-red-400 shrink-0 text-sm">✕</button>
+                          <button onClick={() => handleDeleteLog(log.id, log.durationMin)} className="text-charcoal/25 hover:text-[#b3492f] shrink-0 text-sm">✕</button>
                         </div>
                       );
                     })}
@@ -1204,32 +1204,32 @@ export default function ProjectsPage() {
             {activeTab === "meetings" && (
               <div className="max-w-3xl space-y-5">
                 {meetingsLoading ? (
-                  <p className="text-sm text-gray-400 py-8 text-center">Loading meetings…</p>
+                  <p className="text-sm text-charcoal/40 py-8 text-center">Loading meetings…</p>
                 ) : (
                   <>
                     <div>
-                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                      <h3 className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide mb-3">
                         Linked to this project ({linkedMeetings.length})
                       </h3>
                       {linkedMeetings.length === 0 ? (
-                        <p className="text-sm text-gray-400 text-center py-6 bg-white rounded-xl border border-gray-100">
+                        <p className="text-sm text-charcoal/40 text-center py-6 bg-white rounded-xl border border-mint">
                           No meetings linked yet.
                         </p>
                       ) : (
                         <div className="space-y-2">
                           {linkedMeetings.map((m) => (
-                            <div key={m.id} className="bg-white rounded-xl border border-gray-100 p-4 flex items-center gap-3 shadow-sm">
-                              <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center shrink-0">
-                                <svg className="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
+                            <div key={m.id} className="bg-white rounded-xl border border-mint p-4 flex items-center gap-3 shadow-sm">
+                              <div className="w-8 h-8 rounded-lg bg-mint flex items-center justify-center shrink-0">
+                                <svg className="w-4 h-4 text-teal-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.8}>
                                   <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                                 </svg>
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-gray-800 truncate">{m.label ?? "Untitled meeting"}</p>
-                                <p className="text-xs text-gray-400">{m.date ?? fmtDate(m.saved_at)}</p>
+                                <p className="text-sm font-medium text-charcoal truncate">{m.label ?? "Untitled meeting"}</p>
+                                <p className="text-xs text-charcoal/40">{m.date ?? fmtDate(m.saved_at)}</p>
                               </div>
                               <button onClick={() => handleUnlinkMeeting(m.id)}
-                                className="text-xs text-gray-400 hover:text-red-500 border border-gray-200 rounded-lg px-2.5 py-1 shrink-0">Unlink</button>
+                                className="text-xs text-charcoal/40 hover:text-[#b3492f] border border-mint-mist rounded-button px-2.5 py-1 shrink-0">Unlink</button>
                             </div>
                           ))}
                         </div>
@@ -1238,18 +1238,18 @@ export default function ProjectsPage() {
 
                     {unlinkableMeetings.length > 0 && (
                       <div>
-                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                        <h3 className="text-xs font-semibold text-charcoal/50 uppercase tracking-wide mb-3">
                           Available meetings — link to this project
                         </h3>
                         <div className="space-y-2">
                           {unlinkableMeetings.map((m) => (
-                            <div key={m.id} className="bg-gray-50 rounded-xl border border-gray-100 p-4 flex items-center gap-3">
+                            <div key={m.id} className="bg-mint/40 rounded-xl border border-mint p-4 flex items-center gap-3">
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-700 truncate">{m.label ?? "Untitled meeting"}</p>
-                                <p className="text-xs text-gray-400">{m.date ?? fmtDate(m.savedAt)}</p>
+                                <p className="text-sm text-charcoal/80 truncate">{m.label ?? "Untitled meeting"}</p>
+                                <p className="text-xs text-charcoal/40">{m.date ?? fmtDate(m.savedAt)}</p>
                               </div>
                               <button onClick={() => handleLinkMeeting(m.id)}
-                                className="text-xs text-indigo-600 hover:text-indigo-800 border border-indigo-200 rounded-lg px-2.5 py-1 shrink-0">+ Link</button>
+                                className="text-xs text-teal-pine hover:text-teal-deep border border-teal-sage/40 rounded-button px-2.5 py-1 shrink-0">+ Link</button>
                             </div>
                           ))}
                         </div>
@@ -1257,7 +1257,7 @@ export default function ProjectsPage() {
                     )}
 
                     {allMeetings.length === 0 && (
-                      <div className="text-center py-12 text-gray-400">
+                      <div className="text-center py-12 text-charcoal/40">
                         <p className="text-3xl mb-2">💬</p>
                         <p className="text-sm">No meetings in history. Create one from the Meetings page.</p>
                       </div>
@@ -1272,13 +1272,13 @@ export default function ProjectsPage() {
               <div className="max-w-3xl space-y-4">
                 {/* New note form */}
                 {showNewNote ? (
-                  <div className="bg-white rounded-xl border border-indigo-100 p-4 space-y-3 shadow-sm">
+                  <div className="bg-white rounded-xl border border-teal-sage/30 p-4 space-y-3 shadow-sm">
                     <input
                       value={noteTitle}
                       onChange={e => setNoteTitle(e.target.value)}
                       placeholder="Title (optional)"
                       autoFocus
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                      className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-sage/40"
                     />
                     <textarea
                       value={noteBody}
@@ -1286,19 +1286,19 @@ export default function ProjectsPage() {
                       onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleCreateNote(); }}
                       placeholder="Write your note… (Ctrl+Enter to save)"
                       rows={5}
-                      className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                      className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-sage/40 resize-none"
                     />
                     <div className="flex gap-2">
                       <button
                         onClick={handleCreateNote}
                         disabled={savingNote || !noteBody.trim()}
-                        className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
+                        className="text-sm bg-teal-deep text-white px-4 py-1.5 rounded-button hover:bg-teal-forest disabled:opacity-50"
                       >
                         {savingNote ? "Saving…" : "Save Note"}
                       </button>
                       <button
                         onClick={() => { setShowNewNote(false); setNoteTitle(""); setNoteBody(""); }}
-                        className="text-sm text-gray-500 hover:text-gray-700"
+                        className="text-sm text-charcoal/50 hover:text-charcoal"
                       >
                         Cancel
                       </button>
@@ -1307,7 +1307,7 @@ export default function ProjectsPage() {
                 ) : (
                   <button
                     onClick={() => setShowNewNote(true)}
-                    className="w-full text-sm text-indigo-500 border-2 border-dashed border-indigo-200 rounded-xl py-3 hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
+                    className="w-full text-sm text-teal-pine border-2 border-dashed border-teal-sage/40 rounded-xl py-3 hover:border-teal-deep hover:bg-mint transition-colors"
                   >
                     + New Note
                   </button>
@@ -1315,12 +1315,12 @@ export default function ProjectsPage() {
 
                 {!notesLoaded && (
                   <div className="space-y-3">
-                    {[1, 2].map(i => <div key={i} className="h-24 bg-gray-100 rounded-xl animate-pulse" />)}
+                    {[1, 2].map(i => <div key={i} className="h-24 bg-mint rounded-xl animate-pulse" />)}
                   </div>
                 )}
 
                 {notesLoaded && notes.length === 0 && (
-                  <div className="text-center py-16 text-gray-400">
+                  <div className="text-center py-16 text-charcoal/40">
                     <p className="text-3xl mb-2">📝</p>
                     <p className="text-sm">No notes yet for this project.</p>
                     <p className="text-xs mt-1">Use notes to capture decisions, context, or anything worth remembering.</p>
@@ -1330,7 +1330,7 @@ export default function ProjectsPage() {
                 {notesLoaded && notes.length > 0 && (
                   <div className="space-y-3">
                     {notes.map(note => (
-                      <div key={note.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden group/note">
+                      <div key={note.id} className="bg-white rounded-xl border border-mint shadow-sm overflow-hidden group/note">
                         {editingNoteId === note.id ? (
                           <div className="p-4 space-y-3">
                             <input
@@ -1338,26 +1338,26 @@ export default function ProjectsPage() {
                               onChange={e => setEditNoteTitle(e.target.value)}
                               placeholder="Title (optional)"
                               autoFocus
-                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                              className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-sage/40"
                             />
                             <textarea
                               value={editNoteBody}
                               onChange={e => setEditNoteBody(e.target.value)}
                               onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) handleUpdateNote(note.id); }}
                               rows={6}
-                              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                              className="w-full text-sm border border-mint-mist rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-teal-sage/40 resize-none"
                             />
                             <div className="flex gap-2">
                               <button
                                 onClick={() => handleUpdateNote(note.id)}
                                 disabled={!editNoteBody.trim()}
-                                className="text-sm bg-indigo-500 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-600 disabled:opacity-50"
+                                className="text-sm bg-teal-deep text-white px-4 py-1.5 rounded-button hover:bg-teal-forest disabled:opacity-50"
                               >
                                 Save
                               </button>
                               <button
                                 onClick={() => setEditingNoteId(null)}
-                                className="text-sm text-gray-500 hover:text-gray-700"
+                                className="text-sm text-charcoal/50 hover:text-charcoal"
                               >
                                 Cancel
                               </button>
@@ -1368,9 +1368,9 @@ export default function ProjectsPage() {
                             <div className="flex items-start justify-between gap-3 mb-2">
                               <div className="flex-1 min-w-0">
                                 {note.title && (
-                                  <h4 className="text-sm font-semibold text-gray-800 mb-1">{note.title}</h4>
+                                  <h4 className="text-sm font-semibold text-charcoal mb-1">{note.title}</h4>
                                 )}
-                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">{note.body}</p>
+                                <p className="text-sm text-charcoal/80 leading-relaxed whitespace-pre-wrap">{note.body}</p>
                               </div>
                               <div className="flex gap-1 shrink-0 opacity-0 group-hover/note:opacity-100 transition-opacity">
                                 <button
@@ -1379,7 +1379,7 @@ export default function ProjectsPage() {
                                     setEditNoteTitle(note.title ?? "");
                                     setEditNoteBody(note.body);
                                   }}
-                                  className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-charcoal/40 hover:text-teal-deep hover:bg-mint transition-colors"
                                   title="Edit note"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1388,7 +1388,7 @@ export default function ProjectsPage() {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteNote(note.id)}
-                                  className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-charcoal/40 hover:text-[#b3492f] hover:bg-[#e07a5f]/15 transition-colors"
                                   title="Delete note"
                                 >
                                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1397,7 +1397,7 @@ export default function ProjectsPage() {
                                 </button>
                               </div>
                             </div>
-                            <p className="text-[11px] text-gray-400">
+                            <p className="text-[11px] text-charcoal/40">
                               {note.updatedAt !== note.createdAt ? "Updated " : ""}
                               {new Date(note.updatedAt).toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                             </p>
@@ -1414,19 +1414,19 @@ export default function ProjectsPage() {
             {activeTab === "milestones" && (
               <div className="max-w-3xl space-y-4">
                 {milestones.length === 0 && milestonesLoaded && (
-                  <div className="bg-white rounded-xl border border-gray-100 p-10 text-center shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center mx-auto mb-3">
-                      <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                  <div className="bg-white rounded-xl border border-mint p-10 text-center shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-rose/10 flex items-center justify-center mx-auto mb-3">
+                      <svg className="w-6 h-6 text-charcoal/60" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
                       </svg>
                     </div>
-                    <p className="text-sm font-semibold text-gray-700">No milestones yet</p>
-                    <p className="text-xs text-gray-400 mt-1">Milestones linked to this project will appear here.</p>
+                    <p className="text-sm font-semibold text-charcoal/80">No milestones yet</p>
+                    <p className="text-xs text-charcoal/40 mt-1">Milestones linked to this project will appear here.</p>
                   </div>
                 )}
 
                 {!milestonesLoaded && (
-                  <div className="flex items-center justify-center py-16 text-gray-400 text-sm gap-3">
+                  <div className="flex items-center justify-center py-16 text-charcoal/40 text-sm gap-3">
                     <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -1437,16 +1437,16 @@ export default function ProjectsPage() {
 
                 {/* Summary strip */}
                 {milestones.length > 0 && (
-                  <div className="flex gap-6 bg-white rounded-xl border border-gray-100 px-5 py-3 shadow-sm">
+                  <div className="flex gap-6 bg-white rounded-xl border border-mint px-5 py-3 shadow-sm">
                     {[
-                      { label: "Total",       value: milestones.length,                                            color: "text-gray-700" },
-                      { label: "Completed",   value: milestones.filter(m => m.status === "completed").length,      color: "text-emerald-600" },
-                      { label: "In Progress", value: milestones.filter(m => m.status === "in-progress").length,    color: "text-blue-600" },
-                      { label: "Skills",      value: milestones.reduce((s,m)=>s+(m.skills?.length??0),0),          color: "text-violet-600" },
+                      { label: "Total",       value: milestones.length,                                            color: "text-charcoal/80" },
+                      { label: "Completed",   value: milestones.filter(m => m.status === "completed").length,      color: "text-teal-pine" },
+                      { label: "In Progress", value: milestones.filter(m => m.status === "in-progress").length,    color: "text-navy" },
+                      { label: "Skills",      value: milestones.reduce((s,m)=>s+(m.skills?.length??0),0),          color: "text-charcoal" },
                     ].map(({ label, value, color }) => (
                       <div key={label}>
                         <p className={`text-lg font-bold ${color}`}>{value}</p>
-                        <p className="text-[10px] text-gray-400 uppercase tracking-wide">{label}</p>
+                        <p className="text-[10px] text-charcoal/40 uppercase tracking-wide">{label}</p>
                       </div>
                     ))}
                   </div>
@@ -1462,21 +1462,21 @@ export default function ProjectsPage() {
                   const tickets = m.relatedTickets ?? [];
 
                   const statusStyles: Record<string, { badge: string; dot: string; label: string }> = {
-                    completed:   { badge: "bg-emerald-100 text-emerald-700 border-emerald-200", dot: "bg-emerald-500", label: "Completed" },
-                    "in-progress": { badge: "bg-blue-100 text-blue-700 border-blue-200",          dot: "bg-blue-500",   label: "In Progress" },
-                    pending:     { badge: "bg-gray-100 text-gray-600 border-gray-200",            dot: "bg-gray-400",   label: "Pending" },
+                    completed:   { badge: "bg-teal-sage/20 text-teal-pine border-teal-sage/40", dot: "bg-teal-deep", label: "Completed" },
+                    "in-progress": { badge: "bg-navy/10 text-navy border-navy/30",          dot: "bg-navy",   label: "In Progress" },
+                    pending:     { badge: "bg-mint text-charcoal/70 border-mint-mist",            dot: "bg-charcoal/40",   label: "Pending" },
                   };
                   const ss = statusStyles[m.status] ?? statusStyles.pending;
 
                   const profColors: Record<string, string> = {
-                    Owner:        "bg-emerald-100 text-emerald-800 border-emerald-200",
-                    Lead:         "bg-blue-100 text-blue-800 border-blue-200",
-                    Practitioner: "bg-violet-100 text-violet-800 border-violet-200",
-                    Emerging:     "bg-amber-100 text-amber-800 border-amber-200",
+                    Owner:        "bg-teal-sage/20 text-teal-pine border-teal-sage/40",
+                    Lead:         "bg-navy/10 text-navy border-navy/30",
+                    Practitioner: "bg-rose/30 text-charcoal border-rose/50",
+                    Emerging:     "bg-rose/25 text-charcoal border-rose/40",
                   };
 
                   return (
-                    <div key={m.id} className={`bg-white rounded-xl border shadow-sm transition-all ${isOpen ? "border-indigo-200 shadow-indigo-50" : "border-gray-100"}`}>
+                    <div key={m.id} className={`bg-white rounded-xl border transition-all ${isOpen ? "border-teal-sage/40" : "border-mint"}`}>
                       {/* Card header — always visible */}
                       <button
                         onClick={() => setExpandedMilestoneId(isOpen ? null : m.id)}
@@ -1484,20 +1484,20 @@ export default function ProjectsPage() {
                       >
                         {/* Status dot + completion line */}
                         <div className="flex flex-col items-center pt-0.5 gap-1 shrink-0">
-                          <span className={`w-3 h-3 rounded-full border-2 ${m.status === "completed" ? "bg-emerald-500 border-emerald-500" : m.status === "in-progress" ? "bg-blue-400 border-blue-400" : "bg-white border-gray-300"}`} />
+                          <span className={`w-3 h-3 rounded-full border-2 ${m.status === "completed" ? "bg-teal-deep border-teal-deep" : m.status === "in-progress" ? "bg-navy border-navy" : "bg-white border-charcoal/25"}`} />
                         </div>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm font-semibold text-gray-900 leading-snug">{displayTitle}</h3>
+                            <h3 className="text-sm font-semibold text-charcoal leading-snug">{displayTitle}</h3>
                             <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${ss.badge}`}>{ss.label}</span>
                             {m.careerImpact && (
-                              <span className="text-[10px] text-indigo-600 bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-full font-medium">
+                              <span className="text-[10px] text-teal-pine bg-mint border border-teal-sage/30 px-2 py-0.5 rounded-full font-medium">
                                 {m.careerImpact}
                               </span>
                             )}
                           </div>
-                          <div className="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                          <div className="flex items-center gap-3 mt-1 text-xs text-charcoal/40">
                             {m.completedAt && (
                               <span>✓ {m.completedAt.slice(0, 10)}</span>
                             )}
@@ -1508,24 +1508,24 @@ export default function ProjectsPage() {
                               <span>{tickets.slice(0, 3).join(", ")}{tickets.length > 3 ? ` +${tickets.length - 3}` : ""}</span>
                             )}
                             {skills.length > 0 && (
-                              <span className="text-violet-500">{skills.length} skill area{skills.length > 1 ? "s" : ""}</span>
+                              <span className="text-charcoal">{skills.length} skill area{skills.length > 1 ? "s" : ""}</span>
                             )}
                           </div>
                         </div>
 
-                        <svg className={`w-4 h-4 text-gray-400 shrink-0 mt-0.5 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <svg className={`w-4 h-4 text-charcoal/40 shrink-0 mt-0.5 transition-transform ${isOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
 
                       {/* Expanded detail */}
                       {isOpen && (
-                        <div className="px-5 pb-5 space-y-5 border-t border-gray-50 pt-4">
+                        <div className="px-5 pb-5 space-y-5 border-t border-mint pt-4">
                           {/* Why it matters */}
                           {m.whyItMatters && (
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Why It Matters</p>
-                              <p className="text-sm text-gray-600 leading-relaxed">{m.whyItMatters}</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-widest text-charcoal/40 mb-1.5">Why It Matters</p>
+                              <p className="text-sm text-charcoal/70 leading-relaxed">{m.whyItMatters}</p>
                             </div>
                           )}
 
@@ -1533,11 +1533,11 @@ export default function ProjectsPage() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {delivers.length > 0 && (
                               <div>
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Key Deliverables</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-charcoal/40 mb-2">Key Deliverables</p>
                                 <ul className="space-y-1.5">
                                   {delivers.map((d, i) => (
-                                    <li key={i} className="flex items-start gap-2 text-xs text-gray-600">
-                                      <svg className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                                    <li key={i} className="flex items-start gap-2 text-xs text-charcoal/70">
+                                      <svg className="w-3.5 h-3.5 text-teal-pine shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                                       </svg>
                                       {d}
@@ -1549,10 +1549,10 @@ export default function ProjectsPage() {
 
                             {tickets.length > 0 && (
                               <div>
-                                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-2">Related Tickets</p>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-charcoal/40 mb-2">Related Tickets</p>
                                 <div className="flex flex-wrap gap-1.5">
                                   {tickets.map((t) => (
-                                    <span key={t} className="text-[10px] font-mono px-2 py-0.5 bg-gray-100 text-gray-600 rounded border border-gray-200">{t}</span>
+                                    <span key={t} className="text-[10px] font-mono px-2 py-0.5 bg-mint text-charcoal/70 rounded border border-mint-mist">{t}</span>
                                   ))}
                                 </div>
                               </div>
@@ -1562,16 +1562,16 @@ export default function ProjectsPage() {
                           {/* Skills gained */}
                           {skills.length > 0 && (
                             <div>
-                              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3">Skills Gained</p>
+                              <p className="text-[10px] font-semibold uppercase tracking-widest text-charcoal/40 mb-3">Skills Gained</p>
                               <div className="space-y-3">
                                 {skills.map((s) => (
-                                  <div key={s.id} className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                                  <div key={s.id} className="rounded-lg border border-mint bg-mint/40 p-3">
                                     <div className="flex items-start justify-between gap-2 mb-2">
                                       <div>
-                                        <p className="text-xs font-semibold text-gray-800">{s.skillCategory}</p>
-                                        <p className="text-[10px] text-gray-400 mt-0.5">{s.domain}</p>
+                                        <p className="text-xs font-semibold text-charcoal">{s.skillCategory}</p>
+                                        <p className="text-[10px] text-charcoal/40 mt-0.5">{s.domain}</p>
                                       </div>
-                                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${profColors[s.proficiencyLevel] ?? "bg-gray-100 text-gray-600 border-gray-200"}`}>
+                                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border shrink-0 ${profColors[s.proficiencyLevel] ?? "bg-mint text-charcoal/70 border-mint-mist"}`}>
                                         {s.proficiencyLevel}
                                       </span>
                                     </div>
@@ -1579,7 +1579,7 @@ export default function ProjectsPage() {
                                     {/* Specific skills */}
                                     <div className="flex flex-wrap gap-1 mb-2">
                                       {s.specificSkills.map((sk, i) => (
-                                        <span key={i} className="text-[10px] px-1.5 py-0.5 bg-white border border-gray-200 text-gray-500 rounded">
+                                        <span key={i} className="text-[10px] px-1.5 py-0.5 bg-white border border-mint-mist text-charcoal/50 rounded">
                                           {sk}
                                         </span>
                                       ))}
@@ -1587,18 +1587,18 @@ export default function ProjectsPage() {
 
                                     {/* Resume bullet */}
                                     {s.resumeBullet && (
-                                      <div className="mt-2 pt-2 border-t border-gray-200">
-                                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1">Resume Bullet</p>
-                                        <p className="text-[11px] text-gray-600 italic leading-relaxed">{s.resumeBullet}</p>
+                                      <div className="mt-2 pt-2 border-t border-mint-mist">
+                                        <p className="text-[10px] font-semibold text-charcoal/40 uppercase tracking-wide mb-1">Resume Bullet</p>
+                                        <p className="text-[11px] text-charcoal/70 italic leading-relaxed">{s.resumeBullet}</p>
                                       </div>
                                     )}
 
                                     {/* Evidence tickets */}
                                     {s.evidenceTickets.length > 0 && (
                                       <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-                                        <span className="text-[10px] text-gray-400">Evidence:</span>
+                                        <span className="text-[10px] text-charcoal/40">Evidence:</span>
                                         {s.evidenceTickets.map((t) => (
-                                          <span key={t} className="text-[9px] font-mono px-1.5 py-0.5 bg-indigo-50 text-indigo-500 rounded border border-indigo-100">{t}</span>
+                                          <span key={t} className="text-[9px] font-mono px-1.5 py-0.5 bg-mint text-teal-pine rounded border border-teal-sage/30">{t}</span>
                                         ))}
                                       </div>
                                     )}
@@ -1618,28 +1618,28 @@ export default function ProjectsPage() {
             {/* ── EXPORT ─────────────────────────────────────────────────── */}
             {activeTab === "export" && (
               <div className="max-w-xl space-y-4">
-                <div className="bg-white rounded-xl border border-gray-100 p-6 shadow-sm space-y-4">
-                  <h3 className="text-sm font-semibold text-gray-700">Export Project Data</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">
+                <div className="bg-white rounded-xl border border-mint p-6 shadow-sm space-y-4">
+                  <h3 className="text-sm font-semibold text-charcoal/80">Export Project Data</h3>
+                  <p className="text-sm text-charcoal/50 leading-relaxed">
                     Downloads a CSV with all tasks and time logs strictly scoped to{" "}
-                    <span className="font-semibold text-gray-700">{activeProject.name}</span>.
+                    <span className="font-semibold text-charcoal/80">{activeProject.name}</span>.
                   </p>
-                  <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+                  <div className="bg-mint/40 rounded-lg p-4 space-y-2">
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Tasks</span>
-                      <span className="font-medium text-gray-700">{stats?.taskCount ?? 0} rows</span>
+                      <span className="text-charcoal/50">Tasks</span>
+                      <span className="font-medium text-charcoal/80">{stats?.taskCount ?? 0} rows</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Time log entries</span>
-                      <span className="font-medium text-gray-700">{timeLogs.length} rows</span>
+                      <span className="text-charcoal/50">Time log entries</span>
+                      <span className="font-medium text-charcoal/80">{timeLogs.length} rows</span>
                     </div>
                     <div className="flex justify-between text-xs">
-                      <span className="text-gray-500">Total time logged</span>
-                      <span className="font-medium text-gray-700">{stats ? fmtMins(stats.totalMinutes) : "—"}</span>
+                      <span className="text-charcoal/50">Total time logged</span>
+                      <span className="font-medium text-charcoal/80">{stats ? fmtMins(stats.totalMinutes) : "—"}</span>
                     </div>
                   </div>
                   <button onClick={handleExport} disabled={exporting}
-                    className="w-full py-2.5 text-sm bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 disabled:opacity-50 font-medium">
+                    className="w-full py-2.5 text-sm bg-teal-deep text-white rounded-button hover:bg-teal-forest disabled:opacity-50 font-medium">
                     {exporting ? "Preparing download…" : "Download CSV"}
                   </button>
                 </div>

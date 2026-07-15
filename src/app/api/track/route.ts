@@ -19,7 +19,7 @@ const g = globalThis as unknown as { _consumerBooted?: boolean };
 if (!g._consumerBooted) {
   g._consumerBooted = true;
   startEventConsumer().catch((err) =>
-    console.error("[Clock-It] Kafka consumer boot failed:", err)
+    console.error("[ProfDev] Kafka consumer boot failed:", err)
   );
 }
 

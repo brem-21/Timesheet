@@ -171,13 +171,14 @@ export default function TeamPage() {
       : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-paper">
       {/* Top bar */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+      <header className="bg-white border-b border-mint sticky top-0 z-10">
+        <div className="px-6 py-5 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-lg font-bold text-gray-900">Team View</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Browse any team member&apos;s Jira activity</p>
+            <p className="eyebrow"><span className="eyebrow-dot" />Team</p>
+            <h1 className="headline mt-1">Team View</h1>
+            <p className="text-[13px] text-charcoal/60 mt-1">Browse any team member&apos;s Jira activity</p>
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
@@ -188,19 +189,14 @@ export default function TeamPage() {
               <button
                 onClick={handleExport}
                 disabled={exportLoading || tickets.length === 0}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary-sm"
               >
                 {exportLoading ? (
                   <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                )}
+                ) : null}
                 Export CSV
               </button>
             )}
@@ -211,41 +207,35 @@ export default function TeamPage() {
       <div className="px-6 py-6 space-y-6 max-w-screen-xl mx-auto">
         {/* Empty state — no user selected */}
         {!selectedUser?.accountId && (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            </div>
-            <p className="text-base font-medium text-gray-500">Search for a team member</p>
-            <p className="text-sm mt-1">Use the search box above to find and select a user</p>
+          <div className="flex flex-col items-center justify-center py-16 text-charcoal/40">
+            <p className="text-[16px] font-medium text-charcoal/60">Search for a team member</p>
+            <p className="text-[13px] mt-1">Use the search box above to find and select a user</p>
 
             {recentSearches.length > 0 && (
               <div className="mt-8 w-full max-w-md">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 text-center">Recent</p>
+                <p className="eyebrow justify-center mb-3"><span className="eyebrow-dot" />Recent</p>
                 <div className="flex flex-col gap-2">
                   {recentSearches.map((u) => (
                     <button
                       key={u.accountId}
                       onClick={() => handleUserSelect(u)}
-                      className="flex items-center gap-3 px-4 py-3 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all group text-left"
+                      className="flex items-center gap-3 px-4 py-3 card-white !p-3 hover:bg-mint/40 transition-colors group text-left"
                     >
                       {u.avatarUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={u.avatarUrl} alt={u.displayName} className="w-8 h-8 rounded-full object-cover shrink-0" />
+                        <img src={u.avatarUrl} alt={u.displayName} className="w-8 h-8 rounded-pill object-cover shrink-0" />
                       ) : (
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold shrink-0">
+                        <div className="w-8 h-8 rounded-pill bg-mint text-teal-pine flex items-center justify-center text-[13px] font-bold shrink-0">
                           {u.displayName[0]?.toUpperCase() ?? "?"}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{u.displayName}</p>
-                        <p className="text-xs text-gray-400 truncate">{u.emailAddress}</p>
+                        <p className="text-[14px] font-medium text-charcoal truncate">{u.displayName}</p>
+                        <p className="text-[12px] text-charcoal/50 truncate">{u.emailAddress}</p>
                       </div>
                       <button
                         onClick={(e) => handleRemoveRecent(e, u.accountId)}
-                        className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all shrink-0 p-1"
+                        className="opacity-0 group-hover:opacity-100 text-charcoal/30 hover:text-[#b3492f] transition-all shrink-0 p-1"
                         title="Remove from recent"
                       >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,18 +252,14 @@ export default function TeamPage() {
 
         {/* Error */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3">
-            <svg className="w-5 h-5 text-red-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+          <div className="bg-[#e07a5f]/10 border border-[#e07a5f]/40 rounded-card px-4 py-3 flex items-start gap-3">
             <div>
-              <p className="text-sm font-medium text-red-800">Error loading data</p>
-              <p className="text-xs text-red-600 mt-0.5">{error}</p>
+              <p className="text-[14px] font-medium text-[#b3492f]">Error loading data</p>
+              <p className="text-[12px] text-[#b3492f]/80 mt-0.5">{error}</p>
             </div>
             <button
               onClick={() => setError("")}
-              className="ml-auto text-red-500 hover:text-red-700 shrink-0"
+              className="ml-auto text-[#b3492f] hover:opacity-70 shrink-0"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -287,38 +273,38 @@ export default function TeamPage() {
           <div className="space-y-4 animate-pulse">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 rounded-xl" />
+                <div key={i} className="h-24 bg-mint rounded-card" />
               ))}
             </div>
-            <div className="h-48 bg-gray-200 rounded-xl" />
-            <div className="h-64 bg-gray-200 rounded-xl" />
+            <div className="h-48 bg-mint rounded-card" />
+            <div className="h-64 bg-mint rounded-card" />
           </div>
         )}
 
         {!loading && selectedUser?.accountId && (
           <>
             {/* User profile banner */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4 flex items-center gap-4">
+            <div className="card-white flex items-center gap-4">
               {selectedUser.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={selectedUser.avatarUrl}
                   alt={selectedUser.displayName}
-                  className="w-12 h-12 rounded-full object-cover"
+                  className="w-12 h-12 rounded-pill object-cover"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-lg font-bold">
+                <div className="w-12 h-12 rounded-pill bg-mint text-teal-pine flex items-center justify-center text-[18px] font-bold">
                   {selectedUser.displayName[0]?.toUpperCase() ?? "?"}
                 </div>
               )}
               <div>
-                <p className="text-base font-semibold text-gray-900">{selectedUser.displayName}</p>
-                <p className="text-sm text-gray-500">{selectedUser.emailAddress}</p>
+                <p className="text-[16px] font-medium text-charcoal">{selectedUser.displayName}</p>
+                <p className="text-[13px] text-charcoal/50">{selectedUser.emailAddress}</p>
               </div>
               <div className="ml-auto flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-xs text-gray-400">Viewing period</p>
-                  <p className="text-sm font-medium text-gray-700">
+                  <p className="text-[11px] text-charcoal/40">Viewing period</p>
+                  <p className="text-[13px] font-medium text-charcoal/80">
                     {new Date(parseInt(year), parseInt(month) - 1).toLocaleString("default", {
                       month: "long",
                       year: "numeric",
@@ -328,9 +314,9 @@ export default function TeamPage() {
                 <button
                   onClick={handleSendToSlack}
                   disabled={slackStatus === "sending" || tickets.length === 0}
-                  className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed
-                    ${slackStatus === "sent" ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200"
-                    : slackStatus === "error" ? "bg-red-100 text-red-700 ring-1 ring-red-200"
+                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-button text-[13px] font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                    ${slackStatus === "sent" ? "bg-teal-sage/20 text-teal-pine"
+                    : slackStatus === "error" ? "bg-[#e07a5f]/15 text-[#b3492f]"
                     : "bg-[#4A154B] text-white hover:bg-[#611f69]"}`}
                 >
                   {slackStatus === "sending" ? (
@@ -362,9 +348,7 @@ export default function TeamPage() {
             {/* Standup summary */}
             {standupSummary && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider mb-3">
-                  Standup Summary
-                </h2>
+                <p className="eyebrow mb-3"><span className="eyebrow-dot" />Standup Summary</p>
                 <StandupSummaryCard summary={standupSummary} />
               </div>
             )}
@@ -372,10 +356,11 @@ export default function TeamPage() {
             {/* Tickets */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                <p className="eyebrow">
+                  <span className="eyebrow-dot" />
                   Tickets — {new Date(parseInt(year), parseInt(month) - 1).toLocaleString("default", { month: "long", year: "numeric" })}
-                </h2>
-                <span className="text-xs text-gray-400">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</span>
+                </p>
+                <span className="text-[12px] text-charcoal/40">{tickets.length} ticket{tickets.length !== 1 ? "s" : ""}</span>
               </div>
               <TicketTable tickets={tickets} />
             </div>

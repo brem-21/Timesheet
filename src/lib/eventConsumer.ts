@@ -94,7 +94,7 @@ export async function startEventConsumer(): Promise<void> {
         },
       });
 
-      console.log(`[Clock-It] Kafka event consumer started → ${EVENTS_TOPIC}`);
+      console.log(`[ProfDev] Kafka event consumer started → ${EVENTS_TOPIC}`);
       recomputeRecommendations().catch(() => {});
       return;
     } catch (err) {

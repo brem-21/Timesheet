@@ -93,7 +93,7 @@ async function runReminder() {
       }
     }
 
-    sections.push("", `_Reminder at 4:00 PM — Clock-It_`);
+    sections.push("", `_Reminder at 4:00 PM — ProfDev_`);
 
     const res = await fetch(webhookUrl, {
       method: "POST",

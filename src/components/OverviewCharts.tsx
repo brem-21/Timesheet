@@ -10,22 +10,22 @@ function BarSegment({ label, value, total, color }: { label: string; value: numb
   const pct = total === 0 ? 0 : Math.round((value / total) * 100);
   return (
     <div className="flex items-center gap-3">
-      <div className="w-28 shrink-0 text-right text-sm text-gray-600 font-medium">{label}</div>
-      <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+      <div className="w-28 shrink-0 text-right text-[13px] text-charcoal/70 font-medium">{label}</div>
+      <div className="flex-1 h-5 bg-mint rounded-pill overflow-hidden">
         <div
-          className={`h-full rounded-full flex items-center px-2 transition-all duration-500 ${color}`}
+          className={`h-full rounded-pill flex items-center px-2 transition-all duration-500 ${color}`}
           style={{ width: `${Math.max(pct, pct > 0 ? 4 : 0)}%` }}
         >
-          {pct > 8 && <span className="text-white text-xs font-semibold">{value}</span>}
+          {pct > 8 && <span className="text-white text-[11px] font-semibold">{value}</span>}
         </div>
       </div>
-      <div className="w-12 text-sm text-gray-500">{pct}%</div>
+      <div className="w-12 text-[13px] text-charcoal/50">{pct}%</div>
     </div>
   );
 }
 
 function PriorityDot({ color }: { color: string }) {
-  return <span className={`inline-block w-2.5 h-2.5 rounded-full ${color}`} />;
+  return <span className={`inline-block w-2.5 h-2.5 rounded-pill ${color}`} />;
 }
 
 export default function OverviewCharts({ tickets }: Props) {
@@ -37,14 +37,14 @@ export default function OverviewCharts({ tickets }: Props) {
   const statusEntries = Object.entries(statusGroups).sort((a, b) => b[1] - a[1]);
 
   const statusColorMap: Record<string, string> = {
-    Done: "bg-emerald-500",
-    "In Progress": "bg-blue-500",
-    Review: "bg-amber-400",
-    "To Do": "bg-gray-400",
-    Blocked: "bg-red-500",
+    Done: "bg-teal-deep",
+    "In Progress": "bg-navy",
+    Review: "bg-rose",
+    "To Do": "bg-charcoal/30",
+    Blocked: "bg-[#b3492f]",
   };
   function statusColor(s: string) {
-    return statusColorMap[s] ?? "bg-indigo-400";
+    return statusColorMap[s] ?? "bg-teal-sage";
   }
 
   // ── Priority breakdown ────────────────────────────────────────────────────
@@ -55,11 +55,11 @@ export default function OverviewCharts({ tickets }: Props) {
   }
 
   const priorityColorMap: Record<string, { bar: string; dot: string }> = {
-    Highest: { bar: "bg-red-600", dot: "bg-red-600" },
-    High: { bar: "bg-orange-500", dot: "bg-orange-500" },
-    Medium: { bar: "bg-amber-400", dot: "bg-amber-400" },
-    Low: { bar: "bg-blue-400", dot: "bg-blue-400" },
-    Lowest: { bar: "bg-gray-300", dot: "bg-gray-300" },
+    Highest: { bar: "bg-[#b3492f]", dot: "bg-[#b3492f]" },
+    High: { bar: "bg-rose", dot: "bg-rose" },
+    Medium: { bar: "bg-navy", dot: "bg-navy" },
+    Low: { bar: "bg-teal-sage", dot: "bg-teal-sage" },
+    Lowest: { bar: "bg-charcoal/20", dot: "bg-charcoal/20" },
   };
 
   // ── Hours by week ─────────────────────────────────────────────────────────
@@ -78,13 +78,16 @@ export default function OverviewCharts({ tickets }: Props) {
   const totalTickets = tickets.length;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-24">
 
       {/* Status Breakdown */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:col-span-1">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">Tickets by Status</h3>
+      <div className="card-white lg:col-span-1">
+        <h3 className="eyebrow mb-4">
+          <span className="eyebrow-dot" />
+          Tickets by Status
+        </h3>
         {statusEntries.length === 0 ? (
-          <p className="text-sm text-gray-400">No data</p>
+          <p className="text-[14px] text-charcoal/40">No data</p>
         ) : (
           <div className="space-y-3">
             {statusEntries.map(([status, count]) => (
@@ -101,10 +104,13 @@ export default function OverviewCharts({ tickets }: Props) {
       </div>
 
       {/* Priority Breakdown */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:col-span-1">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">Tickets by Priority</h3>
+      <div className="card-white lg:col-span-1">
+        <h3 className="eyebrow mb-4">
+          <span className="eyebrow-dot" />
+          Tickets by Priority
+        </h3>
         {Object.keys(priorityGroups).length === 0 ? (
-          <p className="text-sm text-gray-400">No data</p>
+          <p className="text-[14px] text-charcoal/40">No data</p>
         ) : (
           <div className="space-y-3">
             {priorityOrder
@@ -115,27 +121,30 @@ export default function OverviewCharts({ tickets }: Props) {
                   label={p}
                   value={priorityGroups[p]}
                   total={totalTickets}
-                  color={priorityColorMap[p]?.bar ?? "bg-gray-400"}
+                  color={priorityColorMap[p]?.bar ?? "bg-charcoal/30"}
                 />
               ))}
           </div>
         )}
         {/* Legend */}
-        <div className="mt-5 flex flex-wrap gap-3 pt-4 border-t border-gray-50">
+        <div className="mt-5 flex flex-wrap gap-3 pt-4 border-t border-mint">
           {priorityOrder.filter((p) => priorityGroups[p]).map((p) => (
             <div key={p} className="flex items-center gap-1.5">
-              <PriorityDot color={priorityColorMap[p]?.dot ?? "bg-gray-400"} />
-              <span className="text-xs text-gray-500">{p} ({priorityGroups[p]})</span>
+              <PriorityDot color={priorityColorMap[p]?.dot ?? "bg-charcoal/30"} />
+              <span className="text-[12px] text-charcoal/50">{p} ({priorityGroups[p]})</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Hours by Week */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 lg:col-span-1">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">Hours by Week</h3>
+      <div className="card-white lg:col-span-1">
+        <h3 className="eyebrow mb-4">
+          <span className="eyebrow-dot" />
+          Hours by Week
+        </h3>
         {weekEntries.length === 0 ? (
-          <p className="text-sm text-gray-400">No data</p>
+          <p className="text-[14px] text-charcoal/40">No data</p>
         ) : (
           <div className="flex items-end gap-2 h-36">
             {weekEntries.map(([label, hours]) => {
@@ -144,21 +153,21 @@ export default function OverviewCharts({ tickets }: Props) {
                 <div key={label} className="flex-1 flex flex-col items-center gap-1 group">
                   <div className="relative w-full flex justify-center">
                     {/* Tooltip */}
-                    <div className="absolute bottom-full mb-1 hidden group-hover:flex bg-gray-800 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                    <div className="absolute bottom-full mb-1 hidden group-hover:flex bg-charcoal text-white text-[11px] rounded-card px-2 py-1 whitespace-nowrap z-10">
                       {hours}h
                     </div>
                     <div
-                      className="w-full bg-indigo-500 rounded-t-md transition-all duration-300 hover:bg-indigo-600"
+                      className="w-full bg-teal-deep rounded-t-card transition-all duration-300 hover:bg-teal-forest"
                       style={{ height: `${heightPct}%`, minHeight: "4px" }}
                     />
                   </div>
-                  <span className="text-[10px] text-gray-400 text-center leading-tight">{label}</span>
+                  <span className="text-[10px] text-charcoal/40 text-center leading-tight">{label}</span>
                 </div>
               );
             })}
           </div>
         )}
-        <div className="mt-3 text-xs text-gray-400 text-right">
+        <div className="mt-3 text-[12px] text-charcoal/40 text-right">
           Total: {tickets.reduce((s, t) => s + t.hours, 0)}h
         </div>
       </div>

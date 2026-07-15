@@ -24,19 +24,15 @@ export default function TimerButton({ ticketKey, ticketSummary }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-end gap-0.5">
+    <div className="flex flex-col items-end gap-1">
       <button
         onClick={handleClick}
         title={isActive ? "Stop timer" : "Start timer"}
-        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-          isActive
-            ? "bg-red-100 text-red-700 hover:bg-red-200 ring-1 ring-red-300 animate-pulse"
-            : "bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-700"
-        }`}
+        className={isActive ? "btn-ghost-sm" : "btn-primary-sm"}
       >
         {isActive ? (
           <>
-            <span className="w-2 h-2 rounded-sm bg-red-500 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-pill bg-teal-pine shrink-0" />
             {formatDurationShort(elapsed)}
           </>
         ) : (
@@ -50,7 +46,7 @@ export default function TimerButton({ ticketKey, ticketSummary }: Props) {
       </button>
 
       {loggedSeconds > 0 && (
-        <span className="text-[10px] text-gray-400 font-medium">
+        <span className="text-[11px] text-charcoal/40 font-medium">
           {formatDurationShort(loggedSeconds)} logged
         </span>
       )}
